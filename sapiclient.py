@@ -8,12 +8,16 @@ import time
 
 class HttpHelper:
     server = "https://connection.keboola.com/v2/"
+    user_agent = "Keboola StorageApi Python Client/v2"
 
     def __init__(self, token):
         self.token = token
 
     def tokenheader(self):
-        return {'X-StorageApi-Token': self.token}
+        return {
+            'User-Agent': self.user_agent,
+            'X-StorageApi-Token': self.token
+        }
 
     def getRequest(self, url, params = None):
         if params == None:
