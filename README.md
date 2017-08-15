@@ -1,9 +1,19 @@
-## Python client for the Keboola Storage API
+# Python client for the Keboola Storage API
 
+## Install
 
-### Usage 
+`$ pip install git+https://github.com/keboola/sapi-python-client.git`
+
+or 
+
+```bash
+$ git clone https://github.com/keboola/sapi-python-client.git && cd sapi-python-client
+$ python setup.py install
 ```
-from sapiclient import Client
+
+## Usage 
+```
+from kbcstorage.client import Client
 
 cl = Client("MY_KBC_TOKEN")
 
