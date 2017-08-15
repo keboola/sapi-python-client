@@ -1,5 +1,9 @@
 from setuptools import setup, find_packages
 import kbcstorage
+
+with open("README.md") as f:
+    readme = f.read()
+
 setup(
     name='kbcstorage',
     version=kbcstorage.__version__,
@@ -10,4 +14,6 @@ setup(
         'boto3',
         'requests'
     ]
+    long_description=readme,
+    license="MIT"
 )
