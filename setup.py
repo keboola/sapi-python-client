@@ -13,7 +13,7 @@ setup(
     install_requires=[
         'boto3',
         'requests'
-    ]
+    ],
     long_description=readme,
     license="MIT"
 )
