@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/keboola/psapi-python-client.svg?branch=master)](https://travis-ci.org/keboola/sapi-python-client)
+
 # Python client for the Keboola Storage API
 
 ## Install
@@ -34,7 +36,13 @@ cl.get_table(tableId)
 
 ```
 
+## Docker image
+Docker image with pre-installed library is also available, run it via:
+
+```
+docker run -i -t quay.io/keboola/sapi-python-client
+```
+
 Under development -- all contributions very welcome :)
 
 Kickstarted via https://gist.github.com/Halama/6006960 
-.
