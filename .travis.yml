@@ -1,0 +1,19 @@
+sudo: required
+language: bash
+services:
+  - docker
+before_script:
+  - docker-compose build sapi-python-client
+script: 
+  - docker-compose run --rm --entrypoint=flake8 sapi-python-client || true
+  - docker-compose run --rm -e KBC_TOKEN sapi-python-client -m unittest discover
+after_success:
+  - docker images
+deploy:
+  provider: script
+  skip_cleanup: true
+  script: ./deploy.sh
+  on:
+    tags: true  
+notifications:
+  secure: "cK5gbRE+UtkU9tcAtI7uVU8/ioW5XyXH6H4IkpUE2gnzeYe1cWaSYt7JDJHJDI2THgaKqK7KIXmR4dZlEp7VjigoJiOc6nMIqMqCqOFediKPlFu7/J55w0zRZY/kYEZBjcirdVQJ1NhFYSxs3Fukrzvup631yN05CekJNQvi8y4xNJPLE7sH1JK/tF+WDG0COFNqeNkZnONgfVdA2eF+Wu9BH/YvGW0HvnfTjWowyZy1dQY5TRw4Rr50C4kpDQy8TU5o0IaG84FsONItsT+jTyc1Nal3ByM3clW1llTaKLmnQXwMWR6IeYfoScRASyTTdNoripgFnwj4HB64yFoCJUN0fg4h3Pn5/TU752XH+mDodmrK5C2KmYHsYq9LUtVaMItCimvRYqihWdpD7NN5Gcb3c0JxXa+a9//RsPPSFg9yMkObfBlIMeJrZwoEdakpMQhoLdADTOXKR0pK+i5qPWT07utYYdU25fkgRCvq5KeDBoGdUXUMmpUtRVP9uJQv0IQ7af70ov+nap9keNEcqxrb08UmnCMk+SzwFnVY3b0CaCUZPmiiZwklTb1o9nhLgkPV5Aya6cJRpdL3n5lE5tmXyoW/S/QptXopKValEGxJ2q+NpAndmv1tC33nR9Ap2FcZFAcdnVzVzP1e/pSXl+jB0ARcPmYgcXA4+t3v/2c="
