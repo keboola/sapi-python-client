@@ -1,0 +1,17 @@
+sudo: required
+language: bash
+services:
+  - docker
+before_script:
+  - docker-compose build sapi-python-client
+script: docker-compose run --rm sapi-python-client -m unittest discover
+after_success:
+  - docker images
+deploy:
+  provider: script
+  skip_cleanup: true
+  script: ./deploy.sh
+  on:
+    tags: true  
+notifications:
+  slack: keboola:NCe8LwHlAyQBD4KS8BM0JkuA

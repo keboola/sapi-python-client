@@ -1,0 +1,10 @@
+version: '2'
+services:
+  sapi-python-client:
+    build: .
+    image: keboola/sapi-python-client
+    tty: true
+    stdin_open: true
+    command: bash
+    volumes:
+      - ./:/code/
