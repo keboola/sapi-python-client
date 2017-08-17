@@ -7,11 +7,14 @@ import time
 
 
 class HttpHelper:
-    server = "https://connection.keboola.com/v2/"
+    api_url = "https://connection.keboola.com"
+    api_version = 'v2'
     user_agent = "Keboola StorageApi Python Client/v2"
 
-    def __init__(self, token):
+    def __init__(self, token, api_url=None):
         self.token = token
+        if api_url is not None:
+            self.api_url = api_url
 
     def tokenheader(self):
         return {
@@ -22,23 +25,26 @@ class HttpHelper:
     def getRequest(self, url, params = None):
         if params == None:
             params = []
-        resp = self.getAbsUrlRequest(self.server + url, params)
+        resp = self.getAbsUrlRequest(url, params)
         resp.raise_for_status()
         return resp.json()
 
     def postRequest(self, url, params):
-        resp = requests.post(self.server + url, headers=self.tokenheader(), data=params)
+        resp = requests.post(self.api_url + '/' + self.api_version + '/' + url, headers=self.tokenheader(), data=params)
         resp.raise_for_status()
         return resp.json()
 
     def getAbsUrlRequest(self, url, params):
-        return requests.get(url, headers=self.tokenheader(), params=params)
+        return requests.get(self.api_url + '/' + self.api_version + '/' + url, headers=self.tokenheader(), params=params)
 
+    def deleteRequest(self, url, params):
+        resp = requests.delete(self.api_url + '/' + self.api_version + '/' + url, headers=self.tokenheader(), data=params)
+        resp.raise_for_status()
 
 class Client:
-    def __init__(self, token):
+    def __init__(self, token, api_url=None):
         self.token = token
-        self.http = HttpHelper(token)
+        self.http = HttpHelper(token, api_url)
 
     def list_buckets(self):
         return self.http.getRequest('storage/buckets')
@@ -65,12 +71,15 @@ class Client:
         requests.post(uploadParams['url'], data=params, files=files)
         return fileResource
 
-    def bucket_exists(self, bucketId):
-        resp = self.http.getRequest('storage/buckets/' + bucketId)
-        if resp.status_code == 404:
-            return False
-        else:
-            return True
+    def bucket_exists(self, bucket_id):
+        try:
+            self.http.getRequest('storage/buckets/' + bucket_id)
+        except requests.exceptions.HTTPError as e:
+            if e.response.status_code == 404:
+                return False
+            else:
+                raise
+        return True
 
     def table_exists(self, tableId):
         try:
@@ -208,3 +217,12 @@ class Client:
                     + " {" + job["error"]["exceptionId"] + ")"
                 )
         return True
+
+    def drop_bucket(self, bucket_id, options=None):
+        return self.http.deleteRequest('storage/buckets/' + str(bucket_id), options)
+
+    def create_bucket(self, name, stage, description='', backend=None):
+        data = {'name': name, 'stage': stage, 'description': description}
+        if backend is not None:
+            data['backend'] = backend
+        return self.http.postRequest('storage/buckets/', data)['id']
