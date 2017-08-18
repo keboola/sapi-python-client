@@ -8,9 +8,9 @@ from requests import HTTPError
 
 from kbcstorage.workspaces import Workspaces
 
-from tests.workspace_responses import list_response, detail_response
-from tests.workspace_responses import load_tables_response, create_response
-from tests.workspace_responses import reset_password_response
+from .workspace_responses import list_response, detail_response
+from .workspace_responses import load_tables_response, create_response
+from .workspace_responses import reset_password_response
 
 
 class TestWorkspacesEndpointWithMocks(unittest.TestCase):
@@ -215,7 +215,3 @@ class TestWorkspacesEndpointWithMocks(unittest.TestCase):
         with self.assertRaises(HTTPError) as error_context:
             self.ws.reset_password(workspace_id)
         assert error_context.exception.args[0] == msg
-
-
-if __name__ == '__main__':
-    unittest.main()
