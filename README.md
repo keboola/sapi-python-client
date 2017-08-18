@@ -43,6 +43,14 @@ Docker image with pre-installed library is also available, run it via:
 docker run -i -t quay.io/keboola/sapi-python-client
 ```
 
+## Tests
+
+```bash
+$ git clone https://github.com/keboola/sapi-python-client.git && cd sapi-python-client
+$ python setup.py test
+```
+
+
 Under development -- all contributions very welcome :)
 
 Kickstarted via https://gist.github.com/Halama/6006960 
