@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.org/keboola/psapi-python-client.svg?branch=master)](https://travis-ci.org/keboola/sapi-python-client)
+[![Build Status](https://travis-ci.org/keboola/sapi-python-client.svg?branch=master)](https://travis-ci.org/keboola/sapi-python-client)
 
 # Python client for the Keboola Storage API
 
