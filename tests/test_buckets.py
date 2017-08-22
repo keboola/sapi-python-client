@@ -115,6 +115,4 @@ class TestBucketsWithMocks(unittest.TestCase):
         created_detail = self.buckets.create(name=name,
                                              description=description,
                                              backend=backend)
-        print(created_detail['id'])
-        print('in.{}'.format(name))
         assert created_detail['id'] == 'in.c-{}'.format(name)
