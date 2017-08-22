@@ -86,7 +86,7 @@ class Endpoint:
         finally:
             return r.json()
 
-    def _put(self):
+    def put(self):
         raise NotImplementedError
 
     def delete(self, *args, **kwargs):
