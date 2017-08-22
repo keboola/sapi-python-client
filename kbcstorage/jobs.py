@@ -8,8 +8,6 @@ Full documentation `here`.
 """
 import time
 
-import requests
-
 from kbcstorage.base import Endpoint
 
 
@@ -119,8 +117,8 @@ class Jobs(Endpoint):
 
     def block_for_success(self, job_id, d=1):
         """
-        Poll the API until the job is completed, then return ``True`` if the job
-        is succesful, else ``False``.
+        Poll the API until the job is completed, then return ``True`` if the
+        job is succesful, else ``False``.
 
         Args:
             job_id (int or str): The id of the job
@@ -128,7 +126,7 @@ class Jobs(Endpoint):
                 Default 1.
 
         Returns:
-            success (bool): True if the job status is success, else False. 
+            success (bool): True if the job status is success, else False.
 
         Raises:
             requests.HTTPError: If any API request fails.

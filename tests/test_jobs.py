@@ -80,7 +80,7 @@ class TestJobsEndpointWithMocks(unittest.TestCase):
         )
         job_id = 22077337
         job_completed = self.jobs.completed(job_id)
-        assert job_completed == True
+        assert job_completed is True
 
     @responses.activate
     def test_job_blocking(self):
@@ -93,7 +93,7 @@ class TestJobsEndpointWithMocks(unittest.TestCase):
                     method='GET',
                     url=('https://connection.keboola.com/v2/storage/jobs/'
                          '22077337'),
-                    json={'status':'processing'}
+                    json={'status': 'processing'}
                 )
             )
         responses.add(
@@ -130,7 +130,7 @@ class TestJobsEndpointWithMocks(unittest.TestCase):
         )
         job_id = 22077337
         success = self.jobs.block_for_success(job_id, d=0.000001)
-        assert success == True
+        assert success is True
 
     @responses.activate
     def test_success_blocking_if_error(self):
@@ -155,4 +155,4 @@ class TestJobsEndpointWithMocks(unittest.TestCase):
         )
         job_id = 22077337
         success = self.jobs.block_for_success(job_id, d=0.000001)
-        assert success == False
+        assert success is False
