@@ -1,12 +1,11 @@
 """
-Manages workspace requests to the API.
+Manages calls to the Storage API relating to workspaces.
 
 Full documentation `here`.
 
 .. _here:
     http://docs.keboola.apiary.io/#reference/workspaces/
 """
-
 from kbcstorage.base import Endpoint
 
 

@@ -1,4 +1,10 @@
 """
+Manages calls to the Storage API relating to jobs.
+
+Full documentation `here`.
+
+.. _here:
+    http://docs.keboola.apiary.io/#reference/jobs/
 """
 import time
 
