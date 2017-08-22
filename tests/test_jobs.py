@@ -46,6 +46,113 @@ class TestJobsEndpointWithMocks(unittest.TestCase):
                 json=detail_response
             )
         )
-        jobs_id = 22077337
-        jobs_detail = self.jobs.detail(jobs_id)
-        assert jobs_detail['id'] == 22077337
+        job_id = 22077337
+        job_detail = self.jobs.detail(job_id)
+        assert job_detail['id'] == 22077337
+
+    @responses.activate
+    def test_job_status(self):
+        """
+        Jobs mock status works correctly.
+        """
+        responses.add(
+            responses.Response(
+                method='GET',
+                url='https://connection.keboola.com/v2/storage/jobs/22077337',
+                json=detail_response
+            )
+        )
+        job_id = 22077337
+        job_status = self.jobs.status(job_id)
+        assert job_status == 'success'
+
+    @responses.activate
+    def test_job_completion(self):
+        """
+        Jobs mock completion check works correctly.
+        """
+        responses.add(
+            responses.Response(
+                method='GET',
+                url='https://connection.keboola.com/v2/storage/jobs/22077337',
+                json=detail_response
+            )
+        )
+        job_id = 22077337
+        job_completed = self.jobs.completed(job_id)
+        assert job_completed == True
+
+    @responses.activate
+    def test_job_blocking(self):
+        """
+        Jobs mock blocking polls until completion.
+        """
+        for _ in range(5):
+            responses.add(
+                responses.Response(
+                    method='GET',
+                    url=('https://connection.keboola.com/v2/storage/jobs/'
+                         '22077337'),
+                    json={'status':'processing'}
+                )
+            )
+        responses.add(
+            responses.Response(
+                method='GET',
+                url='https://connection.keboola.com/v2/storage/jobs/22077337',
+                json=detail_response
+            )
+        )
+        job_id = 22077337
+        self.jobs.block_until_completed(job_id, d=0.000001)
+        assert True
+
+    @responses.activate
+    def test_success_blocking_if_success(self):
+        """
+        Jobs mock blocking polls until completion.
+        """
+        for _ in range(5):
+            responses.add(
+                responses.Response(
+                    method='GET',
+                    url=('https://connection.keboola.com/v2/storage/jobs/'
+                         '22077337'),
+                    json={'status': 'processing'}
+                )
+            )
+        responses.add(
+            responses.Response(
+                method='GET',
+                url='https://connection.keboola.com/v2/storage/jobs/22077337',
+                json={'status': 'success'}
+            )
+        )
+        job_id = 22077337
+        success = self.jobs.block_for_success(job_id, d=0.000001)
+        assert success == True
+
+    @responses.activate
+    def test_success_blocking_if_error(self):
+        """
+        Jobs mock blocking polls until completion.
+        """
+        for _ in range(5):
+            responses.add(
+                responses.Response(
+                    method='GET',
+                    url=('https://connection.keboola.com/v2/storage/jobs/'
+                         '22077337'),
+                    json={'status': 'processing'}
+                )
+            )
+        responses.add(
+            responses.Response(
+                method='GET',
+                url='https://connection.keboola.com/v2/storage/jobs/22077337',
+                json={'status': 'error'}
+            )
+        )
+        job_id = 22077337
+        success = self.jobs.block_for_success(job_id, d=0.000001)
+        assert success == False
