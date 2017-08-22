@@ -9,8 +9,6 @@ various endpoints, such as tables, workspaces, jobs, etc. as described in the
 .. _Storage API documentation:
     http://docs.keboola.apiary.io/
 """
-from urllib.parse import urljoin
-
 import requests
 
 
