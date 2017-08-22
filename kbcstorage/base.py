@@ -134,6 +134,5 @@ class Endpoint:
             joined (:obj:`str`): The parts joined to base by forward slash,
                 eg. 'http://example.com/hello/a/deeper/path'.
         """
-        parts.insert(0, base)
-        return '/'.join([str(part).strip('/') for part in parts if
-                         str(part).strip('/')])
+        return '/'.join([base, *[str(part).strip('/') for part in parts if
+                         str(part).strip('/')]])
