@@ -128,19 +128,3 @@ class Endpoint:
         except requests.HTTPError:
             # Handle different error codes
             raise
-
-    def _extend(self, base, parts):
-        """
-        Join the items in parts to base by forward slashes
-
-        Args:
-            base (:obj:`str`): The base string, eg.
-                'http://example.com/hello/'.
-            parts (:obj:`list`): The extensions, eg ['a', 'deeper', 'path'].
-
-        Returns:
-            joined (:obj:`str`): The parts joined to base by forward slash,
-                eg. 'http://example.com/hello/a/deeper/path'.
-        """
-        return '/'.join([base, *[str(part).strip('/') for part in parts if
-                         str(part).strip('/')]])
