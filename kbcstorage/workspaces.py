@@ -53,16 +53,19 @@ class Workspaces(Endpoint):
         Returns:
             response_body: The json from the HTTP response.
         """
-        return self._get()
+        headers = {'X-StorageApi-Token': self.token}
+        return self.get(self.path, headers=headers)
 
     def detail(self, workspace_id):
         """
         Retrieves information about a given workspace.
 
-        Note that the passowrd to the workspace can only be retrieved when the
+        Note that the password to the workspace can only be retrieved when the
         workspace is created.
         """
-        return self._get(params=[workspace_id])
+        headers = {'X-StorageApi-Token': self.token}
+        url = '{}/{}'.format(self.path, workspace_id)
+        return self.get(url, headers=headers)
 
     def create(self, backend=None, timeout=None):
         """
@@ -74,11 +77,15 @@ class Workspaces(Endpoint):
             timeout (int): The timeout, in seconds, for SQL statements.
                 Only supported by snowflake backends.
         """
+        headers = {
+            'X-StorageApi-Token': self.token,
+            'Content-Type': 'application/x-www-form-urlencoded'
+        }
         body = {
             'backend': backend,
             'statementTimeoutSeconds': timeout
         }
-        return self._post(body=body)
+        return self.post(self.path, data=body, headers=headers)
 
     def delete(self, workspace_id):
         """
@@ -86,13 +93,24 @@ class Workspaces(Endpoint):
 
         This also irreversibly removes workspace content.
         """
-        return self._delete(params=[workspace_id])
+        headers = {
+            'X-StorageApi-Token': self.token,
+            'Content-Type': 'application/x-www-form-urlencoded'
+        }
+        url = '{}/{}'.format(self.path, workspace_id)
+        # This shadows the superclass...
+        return super().delete(url, headers=headers)
 
     def reset_password(self, workspace_id):
         """
         Generate a new password for the workspace.
         """
-        return self._post(params=[workspace_id, 'password'])
+        headers = {
+            'X-StorageApi-Token': self.token,
+            'Content-Type': 'application/x-www-form-urlencoded'
+        }
+        url = '{}/{}/password'.format(self.path, workspace_id)
+        return self.post(url, headers=headers)
 
     def load_tables(self, workspace_id, table_mapping, preserve=None):
         """
@@ -107,6 +125,11 @@ class Workspaces(Endpoint):
         Todo:
             * Column data types.
         """
+        headers = {
+            'X-StorageApi-Token': self.token,
+            'Content-Type': 'application/x-www-form-urlencoded'
+        }
         body = _make_body(table_mapping)
         body['preserve'] = preserve
-        return self._post(body, params=[workspace_id, 'load'])
+        url = '{}/{}/load'.format(self.path, workspace_id)
+        return self.post(url, data=body, headers=headers)

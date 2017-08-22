@@ -37,16 +37,14 @@ class Endpoint:
         self.path = urljoin(root, extension)
         self.token = token
 
-    def _get(self, params=[], extra_headers={}):
+    def get(self, *args, **kwargs):
         """
-        Make a get request to the url of the endpoint extended with additional
-        params.
+        Construct a requests GET call with args and kwargs and process the
+        results.
 
         Args:
-            params (:obj:`list`): Is used to update the url of the request.
-                Default [].
-            extra_headers (:obj:`dict`): Is used to update the headers.
-                Default {}.
+            *args: Positional arguments to pass to the get request.
+            **kwargs: Key word arguments to pass to the get request.
 
         Returns:
             body: Response body parsed from json.
@@ -54,27 +52,23 @@ class Endpoint:
         Raises:
             requests.HTTPError: If the API request fails.
         """
-        headers = {'X-StorageApi-Token': self.token}
-        headers.update(extra_headers)
+        r = requests.get(*args, **kwargs)
+        try:
+            r.raise_for_status()
+        except requests.HTTPError:
+            # Handle different error codes
+            raise
+        finally:
+            return r.json()
 
-        url = self._extend(self.path, params)
-
-        r = requests.get(url, headers=headers)
-        r.raise_for_status()
-
-        return r.json()
-
-    def _post(self, body={}, params=[], extra_headers={}):
+    def post(self, *args, **kwargs):
         """
-        Make a post request to the endpoint url extended with params,
+        Construct a requests POST call with args and kwargs and process the
+        results.
 
         Args:
-            body (:obj:`dict`): key value pairs for the body of the HTTP
-                request. Default {}.
-            params (:obj:`list`): Is used to update the url of the request.
-                Default [].
-            extra_headers (:obj:`dict`): Is used to update the headers.
-                Default {}.
+            *args: Positional arguments to pass to the post request.
+            **kwargs: Key word arguments to pass to the post request.
 
         Returns:
             body: Response body parsed from json.
@@ -82,44 +76,40 @@ class Endpoint:
         Raises:
             requests.HTTPError: If the API request fails.
         """
-        headers = {
-            'X-StorageApi-Token': self.token,
-            'Content-Type': 'application/x-www-form-urlencoded'
-        }
-        headers.update(headers)
-
-        url = self._extend(self.path, params)
-
-        r = requests.post(url, headers=headers, data=body)
+        r = requests.post(*args, **kwargs)
         r.raise_for_status()
-        return r.json()
+        try:
+            r.raise_for_status()
+        except requests.HTTPError:
+            # Handle different error codes
+            raise
+        finally:
+            return r.json()
 
     def _put(self):
         raise NotImplementedError
 
-    def _delete(self, params=[], extra_headers={}):
+    def delete(self, *args, **kwargs):
         """
-        Make a delete request to the endpoint.
+        Construct a requests DELETE call with args and kwargs and process the
+        result
 
         Args:
-            params (:obj:`list`): Is used to update the url of the request.
-                Default [].
-            extra_headers (:obj:`dict`): Is used to update the headers.
-                Default {}.
+            *args: Positional arguments to pass to the delete request.
+            **kwargs: Key word arguments to pass to the delete request.
+
+        Returns:
+            body: Response body parsed from json.
 
         Raises:
             requests.HTTPError: If the API request fails.
         """
-        headers = {
-            'X-StorageApi-Token': self.token,
-            'Content-Type': 'application/x-www-form-urlencoded'
-        }
-        headers.update(extra_headers)
-
-        url = self._extend(self.path, params)
-
-        r = requests.delete(url, headers=headers)
-        r.raise_for_status()
+        r = requests.delete(*args, **kwargs)
+        try:
+            r.raise_for_status()
+        except requests.HTTPError:
+            # Handle different error codes
+            raise
 
     def _extend(self, base, parts):
         """
