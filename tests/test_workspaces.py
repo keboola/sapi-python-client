@@ -8,9 +8,9 @@ from requests import HTTPError
 
 from kbcstorage.workspaces import Workspaces
 
-from .workspace_responses import list_response, detail_response
-from .workspace_responses import load_tables_response, create_response
-from .workspace_responses import reset_password_response
+from .workspace_responses import (list_response, detail_response,
+                                  load_tables_response, create_response,
+                                  reset_password_response)
 
 
 class TestWorkspacesEndpointWithMocks(unittest.TestCase):
@@ -25,7 +25,7 @@ class TestWorkspacesEndpointWithMocks(unittest.TestCase):
     @responses.activate
     def test_list(self):
         """
-        Workspace list mocks correctly
+        Workspace mocks list correctly
         """
         responses.add(
             responses.Response(
@@ -40,7 +40,7 @@ class TestWorkspacesEndpointWithMocks(unittest.TestCase):
     @responses.activate
     def test_detail_by_integer_id(self):
         """
-        Workspace Endpoint can get mocked detail by integer id
+        Workspace Endpoint can mock detail by integer id
         """
         responses.add(
             responses.Response(
@@ -56,7 +56,7 @@ class TestWorkspacesEndpointWithMocks(unittest.TestCase):
     @responses.activate
     def test_detail_by_str_id(self):
         """
-        Workspace Endpoint can get mocked detail by integer id
+        Workspace Endpoint can get mocked detail by string id
         """
         responses.add(
             responses.Response(
@@ -72,7 +72,8 @@ class TestWorkspacesEndpointWithMocks(unittest.TestCase):
     @responses.activate
     def test_detail_inexsitent_workspace(self):
         """
-        Workspace Endpoint can get mocked detail by integer id
+        Workspace Endpoint raises HTTPError when mocking inexistent workspace
+        detail
         """
         msg = ('404 Client Error: Not Found for url: '
                'https://connection.keboola.com/v2/storage/workspaces/1')
@@ -106,7 +107,7 @@ class TestWorkspacesEndpointWithMocks(unittest.TestCase):
     @responses.activate
     def test_delete(self):
         """
-        Workspace endpoint deletes mock workspace by id
+        Workspace endpoint mock deletes workspace by id
         """
         responses.add(
             responses.Response(
@@ -141,7 +142,7 @@ class TestWorkspacesEndpointWithMocks(unittest.TestCase):
     @responses.activate
     def test_load_tables_to_workspace(self):
         """
-        Workspace endpoint deletes mock workspace by id
+        Workspace endpoint mock loads table
         """
         responses.add(
             responses.Response(
@@ -159,7 +160,7 @@ class TestWorkspacesEndpointWithMocks(unittest.TestCase):
     @responses.activate
     def test_load_inexistent_tables_to_workspace(self):
         """
-        Workspace endpoint deletes mock workspace by id
+        Workspace endpoint raises HTTPError when mock loading inexistent table
         """
         msg = ('404 Client Error: Not Found for url: '
                'https://connection.keboola.com/v2/storage/workspaces/78432/'
@@ -181,7 +182,7 @@ class TestWorkspacesEndpointWithMocks(unittest.TestCase):
     @responses.activate
     def test_reset_workspace_password(self):
         """
-        Reset password for workspace
+        Workspace endpoint mock resets password for workspace
         """
         responses.add(
             responses.Response(
@@ -198,7 +199,8 @@ class TestWorkspacesEndpointWithMocks(unittest.TestCase):
     @responses.activate
     def test_reset_password_for_inexistent_workspace(self):
         """
-        Reset password for inexistent workspace
+        Workspace endpoint raises HTTPError when mock resetting password for
+        inexistent workspace
         """
         msg = ('404 Client Error: Not Found for url: '
                'https://connection.keboola.com/v2/storage/workspaces/1/'
