@@ -36,7 +36,7 @@ class Workspaces(Endpoint):
     """
     Workspaces Endpoint
     """
-    def __init__(self, url, token):
+    def __init__(self, root_url, token):
         """
         Create a Workspaces endpoint.
 
@@ -44,7 +44,7 @@ class Workspaces(Endpoint):
             url (:obj:`str`): The base url for the API.
             token (:obj:`str`): A storage API key.
         """
-        super().__init__(url, 'workspaces', token)
+        super().__init__(root_url, 'workspaces', token)
 
     def list(self):
         """
@@ -54,7 +54,7 @@ class Workspaces(Endpoint):
             response_body: The json from the HTTP response.
         """
         headers = {'X-StorageApi-Token': self.token}
-        return self.get(self.path, headers=headers)
+        return self.get(self.base_url, headers=headers)
 
     def detail(self, workspace_id):
         """
@@ -64,7 +64,7 @@ class Workspaces(Endpoint):
         workspace is created.
         """
         headers = {'X-StorageApi-Token': self.token}
-        url = '{}/{}'.format(self.path, workspace_id)
+        url = '{}/{}'.format(self.base_url, workspace_id)
         return self.get(url, headers=headers)
 
     def create(self, backend=None, timeout=None):
@@ -85,7 +85,7 @@ class Workspaces(Endpoint):
             'backend': backend,
             'statementTimeoutSeconds': timeout
         }
-        return self.post(self.path, data=body, headers=headers)
+        return self.post(self.base_url, data=body, headers=headers)
 
     def delete(self, workspace_id):
         """
@@ -97,7 +97,7 @@ class Workspaces(Endpoint):
             'X-StorageApi-Token': self.token,
             'Content-Type': 'application/x-www-form-urlencoded'
         }
-        url = '{}/{}'.format(self.path, workspace_id)
+        url = '{}/{}'.format(self.base_url, workspace_id)
         # This shadows the superclass...
         return super().delete(url, headers=headers)
 
@@ -109,7 +109,7 @@ class Workspaces(Endpoint):
             'X-StorageApi-Token': self.token,
             'Content-Type': 'application/x-www-form-urlencoded'
         }
-        url = '{}/{}/password'.format(self.path, workspace_id)
+        url = '{}/{}/password'.format(self.base_url, workspace_id)
         return self.post(url, headers=headers)
 
     def load_tables(self, workspace_id, table_mapping, preserve=None):
@@ -131,5 +131,5 @@ class Workspaces(Endpoint):
         }
         body = _make_body(table_mapping)
         body['preserve'] = preserve
-        url = '{}/{}/load'.format(self.path, workspace_id)
+        url = '{}/{}/load'.format(self.base_url, workspace_id)
         return self.post(url, data=body, headers=headers)

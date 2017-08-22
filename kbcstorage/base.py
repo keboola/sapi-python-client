@@ -20,21 +20,23 @@ class Endpoint:
     as described in the Storage API.
 
     Attributes:
-        path (str): URL for this endpoint.
+        base_url (str): The base URL for this endpoint.
         token (str): A key for the Storage API.
     """
-    def __init__(self, root, extension, token):
+    def __init__(self, root_url, path_component, token):
         """
         Create an endpoint.
 
         Args
-            root (str): Root url of API. eg.
+            root_url (str): Root url of API. eg.
                 "https://connection.keboola.com/v2/storage/"
-            extension (str): Extension of url for the endpoint. eg. "buckets"
+            path_component (str): The section of the path specific to the
+                endpoint. eg. "buckets"
             token (str): A key for the Storage API. Can be found in the storage
-            console.
+                console.
         """
-        self.path = urljoin(root, extension)
+        self.base_url = '{}/{}'.format(root_url.strip('/'),
+                                       path_component.strip('/'))
         self.token = token
 
     def get(self, *args, **kwargs):
