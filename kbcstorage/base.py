@@ -58,7 +58,7 @@ class Endpoint:
         except requests.HTTPError:
             # Handle different error codes
             raise
-        finally:
+        else:
             return r.json()
 
     def post(self, *args, **kwargs):
@@ -82,7 +82,7 @@ class Endpoint:
         except requests.HTTPError:
             # Handle different error codes
             raise
-        finally:
+        else:
             return r.json()
 
     def put(self):
