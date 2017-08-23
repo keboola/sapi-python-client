@@ -77,7 +77,6 @@ class Endpoint:
             requests.HTTPError: If the API request fails.
         """
         r = requests.post(*args, **kwargs)
-        r.raise_for_status()
         try:
             r.raise_for_status()
         except requests.HTTPError:
@@ -126,3 +125,4 @@ class Endpoint:
         except requests.HTTPError:
             # Handle different error codes
             raise
+        # Should delete return something on success?
