@@ -1,6 +1,8 @@
 [![Build Status](https://travis-ci.org/keboola/psapi-python-client.svg?branch=master)](https://travis-ci.org/keboola/sapi-python-client)
 
 # Python client for the Keboola Storage API
+Client for using [Keboola Connection Storage API](http://docs.keboola.apiary.io/). This API client provides client methods to get data from KBC and store data in KBC. The endpoints 
+for working with buckets, tables and workspaces are covered.
 
 ## Install
 
