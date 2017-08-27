@@ -85,25 +85,6 @@ class Endpoint:
         else:
             return r.json()
 
-    def put(self):
-        """
-        **Not implemented**
-
-        Construct a requests PUT call with args and kwargs and process the
-        result
-
-        Args:
-            *args: Positional arguments to pass to the put request.
-            **kwargs: Key word arguments to pass to the put request.
-
-        Returns:
-            body: Response body parsed from json.
-
-        Raises:
-            requests.HTTPError: If the API request fails.
-        """
-        raise NotImplementedError
-
     def delete(self, *args, **kwargs):
         """
         Construct a requests DELETE call with args and kwargs and process the
