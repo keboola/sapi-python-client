@@ -15,7 +15,7 @@ class Buckets(Endpoint):
     """
     def __init__(self, root_url, token):
         """
-        Create a Workspaces endpoint.
+        Create a Buckets endpoint.
 
         Args:
             url (:obj:`str`): The base url for the API.
@@ -25,7 +25,7 @@ class Buckets(Endpoint):
 
     def list(self):
         """
-        Get all job details.
+        List all buckets in project.
 
         Returns:
             response_body: The parsed json from the HTTP response.

@@ -31,14 +31,14 @@ class TestFunctionalBuckets(unittest.TestCase):
         bucket_id = self.buckets.create(name='py-test',
                                         stage='in',
                                         description='Test bucket')['id']
-        self.assertEqual(bucket_id, self.buckets.detail(bucket_id)['id'])
-        self.assertEqual('c-py-test', self.buckets.detail(bucket_id)['name'])
-        self.assertIsNotNone(self.buckets.detail(bucket_id)['uri'])
-        self.assertIsNotNone(self.buckets.detail(bucket_id)['created'])
-        self.assertEqual('Test bucket',
-                         self.buckets.detail(bucket_id)['description'])
-        self.assertEqual([], self.buckets.detail(bucket_id)['tables'])
-        self.assertEqual([], self.buckets.detail(bucket_id)['attributes'])
+        detail = self.buckets.detail(bucket_id)
+        self.assertEqual(bucket_id, detail['id'])
+        self.assertEqual('c-py-test', detail['name'])
+        self.assertIsNotNone(detail['uri'])
+        self.assertIsNotNone(detail['created'])
+        self.assertEqual('Test bucket', detail['description'])
+        self.assertEqual([], detail['tables'])
+        self.assertEqual([], detail['attributes'])
 
     def test_invalid_bucket(self):
         try:
