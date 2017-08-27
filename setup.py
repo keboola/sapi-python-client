@@ -9,11 +9,13 @@ setup(
     setup_requires=['setuptools_scm'],
     url='https://github.com/keboola/sapi-python-client',
     download_url='https://github.com/keboola/sapi-python-client',
-    packages=find_packages(),
+    packages=find_packages(exclude=['tests']),
     install_requires=[
         'boto3',
         'requests'
     ],
+    test_suite='tests',
+    tests_require=['responses'],
     long_description=readme,
     license="MIT"
 )
