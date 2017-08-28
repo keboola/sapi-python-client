@@ -6,6 +6,8 @@ Full documentation `here`.
 .. _here:
     http://docs.keboola.apiary.io/#reference/tables/
 """
+import requests
+
 from kbcstorage.base import Endpoint
 from kbcstorage.files import Files
 from kbcstorage.jobs import Jobs
@@ -111,10 +113,6 @@ class Tables(Endpoint):
         Raises:
             requests.HTTPError: If the API request fails.
         """
-        if not isinstance(bucket_id, str) or bucket_id == '':
-            raise ValueError("Invalid bucket_id '{}'.".format(bucket_id))
-        if not isinstance(name, str) or name == '':
-            raise ValueError("Invalid name_id '{}'.".format(name))
         files = Files(self.root_url, self.token)
         file_id = files.upload_file(file_path=file_path, tags=['file-import'],
                                     do_notify=False, is_public=False)
@@ -256,8 +254,6 @@ class Tables(Endpoint):
         Raises:
             requests.HTTPError: If the API request fails.
         """
-        if not isinstance(table_id, str) or table_id == '':
-            raise ValueError("Invalid bucket_id '{}'.".format(table_id))
         files = Files(self.root_url, self.token)
         file_id = files.upload_file(file_path=file_path, tags=['file-import'],
                                     do_notify=False, is_public=False)
@@ -326,8 +322,171 @@ class Tables(Endpoint):
         url = '{}/{}/import-async'.format(self.base_url, table_id)
         return self.post(url, headers=headers, data=body)
 
-    def preview(self, name, stage='in', description='', backend=None):
-        pass
+    @staticmethod
+    def validate_filter(where_column, where_operator, where_values):
+        params = {}
+        if where_column is not None and where_values is not None:
+            if not isinstance(where_column, str):
+                raise ValueError("Invalid where_column '{}'.".
+                                 format(where_column))
+            if not isinstance(where_operator, str) or \
+                    where_operator not in ('eq', 'neq'):
+                raise ValueError("Invalid where_operator '{}'.".
+                                 format(where_operator))
+            if not isinstance(where_values, list):
+                raise ValueError("Invalid where_values '{}'.".
+                                 format(where_values))
+            params['whereValues[]'] = where_values
+            params['whereColumn'] = where_column
+            params['whereOperator'] = where_operator
+        return params
 
-    def export(self, name, stage='in', description='', backend=None):
-        pass
+    def preview(self, table_id, changed_since=None, changed_until=None,
+                columns=None, where_column=None, where_values=None,
+                where_operator='eq'):
+        """
+        Export preview of a table.
+
+        Args:
+            table_id (str): Table id
+            changed_until (str): Filtering by import date
+                Both until and since values can be a unix timestamp or any
+                date accepted by strtotime.
+            changed_since (str): Filtering by import date
+                Both until and since values can be a unix timestamp or any
+                date accepted by strtotime.
+            where_column (str): Column for exporting only matching rows
+            where_operator (str): 'eq' or 'neq'
+            where_values (list): Values for exporting only matching rows
+            columns (list): List of columns to display
+
+        Returns:
+            response_body: Table data contents.
+
+        Raises:
+            requests.HTTPError: If the API request fails.
+        """
+        headers = {'X-StorageApi-Token': self.token}
+        params = {}
+        if not isinstance(table_id, str) or table_id == '':
+            raise ValueError("Invalid table_id '{}'.".format(table_id))
+        if changed_since is not None:
+            if not isinstance(changed_since, str):
+                raise ValueError("Invalid changed_since '{}'.".
+                                 format(changed_since))
+            params['changedSince'] = changed_since
+        if changed_until is not None:
+            if not isinstance(changed_until, str):
+                raise ValueError("Invalid changed_until '{}'.".
+                                 format(changed_until))
+            params['changedUntil'] = changed_until
+        params.update(self.validate_filter(where_column, where_operator,
+                                           where_values))
+        if columns is not None and isinstance(columns, list):
+            params['columns'] = ','.join(columns)
+        url = '{}/{}/data-preview'.format(self.base_url, table_id)
+        r = requests.get(url=url, headers=headers, params=params)
+        try:
+            r.raise_for_status()
+        except requests.HTTPError:
+            raise
+        else:
+            return r.content.decode('utf-8')
+
+    def export(self, table_id, limit=None, format='rfc', changed_since=None,
+               changed_until=None, columns=None, where_column=None,
+               where_values=None, where_operator='eq', is_gzip=False):
+        """
+        Export data from a table to file
+
+        Args:
+            table_id (str): Table id
+            limit (int): Number of rows to export.
+            format (str): 'rfc', 'escaped' or 'raw'
+            changed_until (str): Filtering by import date
+                Both until and since values can be a unix timestamp or any
+                date accepted by strtotime.
+            changed_since (str): Filtering by import date
+                Both until and since values can be a unix timestamp or any
+                date accepted by strtotime.
+            where_column (str): Column for exporting only matching rows
+            where_operator (str): 'eq' or 'neq'
+            where_values (list): Values for exporting only matching rows
+            columns (list): List of columns to display
+            is_gzip (bool): Result will be gzipped
+
+        Returns:
+            response_body: Table data contents.
+
+        Raises:
+            requests.HTTPError: If the API request fails.
+        """
+
+        job = self.export_raw(table_id=table_id, limit=limit, format=format,
+                              changed_since=changed_since,
+                              changed_until=changed_until, columns=columns,
+                              where_column=where_column,
+                              where_values=where_values,
+                              where_operator=where_operator, is_gzip=is_gzip)
+        jobs = Jobs(self.root_url, self.token)
+        job = jobs.block_until_completed(job['id'])
+        if job['status'] == 'error':
+            raise RuntimeError(job['error']['message'])
+        return job['results']
+
+    def export_raw(self, table_id, limit=None, format='rfc', changed_since=None,
+                   changed_until=None, columns=None, where_column=None,
+                   where_values=None, where_operator='eq', is_gzip=False):
+        """
+        Export data from a table
+
+        Args:
+            table_id (str): Table id
+            limit (int): Number of rows to export.
+            format (str): 'rfc', 'escaped' or 'raw'
+            changed_until (str): Filtering by import date
+                Both until and since values can be a unix timestamp or any
+                date accepted by strtotime.
+            changed_since (str): Filtering by import date
+                Both until and since values can be a unix timestamp or any
+                date accepted by strtotime.
+            where_column (str): Column for exporting only matching rows
+            where_operator (str): 'eq' or 'neq'
+            where_values (list): Values for exporting only matching rows
+            columns (list): List of columns to display
+            is_gzip (bool): Result will be gzipped
+
+        Returns:
+            response_body: The parsed json from the HTTP response
+                containing a storage Job.
+
+        Raises:
+            requests.HTTPError: If the API request fails.
+        """
+        headers = {'X-StorageApi-Token': self.token}
+        params = {
+            'gzip': int(is_gzip)
+        }
+        if not isinstance(table_id, str) or table_id == '':
+            raise ValueError("Invalid table_id '{}'.".format(table_id))
+        if limit is not None and limit is not isinstance(table_id, int):
+            raise ValueError("Invalid limit '{}'.".format(limit))
+        if format not in ('rfc', 'escaped', 'raw'):
+            raise ValueError("Invalid format '{}'.".format(format))
+        if changed_since is not None:
+            if not isinstance(changed_since, str):
+                raise ValueError("Invalid changed_since '{}'.".
+                                 format(changed_since))
+            params['changedSince'] = changed_since
+        if changed_until is not None:
+            if not isinstance(changed_until, str):
+                raise ValueError("Invalid changed_until '{}'.".
+                                 format(changed_until))
+            params['changedUntil'] = changed_until
+        params.update(self.validate_filter(where_column, where_operator,
+                                           where_values))
+        if columns is not None and isinstance(columns, list):
+            params['columns'] = ','.join(columns)
+        url = '{}/{}/export-async'.format(self.base_url, table_id)
+        return self.post(url, headers=headers, data=params)
+

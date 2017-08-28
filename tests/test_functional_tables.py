@@ -120,8 +120,8 @@ class TestFunctionalBuckets(unittest.TestCase):
             writer.writeheader()
             writer.writerow({'col1': 'foo', 'col2': 'bar'})
         os.close(file)
-        table_id = self.tables.load(table_id=table_id, file_path=path,
-                                    is_incremental=True)
+        self.tables.load(table_id=table_id, file_path=path,
+                         is_incremental=True)
         table_info = self.tables.detail(table_id)
         self.assertEqual(table_id, table_info['id'])
         self.assertEqual(2, table_info['rowsCount'])
@@ -149,8 +149,42 @@ class TestFunctionalBuckets(unittest.TestCase):
             writer.writeheader()
             writer.writerow({'col1': 'foo', 'col2': 'bar'})
         os.close(file)
-        table_id = self.tables.load(table_id=table_id, file_path=path,
-                                    is_incremental=False)
+        self.tables.load(table_id=table_id, file_path=path,
+                         is_incremental=False)
         table_info = self.tables.detail(table_id)
         self.assertEqual(table_id, table_info['id'])
-        self.assertEqual(2, table_info['rowsCount'])
+        self.assertEqual(1, table_info['rowsCount'])
+
+    def test_table_preview(self):
+        file, path = tempfile.mkstemp(prefix='sapi-test')
+        with open(path, 'w') as csv_file:
+            writer = csv.DictWriter(csv_file, fieldnames=['col1', 'col2'],
+                                    lineterminator='\n', delimiter=',',
+                                    quotechar='"')
+            writer.writeheader()
+            writer.writerow({'col1': 'ping', 'col2': 'pong'})
+            writer.writerow({'col1': 'foo', 'col2': 'bar'})
+        os.close(file)
+        table_id = self.tables.create(name='some-table', file_path=path,
+                                      bucket_id='in.c-py-test')
+        contents = self.tables.preview(table_id=table_id)
+        print(contents)
+        lines = contents.split('\n')
+        self.assertEqual(['"col1","col2"', '"foo","bar"', '"ping","pong"'],
+                         lines)
+
+    def test_table_export(self):
+        file, path = tempfile.mkstemp(prefix='sapi-test')
+        with open(path, 'w') as csv_file:
+            writer = csv.DictWriter(csv_file, fieldnames=['col1', 'col2'],
+                                    lineterminator='\n', delimiter=',',
+                                    quotechar='"')
+            writer.writeheader()
+            writer.writerow({'col1': 'ping', 'col2': 'pong'})
+            writer.writerow({'col1': 'foo', 'col2': 'bar'})
+        os.close(file)
+        table_id = self.tables.create(name='some-table', file_path=path,
+                                      bucket_id='in.c-py-test')
+        result = self.tables.export(table_id=table_id)
+        self.assertTrue('file' in result)
+        self.assertTrue('id' in result['file'])
