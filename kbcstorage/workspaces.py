@@ -53,7 +53,7 @@ class Workspaces(Endpoint):
             requests.HTTPError: If the API request fails.
         """
         headers = {'X-StorageApi-Token': self.token}
-        return self.get(self.base_url, headers=headers)
+        return self._get(self.base_url, headers=headers)
 
     def detail(self, workspace_id):
         """
@@ -70,7 +70,7 @@ class Workspaces(Endpoint):
         """
         headers = {'X-StorageApi-Token': self.token}
         url = '{}/{}'.format(self.base_url, workspace_id)
-        return self.get(url, headers=headers)
+        return self._get(url, headers=headers)
 
     def create(self, backend=None, timeout=None):
         """
@@ -94,7 +94,7 @@ class Workspaces(Endpoint):
             'statementTimeoutSeconds': timeout
         }
 
-        return self.post(self.base_url, data=body, headers=headers)
+        return self._post(self.base_url, data=body, headers=headers)
 
     def delete(self, workspace_id):
         """
@@ -114,8 +114,7 @@ class Workspaces(Endpoint):
         }
         url = '{}/{}'.format(self.base_url, workspace_id)
 
-        # This shadows the superclass...
-        return super().delete(url, headers=headers)
+        self._delete(url, headers=headers)
 
     def reset_password(self, workspace_id):
         """
@@ -133,7 +132,7 @@ class Workspaces(Endpoint):
             'Content-Type': 'application/x-www-form-urlencoded'
         }
         url = '{}/{}/password'.format(self.base_url, workspace_id)
-        return self.post(url, headers=headers)
+        return self._post(url, headers=headers)
 
     def load_tables(self, workspace_id, table_mapping, preserve=None):
         """
@@ -161,4 +160,4 @@ class Workspaces(Endpoint):
         body['preserve'] = preserve
         url = '{}/{}/load'.format(self.base_url, workspace_id)
 
-        return self.post(url, data=body, headers=headers)
+        return self._post(url, data=body, headers=headers)

@@ -38,7 +38,7 @@ class Endpoint:
                                                   path_component.strip('/'))
         self.token = token
 
-    def get(self, *args, **kwargs):
+    def _get(self, *args, **kwargs):
         """
         Construct a requests GET call with args and kwargs and process the
         results.
@@ -62,7 +62,7 @@ class Endpoint:
         else:
             return r.json()
 
-    def post(self, *args, **kwargs):
+    def _post(self, *args, **kwargs):
         """
         Construct a requests POST call with args and kwargs and process the
         results.
@@ -86,7 +86,7 @@ class Endpoint:
         else:
             return r.json()
 
-    def delete(self, *args, **kwargs):
+    def _delete(self, *args, **kwargs):
         """
         Construct a requests DELETE call with args and kwargs and process the
         result

@@ -55,7 +55,7 @@ class Jobs(Endpoint):
         """
         headers = {'X-StorageApi-Token': self.token}
 
-        return self.get(self.base_url, headers=headers)
+        return self._get(self.base_url, headers=headers)
 
     def detail(self, job_id):
         """
@@ -70,7 +70,7 @@ class Jobs(Endpoint):
         headers = {'X-StorageApi-Token': self.token}
         url = '{}/{}'.format(self.base_url, job_id)
 
-        return self.get(url, headers=headers)
+        return self._get(url, headers=headers)
 
     def status(self, job_id):
         """

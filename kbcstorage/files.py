@@ -44,7 +44,7 @@ class Files(Endpoint):
         params = {}
         if federation_token:
             params['federationToken'] = 'true'
-        return self.get(url, headers=headers, params=params)
+        return self._get(url, headers=headers, params=params)
 
     def upload_file(self, file_path, tags=None, is_public=False,
                     is_permanent=False, is_encrypted=True,
@@ -140,7 +140,7 @@ class Files(Endpoint):
             body['sizeBytes'] = size_bytes
         if federation_token is not None:
             body['federationToken'] = int(federation_token)
-        return self.post(url, headers=headers, data=body)
+        return self._post(url, headers=headers, data=body)
 
     def delete(self, file_id):
         """
@@ -151,7 +151,7 @@ class Files(Endpoint):
         """
         url = '{}/{}'.format(self.base_url, file_id)
         headers = {'X-StorageApi-Token': self.token}
-        super().delete(url, headers=headers)
+        self._delete(url, headers=headers)
 
     def list(self, limit=100, offset=0, tags=None, q=None, run_id=None,
              since_id=None, max_id=None):
@@ -186,7 +186,7 @@ class Files(Endpoint):
             params['sinceId'] = since_id
         if max_id is not None:
             params['maxId'] = max_id
-        return super().get(self.base_url, headers=headers, params=params)
+        return self._get(self.base_url, headers=headers, params=params)
 
     def download(self, file_id, local_path):
         if not os.path.exists(local_path):

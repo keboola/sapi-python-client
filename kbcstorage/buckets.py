@@ -35,7 +35,7 @@ class Buckets(Endpoint):
         """
         headers = {'X-StorageApi-Token': self.token}
 
-        return self.get(self.base_url, headers=headers)
+        return self._get(self.base_url, headers=headers)
 
     def list_tables(self, bucket_id, include=None):
         """
@@ -71,7 +71,7 @@ class Buckets(Endpoint):
         url = '{}/{}'.format(self.base_url, bucket_id)
         headers = {'X-StorageApi-Token': self.token}
 
-        return self.get(url, headers=headers)
+        return self._get(url, headers=headers)
 
     def create(self, name, stage='in', description='', backend=None):
         """
@@ -104,7 +104,7 @@ class Buckets(Endpoint):
             'backend': backend
         }
 
-        return self.post(self.base_url, headers=headers, data=body)
+        return self._post(self.base_url, headers=headers, data=body)
 
     def delete(self, bucket_id, force=False):
         """
@@ -124,7 +124,7 @@ class Buckets(Endpoint):
         url = '{}/{}'.format(self.base_url, bucket_id)
         headers = {'X-StorageApi-Token': self.token}
         params = {'force': force}
-        super().delete(url, headers=headers, params=params)
+        self._delete(url, headers=headers, params=params)
 
     def link(self, *args, **kwargs):
         """
