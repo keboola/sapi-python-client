@@ -16,7 +16,7 @@ class TestJobsEndpointWithMocks(unittest.TestCase):
     """
     def setUp(self):
         token = 'dummy_token'
-        base_url = 'https://connection.keboola.com/v2/storage/'
+        base_url = 'https://connection.keboola.com/'
         self.jobs = Jobs(base_url, token)
 
     @responses.activate

@@ -6,7 +6,7 @@ from kbcstorage.buckets import Buckets
 
 class TestFunctionalBuckets(unittest.TestCase):
     def setUp(self):
-        self.buckets = Buckets(os.getenv('KBC_TEST_API_URL') + '/v2/storage/',
+        self.buckets = Buckets(os.getenv('KBC_TEST_API_URL'),
                                os.getenv('KBC_TEST_TOKEN'))
         try:
             self.buckets.delete('in.c-py-test', force=True)

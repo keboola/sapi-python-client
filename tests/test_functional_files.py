@@ -1,14 +1,14 @@
 import os
 import unittest
 import tempfile
+import warnings
 from requests import exceptions
 from kbcstorage.files import Files
-import warnings
 
 
 class TestFunctionalBuckets(unittest.TestCase):
     def setUp(self):
-        self.files = Files(os.getenv('KBC_TEST_API_URL') + '/v2/storage/',
+        self.files = Files(os.getenv('KBC_TEST_API_URL'),
                            os.getenv('KBC_TEST_TOKEN'))
         files = self.files.list(tags=['py-test'])
         for file in files:
