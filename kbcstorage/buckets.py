@@ -42,7 +42,7 @@ class Buckets(Endpoint):
         Retrieves information about a given bucket.
 
         Args:
-            bucket_id (int or str): The id of the bucket.
+            bucket_id (str): The id of the bucket.
 
         Raises:
             requests.HTTPError: If the API request fails.
@@ -94,7 +94,7 @@ class Buckets(Endpoint):
         of non-empty buckets.
 
         Args:
-            bucket_id (str or int): The id of the bucket to be deleted.
+            bucket_id (str): The id of the bucket to be deleted.
             force (bool): If ``True``, deletes the bucket even if it is not
                 empty. Default ``False``.
         """
