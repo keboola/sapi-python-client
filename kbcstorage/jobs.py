@@ -38,7 +38,7 @@ class Jobs(Endpoint):
         Create a Jobs endpoint.
 
         Args:
-            url (:obj:`str`): The base url for the API.
+            root_url (:obj:`str`): The base url for the API.
             token (:obj:`str`): A storage API key.
         """
         super().__init__(root_url, 'jobs', token)
@@ -62,7 +62,7 @@ class Jobs(Endpoint):
         Retrieves information about a given job.
 
         Args:
-            job_id (int or str): The id of the job.
+            job_id (str): The id of the job.
 
         Raises:
             requests.HTTPError: If the API request fails.
@@ -77,7 +77,7 @@ class Jobs(Endpoint):
         Retrieve the status of a given job.
 
         Args:
-            job_id (int or str): The id of the job.
+            job_id (str): The id of the job.
 
         Raises:
             requests.HTTPError: If the API request fails.
@@ -89,7 +89,7 @@ class Jobs(Endpoint):
         Check if a job is completed or not.
 
         Args:
-            job_id (int or str): The id of the job.
+            job_id (str): The id of the job.
 
         Returns:
             completed (bool): True if job is completed, else False.
@@ -100,28 +100,32 @@ class Jobs(Endpoint):
         completed_statuses = ('error', 'success')
         return self.status(job_id) in completed_statuses
 
-    def block_until_completed(self, job_id, d=1):
+    def block_until_completed(self, job_id, d=600):
         """
         Poll the API until the job is completed.
 
         Args:
-            job_id (int or str): The id of the job
+            job_id (str): The id of the job
             d (int): The time delta between successive polls in seconds.
                 Default 1.
 
         Raises:
             requests.HTTPError: If any API request fails.
         """
-        while not self.completed(job_id):
-            time.sleep(d)
+        retries = 1
+        while True:
+            job = self.detail(job_id)
+            if job['status'] not in ('waiting', 'processing'):
+                return job
+            time.sleep(min(2 ** retries, d))
 
-    def block_for_success(self, job_id, d=1):
+    def block_for_success(self, job_id, d=600):
         """
         Poll the API until the job is completed, then return ``True`` if the
-        job is succesful, else ``False``.
+        job is successful, else ``False``.
 
         Args:
-            job_id (int or str): The id of the job
+            job_id (str): The id of the job
             d (int): The time delta between successive polls in seconds.
                 Default 1.
 
@@ -131,8 +135,6 @@ class Jobs(Endpoint):
         Raises:
             requests.HTTPError: If any API request fails.
         """
-        completed_statuses = ('error', 'success')
-        while True:
-            status = self.status(job_id)
-            if status in completed_statuses:
-                return status == 'success'
+        job = self.block_until_completed(job_id, d)
+        return job['status'] == 'success'
+
