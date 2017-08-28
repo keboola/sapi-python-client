@@ -100,14 +100,15 @@ class Jobs(Endpoint):
         completed_statuses = ('error', 'success')
         return self.status(job_id) in completed_statuses
 
-    def block_until_completed(self, job_id, d=600):
+    def block_until_completed(self, job_id):
         """
         Poll the API until the job is completed.
 
         Args:
             job_id (str): The id of the job
-            d (int): The time delta between successive polls in seconds.
-                Default 1.
+
+        Returns:
+            response_body: The parsed json from the HTTP response containing a storage Job.
 
         Raises:
             requests.HTTPError: If any API request fails.
@@ -115,19 +116,17 @@ class Jobs(Endpoint):
         retries = 1
         while True:
             job = self.detail(job_id)
-            if job['status'] not in ('waiting', 'processing'):
+            if job['status'] in ('error', 'success'):
                 return job
-            time.sleep(min(2 ** retries, d))
+            time.sleep(min(2 ** retries, 20))
 
-    def block_for_success(self, job_id, d=600):
+    def block_for_success(self, job_id):
         """
         Poll the API until the job is completed, then return ``True`` if the
         job is successful, else ``False``.
 
         Args:
             job_id (str): The id of the job
-            d (int): The time delta between successive polls in seconds.
-                Default 1.
 
         Returns:
             success (bool): True if the job status is success, else False.
@@ -135,6 +134,6 @@ class Jobs(Endpoint):
         Raises:
             requests.HTTPError: If any API request fails.
         """
-        job = self.block_until_completed(job_id, d)
+        job = self.block_until_completed(job_id)
         return job['status'] == 'success'
 

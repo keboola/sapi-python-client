@@ -103,8 +103,8 @@ class TestJobsEndpointWithMocks(unittest.TestCase):
                 json=detail_response
             )
         )
-        job_id = 22077337
-        self.jobs.block_until_completed(job_id, d=0.000001)
+        job_id = '22077337'
+        self.jobs.block_until_completed(job_id)
         assert True
 
     @responses.activate
@@ -128,8 +128,8 @@ class TestJobsEndpointWithMocks(unittest.TestCase):
                 json={'status': 'success'}
             )
         )
-        job_id = 22077337
-        success = self.jobs.block_for_success(job_id, d=0.000001)
+        job_id = '22077337'
+        success = self.jobs.block_for_success(job_id)
         assert success is True
 
     @responses.activate
@@ -153,6 +153,6 @@ class TestJobsEndpointWithMocks(unittest.TestCase):
                 json={'status': 'error'}
             )
         )
-        job_id = 22077337
-        success = self.jobs.block_for_success(job_id, d=0.000001)
+        job_id = '22077337'
+        success = self.jobs.block_for_success(job_id)
         assert success is False

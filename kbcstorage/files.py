@@ -24,7 +24,10 @@ class Files(Endpoint):
             root_url (:obj:`str`): The base url for the API.
             token (:obj:`str`): A storage API key.
         """
+        print(root_url)
         super().__init__(root_url, 'files', token)
+        print('init')
+        print(self.base_url)
 
     def detail(self, file_id, federation_token=False):
         """
@@ -57,8 +60,9 @@ class Files(Endpoint):
             is_encrypted (bool): File is encrypted
             is_sliced (bool): File is sliced
             do_notify (bool): Notify members of project that file was uploaded
+
         Returns:
-            response_body: The parsed json from the HTTP response.
+            file_id (str): Id of the created file
 
         Raises:
             requests.HTTPError: If the API request fails.
@@ -100,12 +104,14 @@ class Files(Endpoint):
             is_sliced (bool): File is sliced
             do_notify (bool): Notify members of project that file was uploaded
             federation_token (bool): Obtain AWS federation token
+
         Returns:
             response_body: The parsed json from the HTTP response.
 
         Raises:
             requests.HTTPError: If the API request fails.
         """
+        print(self.base_url)
         url = '{}/{}'.format(self.base_url, 'prepare')
         headers = {
             'X-StorageApi-Token': self.token,
@@ -150,6 +156,12 @@ class Files(Endpoint):
             run_id (str) Run Id
             since_id (str) List files with ID bigger than
             max_id (str) List files with ID smaller than
+
+        Returns:
+            response_body: The parsed json from the HTTP response.
+
+        Raises:
+            requests.HTTPError: If the API request fails.
         """
         headers = {'X-StorageApi-Token': self.token}
         params = {
