@@ -236,7 +236,8 @@ class Tables(Endpoint):
         return body
 
     def load(self, table_id, file_path, is_incremental=False, delimiter=',',
-             enclosure='"', escaped_by='', columns=None, without_headers=False):
+             enclosure='"', escaped_by='', columns=None,
+             without_headers=False):
         """
         Create a new table from CSV file.
 
@@ -272,9 +273,10 @@ class Tables(Endpoint):
         return job['results']
 
     def load_raw(self, table_id, data_url=None, data_file_id=None,
-                 snapshot_id=None, data_workspace_id=None, data_table_name=None,
-                 is_incremental=False, delimiter=',', enclosure='"',
-                 escaped_by='', columns=None, without_headers=False):
+                 snapshot_id=None, data_workspace_id=None,
+                 data_table_name=None, is_incremental=False,
+                 delimiter=',', enclosure='"', escaped_by='', columns=None,
+                 without_headers=False):
         """
         Load data into an existing table
 
@@ -396,8 +398,9 @@ class Tables(Endpoint):
         else:
             return r.content.decode('utf-8')
 
-    def export_to_file(self, table_id, path_name, limit=None, file_format='rfc',
-                       changed_since=None, changed_until=None, columns=None,
+    def export_to_file(self, table_id, path_name, limit=None,
+                       file_format='rfc', changed_since=None,
+                       changed_until=None, columns=None,
                        where_column=None, where_values=None,
                        where_operator='eq', is_gzip=False):
         """
@@ -553,4 +556,3 @@ class Tables(Endpoint):
             params['columns'] = ','.join(columns)
         url = '{}/{}/export-async'.format(self.base_url, table_id)
         return self.post(url, headers=headers, data=params)
-

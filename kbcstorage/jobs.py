@@ -137,4 +137,3 @@ class Jobs(Endpoint):
         """
         job = self.block_until_completed(job_id)
         return job['status'] == 'success'
-

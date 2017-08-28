@@ -99,7 +99,8 @@ class Files(Endpoint):
 
     def prepare_upload(self, name, size_bytes=None, tags=None, is_public=False,
                        is_permanent=False, is_encrypted=True,
-                       is_sliced=False, do_notify=False, federation_token=True):
+                       is_sliced=False, do_notify=False,
+                       federation_token=True):
         """
         Prepare a file resource for a new file
 
