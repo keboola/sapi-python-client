@@ -6,7 +6,7 @@ for working with buckets, tables and workspaces are covered.
 
 ## Install
 
-`$ pip install git+https://github.com/keboola/sapi-python-client.git`
+`$ pip3 install git+https://github.com/keboola/sapi-python-client.git`
 
 or 
 
@@ -17,24 +17,26 @@ $ python setup.py install
 
 ## Usage 
 ```
-from kbcstorage.client import Client
+from kbcstorage.tables import Tables
+from kbcstorage.buckets import Buckets
 
-cl = Client("MY_KBC_TOKEN")
+tables = Tables('https://connection.keboola.com', 'your-token')
 
 # get table data into local file
-cl.get_table_data("in.c-myBucket.myTable", "local_file_name.csv')
+tables.export_to_file(table_id='in.c-demo.some-table', path_name='/data/')
 
 # save data
-cl.save_table("tableName", "in.c-myBucket", "csv_I_want_to_store.csv")
+tables.create(name='some-table-2', bucket_id='in.c-demo', file_path='/data/some-table')
 
 # list buckets
-cl.list_buckets()
+buckets = Buckets('https://connection.keboola.com', 'your-token')
+buckets.list()
 
 # list bucket tables
-cl.list_tables(bucketId)
+buckets.list_tables('in.c-demo')
 
 # get table info
-cl.get_table(tableId)
+tables.detail('in.c-demo')
 
 ```
 
@@ -52,6 +54,11 @@ $ git clone https://github.com/keboola/sapi-python-client.git && cd sapi-python-
 $ python setup.py test
 ```
 
+or 
+
+```bash
+$ docker-compose run --rm -e KBC_TEST_TOKEN -e KBC_TEST_API_URL sapi-python-client -m unittest discover
+```
 
 Under development -- all contributions very welcome :)
 

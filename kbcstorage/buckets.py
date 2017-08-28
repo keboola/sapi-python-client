@@ -37,6 +37,27 @@ class Buckets(Endpoint):
 
         return self.get(self.base_url, headers=headers)
 
+    def list_tables(self, bucket_id, include=None):
+        """
+        List all tables in a bucket.
+
+        Args:
+            bucket_id (str): Id of the bucket
+            include (list): Properties to list (attributes, columns)
+        Returns:
+            response_body: The parsed json from the HTTP response.
+
+        Raises:
+            requests.HTTPError: If the API request fails.
+        """
+        headers = {'X-StorageApi-Token': self.token}
+
+        url = '{}/{}/tables'.format(self.base_url, bucket_id)
+        params = {}
+        if include is not None and isinstance(include, list):
+            params['include'] = ','.join(include)
+        return self.get(url, headers=headers, params=params)
+
     def detail(self, bucket_id):
         """
         Retrieves information about a given bucket.
