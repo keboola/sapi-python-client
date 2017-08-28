@@ -6,6 +6,9 @@ Full documentation `here`.
 .. _here:
     http://docs.keboola.apiary.io/#reference/tables/
 """
+import tempfile
+
+import os
 import requests
 
 from kbcstorage.base import Endpoint
@@ -299,7 +302,7 @@ class Tables(Endpoint):
             requests.HTTPError: If the API request fails.
         """
         if not isinstance(table_id, str) or table_id == '':
-            raise ValueError("Invalid bucket_id '{}'.".format(table_id))
+            raise ValueError("Invalid file_id '{}'.".format(table_id))
         headers = {
             'X-StorageApi-Token': self.token,
             'Content-Type': 'application/x-www-form-urlencoded'
@@ -393,16 +396,18 @@ class Tables(Endpoint):
         else:
             return r.content.decode('utf-8')
 
-    def export(self, table_id, limit=None, format='rfc', changed_since=None,
-               changed_until=None, columns=None, where_column=None,
-               where_values=None, where_operator='eq', is_gzip=False):
+    def export_to_file(self, table_id, path_name, limit=None, file_format='rfc',
+                       changed_since=None, changed_until=None, columns=None,
+                       where_column=None, where_values=None,
+                       where_operator='eq', is_gzip=False):
         """
-        Export data from a table to file
+        Export data from a table to a local file
 
         Args:
             table_id (str): Table id
+            path_name (str): Destination path for file.
             limit (int): Number of rows to export.
-            format (str): 'rfc', 'escaped' or 'raw'
+            file_format (str): 'rfc', 'escaped' or 'raw'
             changed_until (str): Filtering by import date
                 Both until and since values can be a unix timestamp or any
                 date accepted by strtotime.
@@ -416,13 +421,15 @@ class Tables(Endpoint):
             is_gzip (bool): Result will be gzipped
 
         Returns:
-            response_body: Table data contents.
+            destination_file: Local file with exported data
 
         Raises:
             requests.HTTPError: If the API request fails.
         """
 
-        job = self.export_raw(table_id=table_id, limit=limit, format=format,
+        table_detail = self.detail(table_id)
+        job = self.export_raw(table_id=table_id, limit=limit,
+                              file_format=file_format,
                               changed_since=changed_since,
                               changed_until=changed_until, columns=columns,
                               where_column=where_column,
@@ -432,18 +439,75 @@ class Tables(Endpoint):
         job = jobs.block_until_completed(job['id'])
         if job['status'] == 'error':
             raise RuntimeError(job['error']['message'])
-        return job['results']
+        files = Files(self.root_url, self.token)
+        temp_path = tempfile.TemporaryDirectory()
+        local_file = files.download(file_id=job['results']['file']['id'],
+                                    local_path=temp_path.name)
+        destination_file = os.path.join(path_name, table_detail['name'])
+        with open(local_file, mode='rb') as in_file, \
+                open(destination_file, mode='wb') as out_file:
+            columns = table_detail['columns']
+            columns = ['"{}"'.format(col) for col in columns]
+            header = ",".join(columns) + '\n'
+            out_file.write(header.encode('utf-8'))
+            for line in in_file:
+                out_file.write(line)
+        return destination_file
 
-    def export_raw(self, table_id, limit=None, format='rfc', changed_since=None,
-                   changed_until=None, columns=None, where_column=None,
-                   where_values=None, where_operator='eq', is_gzip=False):
+    def export(self, table_id, limit=None, file_format='rfc',
+               changed_since=None, changed_until=None, columns=None,
+               where_column=None, where_values=None, where_operator='eq',
+               is_gzip=False):
+        """
+        Export data from a table to a Storage file
+
+        Args:
+            table_id (str): Table id
+            limit (int): Number of rows to export.
+            file_format (str): 'rfc', 'escaped' or 'raw'
+            changed_until (str): Filtering by import date
+                Both until and since values can be a unix timestamp or any
+                date accepted by strtotime.
+            changed_since (str): Filtering by import date
+                Both until and since values can be a unix timestamp or any
+                date accepted by strtotime.
+            where_column (str): Column for exporting only matching rows
+            where_operator (str): 'eq' or 'neq'
+            where_values (list): Values for exporting only matching rows
+            columns (list): List of columns to display
+            is_gzip (bool): Result will be gzipped
+
+        Returns:
+            response_body: File id of the table export
+
+        Raises:
+            requests.HTTPError: If the API request fails.
+        """
+
+        job = self.export_raw(table_id=table_id, limit=limit,
+                              file_format=file_format,
+                              changed_since=changed_since,
+                              changed_until=changed_until, columns=columns,
+                              where_column=where_column,
+                              where_values=where_values,
+                              where_operator=where_operator, is_gzip=is_gzip)
+        jobs = Jobs(self.root_url, self.token)
+        job = jobs.block_until_completed(job['id'])
+        if job['status'] == 'error':
+            raise RuntimeError(job['error']['message'])
+        return job['results']['file']['id']
+
+    def export_raw(self, table_id, limit=None, file_format='rfc',
+                   changed_since=None, changed_until=None, columns=None,
+                   where_column=None, where_values=None, where_operator='eq',
+                   is_gzip=False):
         """
         Export data from a table
 
         Args:
             table_id (str): Table id
             limit (int): Number of rows to export.
-            format (str): 'rfc', 'escaped' or 'raw'
+            file_format (str): 'rfc', 'escaped' or 'raw'
             changed_until (str): Filtering by import date
                 Both until and since values can be a unix timestamp or any
                 date accepted by strtotime.
@@ -471,8 +535,8 @@ class Tables(Endpoint):
             raise ValueError("Invalid table_id '{}'.".format(table_id))
         if limit is not None and limit is not isinstance(table_id, int):
             raise ValueError("Invalid limit '{}'.".format(limit))
-        if format not in ('rfc', 'escaped', 'raw'):
-            raise ValueError("Invalid format '{}'.".format(format))
+        if file_format not in ('rfc', 'escaped', 'raw'):
+            raise ValueError("Invalid format '{}'.".format(file_format))
         if changed_since is not None:
             if not isinstance(changed_since, str):
                 raise ValueError("Invalid changed_since '{}'.".

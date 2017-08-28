@@ -8,7 +8,7 @@ from kbcstorage.tables import Tables
 from kbcstorage.buckets import Buckets
 
 
-class TestFunctionalBuckets(unittest.TestCase):
+class TestFunctionalTables(unittest.TestCase):
     def setUp(self):
         self.tables = Tables(os.getenv('KBC_TEST_API_URL'),
                              os.getenv('KBC_TEST_TOKEN'))
@@ -168,10 +168,9 @@ class TestFunctionalBuckets(unittest.TestCase):
         table_id = self.tables.create(name='some-table', file_path=path,
                                       bucket_id='in.c-py-test')
         contents = self.tables.preview(table_id=table_id)
-        print(contents)
         lines = contents.split('\n')
-        self.assertEqual(['"col1","col2"', '"foo","bar"', '"ping","pong"'],
-                         lines)
+        self.assertEqual(['', '"col1","col2"', '"foo","bar"', '"ping","pong"'],
+                         sorted(lines))
 
     def test_table_export(self):
         file, path = tempfile.mkstemp(prefix='sapi-test')
@@ -186,5 +185,38 @@ class TestFunctionalBuckets(unittest.TestCase):
         table_id = self.tables.create(name='some-table', file_path=path,
                                       bucket_id='in.c-py-test')
         result = self.tables.export(table_id=table_id)
-        self.assertTrue('file' in result)
-        self.assertTrue('id' in result['file'])
+        self.assertIsNotNone(result)
+
+    def test_table_export_sliced(self):
+        file, path = tempfile.mkstemp(prefix='sapi-test')
+        with open(path, 'w') as csv_file:
+            writer = csv.DictWriter(csv_file, fieldnames=['col1', 'col2'],
+                                    lineterminator='\n', delimiter=',',
+                                    quotechar='"')
+            writer.writeheader()
+            writer.writerow({'col1': 'ping', 'col2': 'pong'})
+        os.close(file)
+        table_id = self.tables.create(name='some-table', file_path=path,
+                                      bucket_id='in.c-py-test')
+        table_info = self.tables.detail(table_id)
+        self.assertEqual(table_id, table_info['id'])
+        self.assertEqual(1, table_info['rowsCount'])
+
+        file, path = tempfile.mkstemp(prefix='sapi-test')
+        with open(path, 'w') as csv_file:
+            writer = csv.DictWriter(csv_file, fieldnames=['col1', 'col2'],
+                                    lineterminator='\n', delimiter=',',
+                                    quotechar='"')
+            writer.writeheader()
+            writer.writerow({'col1': 'foo', 'col2': 'bar'})
+        os.close(file)
+        self.tables.load(table_id=table_id, file_path=path,
+                         is_incremental=True)
+        temp_path = tempfile.TemporaryDirectory()
+        local_path = self.tables.export_to_file(table_id=table_id,
+                                                path_name=temp_path.name)
+        with open(local_path, mode='rt') as file:
+            lines = file.readlines()
+        self.assertEqual(['"col1","col2"\n', '"foo","bar"\n',
+                          '"ping","pong"\n'],
+                         sorted(lines))
