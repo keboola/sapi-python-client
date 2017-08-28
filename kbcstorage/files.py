@@ -24,10 +24,7 @@ class Files(Endpoint):
             root_url (:obj:`str`): The base url for the API.
             token (:obj:`str`): A storage API key.
         """
-        print(root_url)
         super().__init__(root_url, 'files', token)
-        print('init')
-        print(self.base_url)
 
     def detail(self, file_id, federation_token=False):
         """

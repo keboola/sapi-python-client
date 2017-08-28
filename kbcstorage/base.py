@@ -33,8 +33,8 @@ class Endpoint:
             token (str): A key for the Storage API. Can be found in the storage
                 console.
         """
-        self.base_url = '{}/{}'.format(root_url.strip('/'),
-                                       path_component.strip('/'))
+        self.root_url = root_url
+        self.base_url = '{}/v2/storage/{}'.format(root_url.strip('/'), path_component.strip('/'))
         self.token = token
 
     def get(self, *args, **kwargs):

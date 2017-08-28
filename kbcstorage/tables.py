@@ -106,11 +106,11 @@ class Tables(Endpoint):
         Raises:
             requests.HTTPError: If the API request fails.
         """
-        files = Files(self.base_url, self.token)
+        files = Files(self.root_url, self.token)
         file_id = files.upload_file(file_path=file_path, tags=['file-import'], do_notify=False, is_public=False)
         job = self.create_raw(bucket_id=bucket_id, name=name, data_file_id=file_id, delimiter=delimiter,
                               enclosure=enclosure, escaped_by=escaped_by, primary_key=primary_key)
-        jobs = Jobs(self.base_url, self.token)
+        jobs = Jobs(self.root_url, self.token)
         job = jobs.block_until_completed(job['id'])
         if job['status'] == 'error':
             raise RuntimeError(job['error']['message'])
@@ -176,7 +176,8 @@ class Tables(Endpoint):
             raise ValueError("Only one of enclosure and escaped_by may be specified.")
         if primary_key is not None and isinstance(primary_key, list):
             body['primaryKey[]'] = primary_key
-        url = '{}/{}/tables-async'.format(self.base_url, bucket_id)
+        # todo solve this better
+        url = '{}/v2/storage/buckets/{}/tables-async'.format(self.root_url, bucket_id)
         return self.post(url, headers=headers, data=body)
 
     def load(self, name, stage='in', description='', backend=None):

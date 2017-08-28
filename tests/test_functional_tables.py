@@ -9,10 +9,8 @@ from kbcstorage.buckets import Buckets
 
 class TestFunctionalBuckets(unittest.TestCase):
     def setUp(self):
-        self.tables = Tables(os.getenv('KBC_TEST_API_URL') + '/v2/storage/',
-                             os.getenv('KBC_TEST_TOKEN'))
-        self.buckets = Buckets(os.getenv('KBC_TEST_API_URL') + '/v2/storage/',
-                               os.getenv('KBC_TEST_TOKEN'))
+        self.tables = Tables(os.getenv('KBC_TEST_API_URL'), os.getenv('KBC_TEST_TOKEN'))
+        self.buckets = Buckets(os.getenv('KBC_TEST_API_URL'), os.getenv('KBC_TEST_TOKEN'))
         try:
             self.buckets.delete('in.c-py-test', force=True)
         except exceptions.HTTPError as e:
@@ -34,12 +32,11 @@ class TestFunctionalBuckets(unittest.TestCase):
                                     quotechar='"')
             writer.writeheader()
             writer.writerow({'col1': 'ping', 'col2': 'pong'})
-        table_id = self.tables.create(name='some-table', file_path=path, bucket_id='in.c-py-test')
         os.close(file)
+        table_id = self.tables.create(name='some-table', file_path=path, bucket_id='in.c-py-test')
         table_info = self.tables.detail(table_id)
-        print(table_info)
         self.assertEqual(table_id, table_info['id'])
-        self.assertEqual('in.c-py-test', table_info['bucket'])
+        self.assertEqual('in.c-py-test', table_info['bucket']['id'])
 
     def test_table_detail(self):
         file, path = tempfile.mkstemp(prefix='sapi-test')
@@ -50,7 +47,36 @@ class TestFunctionalBuckets(unittest.TestCase):
             writer.writerow({'col1': 'ping', 'col2': 'pong'})
         table_id = self.tables.create(name='some-table', file_path=path, bucket_id='in.c-py-test')
         table_info = self.tables.detail(table_id)
+        self.assertEqual(table_id, table_info['id'])
+        self.assertEqual('some-table', table_info['name'])
+        self.assertEqual('https://connection.keboola.com/v2/storage/tables/in.c-py-test.some-table', table_info['uri'])
+        self.assertEqual([], table_info['primaryKey'])
+        self.assertEqual([], table_info['indexedColumns'])
+        self.assertEqual(['col1', 'col2'], table_info['columns'])
         self.assertTrue('created' in table_info)
+        self.assertTrue('lastImportDate' in table_info)
+        self.assertTrue('lastChangeDate' in table_info)
+        self.assertTrue('rowsCount' in table_info)
+        self.assertTrue('metadata' in table_info)
+        self.assertTrue('bucket' in table_info)
+        self.assertTrue('columnMetadata' in table_info)
+
+    def test_delete_table(self):
+        file, path = tempfile.mkstemp(prefix='sapi-test')
+        with open(path, 'w') as csv_file:
+            writer = csv.DictWriter(csv_file, fieldnames=['col1', 'col2'], lineterminator='\n', delimiter=',',
+                                    quotechar='"')
+            writer.writeheader()
+            writer.writerow({'col1': 'ping', 'col2': 'pong'})
+        table_id = self.tables.create(name='some-table', file_path=path, bucket_id='in.c-py-test')
+        table_info = self.tables.detail(table_id)
+        self.assertEqual(table_id, table_info['id'])
+        self.tables.delete(table_id)
+        try:
+            self.tables.detail('some-totally-non-existent-table')
+        except exceptions.HTTPError as e:
+            if e.response.status_code != 404:
+                raise
 
     def test_invalid_create(self):
         try:
