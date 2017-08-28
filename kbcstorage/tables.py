@@ -72,6 +72,8 @@ class Tables(Endpoint):
         Raises:
             requests.HTTPError: If the API request fails.
         """
+        if not isinstance(table_id, str) or table_id == '':
+            raise ValueError("Invalid table_id '{}'.".format(table_id))
         url = '{}/{}'.format(self.base_url, table_id)
         headers = {'X-StorageApi-Token': self.token}
         return self.get(url, headers=headers)
@@ -150,7 +152,32 @@ class Tables(Endpoint):
             'enclosure': enclosure,
             'escapedBy': escaped_by
         }
+        body.update(self.validate_data_source(data_url, data_file_id, snapshot_id, data_workspace_id, data_table_name))
+        if enclosure is not '' and escaped_by is not '':
+            raise ValueError("Only one of enclosure and escaped_by may be specified.")
+        if primary_key is not None and isinstance(primary_key, list):
+            body['primaryKey[]'] = primary_key
+        # todo solve this better
+        url = '{}/v2/storage/buckets/{}/tables-async'.format(self.root_url, bucket_id)
+        return self.post(url, headers=headers, data=body)
+
+    @staticmethod
+    def validate_data_source(data_url, data_file_id, snapshot_id, data_workspace_id, data_table_name):
+        """
+        Check that table data source is configured properly
+
+        Args:
+            data_url (str): Publicly accessible url with a CSV file to import
+            data_file_id (str): id of the file stored in File Uploads
+            snapshot_id (str): id of a table snapshot - a table will be created from the snapshot.
+            data_workspace_id (str): Load from the table workspace. Use with the dataTableName attribute.
+            data_table_name (str): Load from a table in workspace.
+
+        Returns:
+            body (dict): Request parameters
+        """
         source = False
+        body = {}
         if data_url is not None:
             body['dataUrl'] = data_url
             source = True
@@ -172,16 +199,84 @@ class Tables(Endpoint):
             source = True
         if not source:
             raise ValueError("One of data_url, data_file_id, snapshot_id, data_workspace_id must be specified.")
+        return body
+
+    def load(self, table_id, file_path, is_incremental=False, delimiter=',', enclosure='"', escaped_by='',
+             columns=None, without_headers=False):
+        """
+        Create a new table from CSV file.
+
+        Args:
+            table_id (str): Table id
+            file_path (str): Path to local CSV file.
+            is_incremental (bool): Load incrementally (do not truncate table).
+            delimiter (str): Field delimiter used in the CSV file.
+            enclosure (str): Field enclosure used in the CSV file.
+            escaped_by (str): Escape character used in the CSV file.
+            columns (list): List of columns
+            without_headers (bool): CSV does not contain headers
+
+        Returns:
+            response_body: The parsed json from the HTTP response containing write results
+
+        Raises:
+            requests.HTTPError: If the API request fails.
+        """
+        files = Files(self.root_url, self.token)
+        file_id = files.upload_file(file_path=file_path, tags=['file-import'], do_notify=False, is_public=False)
+        job = self.load_raw(table_id=table_id, data_file_id=file_id, delimiter=delimiter, enclosure=enclosure,
+                            escaped_by=escaped_by, is_incremental=is_incremental, columns=columns,
+                            without_headers=without_headers)
+        jobs = Jobs(self.root_url, self.token)
+        job = jobs.block_until_completed(job['id'])
+        if job['status'] == 'error':
+            raise RuntimeError(job['error']['message'])
+        return job['results']
+
+    def load_raw(self, table_id, data_url=None, data_file_id=None, snapshot_id=None, data_workspace_id=None,
+                 data_table_name=None, is_incremental=False, delimiter=',', enclosure='"', escaped_by='',
+                 columns=None, without_headers=False):
+        """
+        Load data into an existing table
+
+        Args:
+            table_id (str): Table id
+            data_url (str): Publicly accessible url with a CSV file to import
+            data_file_id (str): id of the file stored in File Uploads
+            snapshot_id (str): id of a table snapshot - a table will be created from the snapshot.
+            data_workspace_id (str): Load from the table workspace. Use with the dataTableName attribute.
+            data_table_name (str): Load from a table in workspace.
+            is_incremental (bool): Load incrementally (do not truncate table).
+            delimiter (str): Field delimiter used in the CSV file.
+            enclosure (str): Field enclosure used in the CSV file.
+            escaped_by (str): Escape character used in the CSV file.
+            columns (list): List of columns
+            without_headers (bool): CSV does not contain headers
+
+        Returns:
+            response_body: The parsed json from the HTTP response containing a storage Job.
+
+        Raises:
+            requests.HTTPError: If the API request fails.
+        """
+        headers = {
+            'X-StorageApi-Token': self.token,
+            'Content-Type': 'application/x-www-form-urlencoded'
+        }
+        body = {
+            'delimiter': delimiter,
+            'enclosure': enclosure,
+            'escapedBy': escaped_by,
+            'incremental': int(is_incremental),
+            'withoutHeaders': int(without_headers)
+        }
+        body.update(self.validate_data_source(data_url, data_file_id, snapshot_id, data_workspace_id, data_table_name))
         if enclosure is not '' and escaped_by is not '':
             raise ValueError("Only one of enclosure and escaped_by may be specified.")
-        if primary_key is not None and isinstance(primary_key, list):
-            body['primaryKey[]'] = primary_key
-        # todo solve this better
-        url = '{}/v2/storage/buckets/{}/tables-async'.format(self.root_url, bucket_id)
+        if columns is not None and isinstance(columns, list):
+            body['primaryKey[]'] = columns
+        url = '{}/{}/import-async'.format(self.base_url, table_id)
         return self.post(url, headers=headers, data=body)
-
-    def load(self, name, stage='in', description='', backend=None):
-        pass
 
     def preview(self, name, stage='in', description='', backend=None):
         pass
