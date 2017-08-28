@@ -32,7 +32,8 @@ class Files(Endpoint):
 
         Args:
             file_id (str): The id of the file.
-            federation_token (bool): True to get AWS credentials for file download
+            federation_token (bool): True to get AWS credentials
+                for file download
 
         Raises:
             requests.HTTPError: If the API request fails.
@@ -44,7 +45,8 @@ class Files(Endpoint):
             params['federationToken'] = 'true'
         return self.get(url, headers=headers, params=params)
 
-    def upload_file(self, file_path, tags=None, is_public=False, is_permanent=False, is_encrypted=True,
+    def upload_file(self, file_path, tags=None, is_public=False,
+                    is_permanent=False, is_encrypted=True,
                     is_sliced=False, do_notify=False):
         """
         Upload a file to storage
@@ -68,25 +70,34 @@ class Files(Endpoint):
             raise ValueError("File " + file_path + " does not exist")
         file_name = os.path.basename(file_path)
         size = os.path.getsize(file_path)
-        file_resource = self.prepare_upload(file_name, size, tags, is_public, is_permanent, is_encrypted, is_sliced,
-                                            do_notify, True)
+        file_resource = self.prepare_upload(file_name, size, tags, is_public,
+                                            is_permanent, is_encrypted,
+                                            is_sliced, do_notify, True)
         upload_params = file_resource['uploadParams']
-        s3 = boto3.resource('s3', aws_access_key_id=upload_params['credentials']['AccessKeyId'],
-                            aws_secret_access_key=upload_params['credentials']['SecretAccessKey'],
-                            aws_session_token=upload_params['credentials']['SessionToken'],
+        key_id = upload_params['credentials']['AccessKeyId']
+        key = upload_params['credentials']['SecretAccessKey']
+        token = upload_params['credentials']['SessionToken']
+        s3 = boto3.resource('s3', aws_access_key_id=key_id,
+                            aws_secret_access_key=key,
+                            aws_session_token=token,
                             region_name=file_resource['region'])
 
-        s3_object = s3.Object(bucket_name=upload_params['bucket'], key=upload_params['key'])
+        s3_object = s3.Object(bucket_name=upload_params['bucket'],
+                              key=upload_params['key'])
         disposition = 'attachment; filename={};'.format(file_resource['name'])
         with open(file_path, mode='rb') as file:
             if is_encrypted:
-                s3_object.put(ACL=upload_params['acl'], Body=file, ContentDisposition=disposition,
-                              ServerSideEncryption=upload_params['x-amz-server-side-encryption'])
+                encryption = upload_params['x-amz-server-side-encryption']
+                s3_object.put(ACL=upload_params['acl'], Body=file,
+                              ContentDisposition=disposition,
+                              ServerSideEncryption=encryption)
             else:
-                s3_object.put(ACL=upload_params['acl'], Body=file, ContentDisposition=disposition)
+                s3_object.put(ACL=upload_params['acl'], Body=file,
+                              ContentDisposition=disposition)
         return file_resource['id']
 
-    def prepare_upload(self, name, size_bytes=None, tags=None, is_public=False, is_permanent=False, is_encrypted=True,
+    def prepare_upload(self, name, size_bytes=None, tags=None, is_public=False,
+                       is_permanent=False, is_encrypted=True,
                        is_sliced=False, do_notify=False, federation_token=True):
         """
         Prepare a file resource for a new file
@@ -108,7 +119,6 @@ class Files(Endpoint):
         Raises:
             requests.HTTPError: If the API request fails.
         """
-        print(self.base_url)
         url = '{}/{}'.format(self.base_url, 'prepare')
         headers = {
             'X-StorageApi-Token': self.token,
@@ -141,7 +151,8 @@ class Files(Endpoint):
         headers = {'X-StorageApi-Token': self.token}
         super().delete(url, headers=headers)
 
-    def list(self, limit=100, offset=0, tags=None, q=None, run_id=None, since_id=None, max_id=None):
+    def list(self, limit=100, offset=0, tags=None, q=None, run_id=None,
+             since_id=None, max_id=None):
         """
         List files in project.
 

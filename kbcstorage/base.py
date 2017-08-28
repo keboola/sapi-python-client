@@ -34,7 +34,8 @@ class Endpoint:
                 console.
         """
         self.root_url = root_url
-        self.base_url = '{}/v2/storage/{}'.format(root_url.strip('/'), path_component.strip('/'))
+        self.base_url = '{}/v2/storage/{}'.format(root_url.strip('/'),
+                                                  path_component.strip('/'))
         self.token = token
 
     def get(self, *args, **kwargs):
