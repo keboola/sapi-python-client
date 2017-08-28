@@ -62,7 +62,7 @@ class Jobs(Endpoint):
         Retrieves information about a given job.
 
         Args:
-            job_id (str): The id of the job.
+            job_id (str or int): The id of the job.
 
         Raises:
             requests.HTTPError: If the API request fails.
@@ -77,7 +77,7 @@ class Jobs(Endpoint):
         Retrieve the status of a given job.
 
         Args:
-            job_id (str): The id of the job.
+            job_id (str or int): The id of the job.
 
         Raises:
             requests.HTTPError: If the API request fails.
@@ -89,7 +89,7 @@ class Jobs(Endpoint):
         Check if a job is completed or not.
 
         Args:
-            job_id (str): The id of the job.
+            job_id (str or int): The id of the job.
 
         Returns:
             completed (bool): True if job is completed, else False.
@@ -108,7 +108,8 @@ class Jobs(Endpoint):
             job_id (str): The id of the job
 
         Returns:
-            response_body: The parsed json from the HTTP response containing a storage Job.
+            response_body: The parsed json from the HTTP response
+                containing a storage Job.
 
         Raises:
             requests.HTTPError: If any API request fails.

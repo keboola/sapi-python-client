@@ -84,7 +84,7 @@ class TestFunctionalBuckets(unittest.TestCase):
 
     def test_download_file_sliced(self):
         buckets = Buckets(os.getenv('KBC_TEST_API_URL'),
-                               os.getenv('KBC_TEST_TOKEN'))
+                          os.getenv('KBC_TEST_TOKEN'))
         try:
             buckets.delete('in.c-py-test', force=True)
         except exceptions.HTTPError as e:

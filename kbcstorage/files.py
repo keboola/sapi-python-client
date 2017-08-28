@@ -7,8 +7,6 @@ Full documentation `here`.
     http://docs.keboola.apiary.io/#reference/files/
 """
 import os
-import string
-
 import boto3
 import requests
 
@@ -202,8 +200,7 @@ class Files(Endpoint):
             region_name=file_info['region']
         )
         if file_info['isSliced']:
-            manifest = requests.get(url = file_info['url']).json()
-            print(manifest)
+            manifest = requests.get(url=file_info['url']).json()
             file_names = []
             for entry in manifest["entries"]:
                 full_path = entry["url"]

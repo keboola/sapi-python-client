@@ -37,7 +37,7 @@ class Workspaces(Endpoint):
         Create a Workspaces endpoint.
 
         Args:
-            url (:obj:`str`): The base url for the API.
+            root_url (:obj:`str`): The base url for the API.
             token (:obj:`str`): A storage API key.
         """
         super().__init__(root_url, 'workspaces', token)

@@ -18,7 +18,7 @@ class Buckets(Endpoint):
         Create a Buckets endpoint.
 
         Args:
-            url (:obj:`str`): The base url for the API.
+            root_url (:obj:`str`): The base url for the API.
             token (:obj:`str`): A storage API key.
         """
         super().__init__(root_url, 'buckets', token)
