@@ -37,32 +37,39 @@ class Endpoint:
         self.base_url = '{}/v2/storage/{}'.format(root_url.strip('/'),
                                                   path_component.strip('/'))
         self.token = token
+        self._auth_header = {'X-StorageApi-Token': self.token}
 
-    def get(self, *args, **kwargs):
+    def _get(self, url, params=None, **kwargs):
         """
         Construct a requests GET call with args and kwargs and process the
         results.
 
+
         Args:
-            *args: Positional arguments to pass to the get request.
-            **kwargs: Key word arguments to pass to the get request.
+            url (str): requested url
+            params (dict): additional url params to be passed to the underlying
+                requests.get
+            **kwargs: Key word arguments to pass to the get requests.get
 
         Returns:
-            body: Response body parsed from json.
+            r (requests.Response): object
 
         Raises:
             requests.HTTPError: If the API request fails.
         """
-        r = requests.get(*args, **kwargs)
+        headers = kwargs.pop('headers', {})
+        headers.update(self._auth_header)
+
+        r = requests.get(url, params, headers=headers, **kwargs)
         try:
             r.raise_for_status()
         except requests.HTTPError:
             # Handle different error codes
             raise
         else:
-            return r.json()
+            return r
 
-    def post(self, *args, **kwargs):
+    def _post(self, *args, **kwargs):
         """
         Construct a requests POST call with args and kwargs and process the
         results.
@@ -77,16 +84,18 @@ class Endpoint:
         Raises:
             requests.HTTPError: If the API request fails.
         """
-        r = requests.post(*args, **kwargs)
+        headers = kwargs.pop('headers', {})
+        headers.update(self._auth_header)
+        r = requests.post(headers=headers, *args, **kwargs)
         try:
             r.raise_for_status()
         except requests.HTTPError:
             # Handle different error codes
             raise
         else:
-            return r.json()
+            return r
 
-    def delete(self, *args, **kwargs):
+    def _delete(self, *args, **kwargs):
         """
         Construct a requests DELETE call with args and kwargs and process the
         result
@@ -101,7 +110,9 @@ class Endpoint:
         Raises:
             requests.HTTPError: If the API request fails.
         """
-        r = requests.delete(*args, **kwargs)
+        headers = kwargs.pop('headers', {})
+        headers.update(self._auth_header)
+        r = requests.delete(headers=headers, *args, **kwargs)
         try:
             r.raise_for_status()
         except requests.HTTPError:

@@ -33,9 +33,8 @@ class Buckets(Endpoint):
         Raises:
             requests.HTTPError: If the API request fails.
         """
-        headers = {'X-StorageApi-Token': self.token}
 
-        return self.get(self.base_url, headers=headers)
+        return self._get(self.base_url).json()
 
     def list_tables(self, bucket_id, include=None):
         """
@@ -56,7 +55,7 @@ class Buckets(Endpoint):
         params = {}
         if include is not None and isinstance(include, list):
             params['include'] = ','.join(include)
-        return self.get(url, headers=headers, params=params)
+        return self._get(url, headers=headers, params=params).json()
 
     def detail(self, bucket_id):
         """
@@ -69,9 +68,8 @@ class Buckets(Endpoint):
             requests.HTTPError: If the API request fails.
         """
         url = '{}/{}'.format(self.base_url, bucket_id)
-        headers = {'X-StorageApi-Token': self.token}
 
-        return self.get(url, headers=headers)
+        return self._get(url).json()
 
     def create(self, name, stage='in', description='', backend=None):
         """
@@ -92,10 +90,6 @@ class Buckets(Endpoint):
             requests.HTTPError: If the API request fails.
         """
         # Separating create and link into two distinct functions...
-        headers = {
-            'X-StorageApi-Token': self.token,
-            'Content-Type': 'application/x-www-form-urlencoded'
-        }
         # Need to check args...
         body = {
             'name': name,
@@ -104,7 +98,7 @@ class Buckets(Endpoint):
             'backend': backend
         }
 
-        return self.post(self.base_url, headers=headers, data=body)
+        return self._post(self.base_url, data=body).json()
 
     def delete(self, bucket_id, force=False):
         """
@@ -122,9 +116,8 @@ class Buckets(Endpoint):
         # How does the API handle it when force == False and the bucket is non-
         # empty?
         url = '{}/{}'.format(self.base_url, bucket_id)
-        headers = {'X-StorageApi-Token': self.token}
         params = {'force': force}
-        super().delete(url, headers=headers, params=params)
+        self._delete(url, params=params)
 
     def link(self, *args, **kwargs):
         """
