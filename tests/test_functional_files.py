@@ -1,9 +1,13 @@
+import csv
 import os
 import unittest
 import tempfile
 import warnings
 from requests import exceptions
+
+from kbcstorage.buckets import Buckets
 from kbcstorage.files import Files
+from kbcstorage.tables import Tables
 
 
 class TestFunctionalBuckets(unittest.TestCase):
@@ -68,7 +72,51 @@ class TestFunctionalBuckets(unittest.TestCase):
         self.assertTrue('SessionToken' in file_info['credentials'])
 
     def test_download_file(self):
-        raise ValueError("Not implemented")
+        file, path = tempfile.mkstemp(prefix='sapi-test')
+        os.write(file, bytes('fooBar', 'utf-8'))
+        file_id = self.files.upload_file(path, tags=['py-test', 'file1'])
+        os.close(file)
+        tmp = tempfile.TemporaryDirectory()
+        local_path = self.files.download(file_id, tmp.name)
+        with open(local_path, mode='rb') as file:
+            data = file.read()
+        self.assertEqual('fooBar', data.decode('utf-8'))
 
     def test_download_file_sliced(self):
-        raise ValueError("Not implemented")
+        buckets = Buckets(os.getenv('KBC_TEST_API_URL'),
+                               os.getenv('KBC_TEST_TOKEN'))
+        try:
+            buckets.delete('in.c-py-test', force=True)
+        except exceptions.HTTPError as e:
+            if e.response.status_code != 404:
+                raise
+        buckets.create(name='py-test', stage='in')
+
+        tables = Tables(os.getenv('KBC_TEST_API_URL'),
+                        os.getenv('KBC_TEST_TOKEN'))
+        file, path = tempfile.mkstemp(prefix='sapi-test')
+        with open(path, 'w') as csv_file:
+            writer = csv.DictWriter(csv_file, fieldnames=['col1', 'col2'],
+                                    lineterminator='\n', delimiter=',',
+                                    quotechar='"')
+            writer.writeheader()
+            writer.writerow({'col1': 'ping', 'col2': 'pong'})
+        os.close(file)
+        table_id = tables.create(name='some-table', file_path=path,
+                                      bucket_id='in.c-py-test')
+        file, path = tempfile.mkstemp(prefix='sapi-test')
+        with open(path, 'w') as csv_file:
+            writer = csv.DictWriter(csv_file, fieldnames=['col1', 'col2'],
+                                    lineterminator='\n', delimiter=',',
+                                    quotechar='"')
+            writer.writeheader()
+            writer.writerow({'col1': 'foo', 'col2': 'bar'})
+        os.close(file)
+        tables.load(table_id=table_id, file_path=path,
+                    is_incremental=True)
+        file_id = tables.export(table_id=table_id)
+        temp_path = tempfile.TemporaryDirectory()
+        local_path = self.files.download(file_id, temp_path.name)
+        with open(local_path, mode='rt') as file:
+            lines = file.readlines()
+        self.assertEqual(['"foo","bar"\n', '"ping","pong"\n'], sorted(lines))

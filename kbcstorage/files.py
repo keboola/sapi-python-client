@@ -7,7 +7,10 @@ Full documentation `here`.
     http://docs.keboola.apiary.io/#reference/files/
 """
 import os
+import string
+
 import boto3
+import requests
 
 from kbcstorage.base import Endpoint
 
@@ -158,7 +161,7 @@ class Files(Endpoint):
 
         Args:
             limit (int): Pagination size
-            offset (str): Pagination start
+            offset (int): Pagination start
             tags (list): List files with the tags
             q (str) Elastic query string
             run_id (str) Run Id
@@ -173,8 +176,8 @@ class Files(Endpoint):
         """
         headers = {'X-StorageApi-Token': self.token}
         params = {
-            'limit': limit,
-            'offset': offset
+            'limit': int(limit),
+            'offset': int(offset)
         }
         if tags is not None and isinstance(tags, list):
             params['tags[]'] = tags
@@ -185,3 +188,39 @@ class Files(Endpoint):
         if max_id is not None:
             params['maxId'] = max_id
         return super().get(self.base_url, headers=headers, params=params)
+
+    def download(self, file_id, local_path):
+        if not os.path.exists(local_path):
+            os.mkdir(local_path)
+        file_info = self.detail(file_id=file_id, federation_token=True)
+        local_file = os.path.join(local_path, file_info['name'])
+        s3 = boto3.resource(
+            's3',
+            aws_access_key_id=file_info['credentials']['AccessKeyId'],
+            aws_secret_access_key=file_info['credentials']['SecretAccessKey'],
+            aws_session_token=file_info['credentials']['SessionToken'],
+            region_name=file_info['region']
+        )
+        if file_info['isSliced']:
+            manifest = requests.get(url = file_info['url']).json()
+            print(manifest)
+            file_names = []
+            for entry in manifest["entries"]:
+                full_path = entry["url"]
+                file_name = full_path.rsplit("/", 1)[1]
+                file_names.append(file_name)
+                splitted_path = full_path.split("/")
+                file_key = "/".join(splitted_path[3:])
+                bucket = s3.Bucket(file_info['s3Path']['bucket'])
+                bucket.download_file(file_key, file_name)
+            # merge the downloaded files
+            with open(local_file, mode='wb') as out_file:
+                for file_name in file_names:
+                    with open(file_name, mode='rb') as in_file:
+                        for line in in_file:
+                            out_file.write(line)
+                    os.remove(file_name)
+        else:
+            bucket = s3.Bucket(file_info["s3Path"]["bucket"])
+            bucket.download_file(file_info["s3Path"]["key"], local_file)
+        return local_file
