@@ -40,6 +40,7 @@ class TestFunctionalBuckets(unittest.TestCase):
         self.assertTrue('tags' in file_info)
         self.assertTrue('py-test' in file_info['tags'])
         self.assertTrue('file1' in file_info['tags'])
+        self.assertFalse('credentials' in file_info)
 
     def test_delete_file(self):
         file, path = tempfile.mkstemp(prefix='sapi-test')
@@ -54,10 +55,20 @@ class TestFunctionalBuckets(unittest.TestCase):
             if e.response.status_code != 404:
                 raise
 
-    def test_download_file(self):
+    def test_download_file_credentials(self):
         file, path = tempfile.mkstemp(prefix='sapi-test')
         os.write(file, bytes('fooBar', 'utf-8'))
         file_id = self.files.upload_file(path, tags=['py-test', 'file1'])
         os.close(file)
-        self.assertEqual(file_id, self.files.detail(file_id, federation_token=True)['id'])
-        self.assertEqual(['py-test', 'file1'], self.files.detail(file_id)['tags'])
+        file_info = self.files.detail(file_id, federation_token=True)
+        self.assertEqual(file_id, file_info['id'])
+        self.assertTrue('credentials' in file_info)
+        self.assertTrue('AccessKeyId' in file_info['credentials'])
+        self.assertTrue('SecretAccessKey' in file_info['credentials'])
+        self.assertTrue('SessionToken' in file_info['credentials'])
+
+    def test_download_file(self):
+        raise ValueError("Not implemented")
+
+    def test_download_file_sliced(self):
+        raise ValueError("Not implemented")
