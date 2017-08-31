@@ -15,7 +15,30 @@ $ git clone https://github.com/keboola/sapi-python-client.git && cd sapi-python-
 $ python setup.py install
 ```
 
-## Usage 
+## Client Class Usage
+```
+from kbcstorage.client import Client
+
+client = Client('https://connection.keboola.com', 'your-token')
+
+# get table data into local file
+client.tables.export_to_file(table_id='in.c-demo.some-table', path_name='/data/')
+
+# save data
+client.tables.create(name='some-table-2', bucket_id='in.c-demo', file_path='/data/some-table')
+
+# list buckets
+client.buckets.list()
+
+# list bucket tables
+client.buckets.list_tables('in.c-demo')
+
+# get table info
+client.tables.detail('in.c-demo')
+
+```
+
+## Endpoint Classes Usage 
 ```
 from kbcstorage.tables import Tables
 from kbcstorage.buckets import Buckets
