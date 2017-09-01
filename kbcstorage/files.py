@@ -40,11 +40,10 @@ class Files(Endpoint):
             requests.HTTPError: If the API request fails.
         """
         url = '{}/{}'.format(self.base_url, file_id)
-        headers = {'X-StorageApi-Token': self.token}
         params = {}
         if federation_token:
             params['federationToken'] = 'true'
-        return self.get(url, headers=headers, params=params)
+        return self._get(url, params=params)
 
     def upload_file(self, file_path, tags=None, is_public=False,
                     is_permanent=False, is_encrypted=True,
@@ -122,10 +121,6 @@ class Files(Endpoint):
             requests.HTTPError: If the API request fails.
         """
         url = '{}/{}'.format(self.base_url, 'prepare')
-        headers = {
-            'X-StorageApi-Token': self.token,
-            'Content-Type': 'application/x-www-form-urlencoded'
-        }
         body = {
             'isPublic': int(is_public),
             'isPermanent': int(is_permanent),
@@ -140,7 +135,7 @@ class Files(Endpoint):
             body['sizeBytes'] = size_bytes
         if federation_token is not None:
             body['federationToken'] = int(federation_token)
-        return self.post(url, headers=headers, data=body)
+        return self._post(url, data=body)
 
     def delete(self, file_id):
         """
@@ -150,8 +145,7 @@ class Files(Endpoint):
             file_id (str): The id of the file to be deleted.
         """
         url = '{}/{}'.format(self.base_url, file_id)
-        headers = {'X-StorageApi-Token': self.token}
-        super().delete(url, headers=headers)
+        self._delete(url)
 
     def list(self, limit=100, offset=0, tags=None, q=None, run_id=None,
              since_id=None, max_id=None):
@@ -173,7 +167,6 @@ class Files(Endpoint):
         Raises:
             requests.HTTPError: If the API request fails.
         """
-        headers = {'X-StorageApi-Token': self.token}
         params = {
             'limit': int(limit),
             'offset': int(offset)
@@ -186,7 +179,7 @@ class Files(Endpoint):
             params['sinceId'] = since_id
         if max_id is not None:
             params['maxId'] = max_id
-        return super().get(self.base_url, headers=headers, params=params)
+        return self._get(self.base_url, params=params)
 
     def download(self, file_id, local_path):
         if not os.path.exists(local_path):

@@ -42,11 +42,28 @@ class Tables(Endpoint):
         Raises:
             requests.HTTPError: If the API request fails.
         """
-        headers = {'X-StorageApi-Token': self.token}
 
         url = '{}/tables'.format(self.base_url)
         params = {'include': ','.join(include)}
-        return self.get(url, headers=headers, params=params)
+        return self._get(url, params=params)
+
+    def list_bucket(self, bucket_id, include=None):
+        """
+        List all tables in a bucket.
+
+        Args:
+            bucket_id (str): Id of the bucket
+            include (list): Properties to list (attributes, columns)
+        Returns:
+            response_body: The parsed json from the HTTP response.
+
+        Raises:
+            requests.HTTPError: If the API request fails.
+        """
+
+        url = '{}/{}/tables'.format(self.base_url, bucket_id)
+        params = {'include': ','.join(include)}
+        return self._get(url, params=params)
 
     def detail(self, table_id):
         """
@@ -61,8 +78,7 @@ class Tables(Endpoint):
         if not isinstance(table_id, str) or table_id == '':
             raise ValueError("Invalid table_id '{}'.".format(table_id))
         url = '{}/{}'.format(self.base_url, table_id)
-        headers = {'X-StorageApi-Token': self.token}
-        return self.get(url, headers=headers)
+        return self._get(url)
 
     def delete(self, table_id):
         """
@@ -74,8 +90,7 @@ class Tables(Endpoint):
         if not isinstance(table_id, str) or table_id == '':
             raise ValueError("Invalid table_id '{}'.".format(table_id))
         url = '{}/{}'.format(self.base_url, table_id)
-        headers = {'X-StorageApi-Token': self.token}
-        super().delete(url, headers=headers)
+        self._delete(url)
 
     def create(self, bucket_id, name, file_path, delimiter=',', enclosure='"',
                escaped_by='', primary_key=None):
@@ -143,10 +158,6 @@ class Tables(Endpoint):
             raise ValueError("Invalid bucket_id '{}'.".format(bucket_id))
         if not isinstance(name, str) or name == '':
             raise ValueError("Invalid name_id '{}'.".format(name))
-        headers = {
-            'X-StorageApi-Token': self.token,
-            'Content-Type': 'application/x-www-form-urlencoded'
-        }
         body = {
             'name': name,
             'delimiter': delimiter,
@@ -164,7 +175,7 @@ class Tables(Endpoint):
         # todo solve this better
         url = '{}/v2/storage/buckets/{}/tables-async'.format(self.root_url,
                                                              bucket_id)
-        return self.post(url, headers=headers, data=body)
+        return self._post(url, data=body)
 
     @staticmethod
     def validate_data_source(data_url, data_file_id, snapshot_id,
@@ -286,10 +297,6 @@ class Tables(Endpoint):
         """
         if not isinstance(table_id, str) or table_id == '':
             raise ValueError("Invalid file_id '{}'.".format(table_id))
-        headers = {
-            'X-StorageApi-Token': self.token,
-            'Content-Type': 'application/x-www-form-urlencoded'
-        }
         body = {
             'delimiter': delimiter,
             'enclosure': enclosure,
@@ -306,7 +313,7 @@ class Tables(Endpoint):
         if columns is not None and isinstance(columns, list):
             body['primaryKey[]'] = columns
         url = '{}/{}/import-async'.format(self.base_url, table_id)
-        return self.post(url, headers=headers, data=body)
+        return self._post(url, data=body)
 
     @staticmethod
     def validate_filter(where_column, where_operator, where_values):
@@ -352,7 +359,6 @@ class Tables(Endpoint):
         Raises:
             requests.HTTPError: If the API request fails.
         """
-        headers = {'X-StorageApi-Token': self.token}
         params = {}
         if not isinstance(table_id, str) or table_id == '':
             raise ValueError("Invalid table_id '{}'.".format(table_id))
@@ -371,7 +377,7 @@ class Tables(Endpoint):
         if columns is not None and isinstance(columns, list):
             params['columns'] = ','.join(columns)
         url = '{}/{}/data-preview'.format(self.base_url, table_id)
-        r = requests.get(url=url, headers=headers, params=params)
+        r = self._get(url=url, params=params, as_json=False)
         try:
             r.raise_for_status()
         except requests.HTTPError:
@@ -511,7 +517,6 @@ class Tables(Endpoint):
         Raises:
             requests.HTTPError: If the API request fails.
         """
-        headers = {'X-StorageApi-Token': self.token}
         params = {
             'gzip': int(is_gzip)
         }
@@ -536,4 +541,4 @@ class Tables(Endpoint):
         if columns is not None and isinstance(columns, list):
             params['columns'] = ','.join(columns)
         url = '{}/{}/export-async'.format(self.base_url, table_id)
-        return self.post(url, headers=headers, data=params)
+        return self._post(url, data=params)

@@ -52,8 +52,7 @@ class Workspaces(Endpoint):
         Raises:
             requests.HTTPError: If the API request fails.
         """
-        headers = {'X-StorageApi-Token': self.token}
-        return self.get(self.base_url, headers=headers)
+        return self._get(self.base_url)
 
     def detail(self, workspace_id):
         """
@@ -68,9 +67,8 @@ class Workspaces(Endpoint):
         Raises:
             requests.HTTPError: If the API request fails.
         """
-        headers = {'X-StorageApi-Token': self.token}
         url = '{}/{}'.format(self.base_url, workspace_id)
-        return self.get(url, headers=headers)
+        return self._get(url)
 
     def create(self, backend=None, timeout=None):
         """
@@ -85,16 +83,12 @@ class Workspaces(Endpoint):
         Raises:
             requests.HTTPError: If the API request fails.
         """
-        headers = {
-            'X-StorageApi-Token': self.token,
-            'Content-Type': 'application/x-www-form-urlencoded'
-        }
         body = {
             'backend': backend,
             'statementTimeoutSeconds': timeout
         }
 
-        return self.post(self.base_url, data=body, headers=headers)
+        return self._post(self.base_url, data=body)
 
     def delete(self, workspace_id):
         """
@@ -108,14 +102,9 @@ class Workspaces(Endpoint):
         Raises:
             requests.HTTPError: If the API request fails.
         """
-        headers = {
-            'X-StorageApi-Token': self.token,
-            'Content-Type': 'application/x-www-form-urlencoded'
-        }
         url = '{}/{}'.format(self.base_url, workspace_id)
 
-        # This shadows the superclass...
-        return super().delete(url, headers=headers)
+        self._delete(url)
 
     def reset_password(self, workspace_id):
         """
@@ -128,12 +117,8 @@ class Workspaces(Endpoint):
         Raises:
             requests.HTTPError: If the API request fails.
         """
-        headers = {
-            'X-StorageApi-Token': self.token,
-            'Content-Type': 'application/x-www-form-urlencoded'
-        }
         url = '{}/{}/password'.format(self.base_url, workspace_id)
-        return self.post(url, headers=headers)
+        return self._post(url)
 
     def load_tables(self, workspace_id, table_mapping, preserve=None):
         """
@@ -153,12 +138,8 @@ class Workspaces(Endpoint):
         Todo:
             * Column data types.
         """
-        headers = {
-            'X-StorageApi-Token': self.token,
-            'Content-Type': 'application/x-www-form-urlencoded'
-        }
         body = _make_body(table_mapping)
         body['preserve'] = preserve
         url = '{}/{}/load'.format(self.base_url, workspace_id)
 
-        return self.post(url, data=body, headers=headers)
+        return self._post(url, data=body)
