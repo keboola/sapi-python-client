@@ -56,7 +56,7 @@ class Buckets(Endpoint):
         params = {}
         if include is not None and isinstance(include, list):
             params['include'] = ','.join(include)
-        return self.get(url, headers=headers, params=params)
+        return self._get(url, headers=headers, params=params)
 
     def detail(self, bucket_id):
         """
