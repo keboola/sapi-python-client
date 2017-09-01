@@ -377,7 +377,7 @@ class Tables(Endpoint):
         if columns is not None and isinstance(columns, list):
             params['columns'] = ','.join(columns)
         url = '{}/{}/data-preview'.format(self.base_url, table_id)
-        r = requests.get(url=url, params=params)
+        r = self._get(url=url, params=params)
         try:
             r.raise_for_status()
         except requests.HTTPError:
