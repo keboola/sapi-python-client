@@ -53,9 +53,7 @@ class Jobs(Endpoint):
         Raises:
             requests.HTTPError: If the API request fails.
         """
-        headers = {'X-StorageApi-Token': self.token}
-
-        return self._get(self.base_url, headers=headers)
+        return self._get(self.base_url)
 
     def detail(self, job_id):
         """
@@ -67,10 +65,9 @@ class Jobs(Endpoint):
         Raises:
             requests.HTTPError: If the API request fails.
         """
-        headers = {'X-StorageApi-Token': self.token}
         url = '{}/{}'.format(self.base_url, job_id)
 
-        return self._get(url, headers=headers)
+        return self._get(url)
 
     def status(self, job_id):
         """

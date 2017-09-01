@@ -37,6 +37,7 @@ class Endpoint:
         self.base_url = '{}/v2/storage/{}'.format(root_url.strip('/'),
                                                   path_component.strip('/'))
         self.token = token
+        self._auth_header = {'X-StorageApi-Token': self.token}
 
     def _get(self, *args, **kwargs):
         """
@@ -53,7 +54,10 @@ class Endpoint:
         Raises:
             requests.HTTPError: If the API request fails.
         """
-        r = requests.get(*args, **kwargs)
+        headers = kwargs.pop('headers', {})
+        headers.update(self._auth_header)
+
+        r = requests.get(headers=headers, *args, **kwargs)
         try:
             r.raise_for_status()
         except requests.HTTPError:
@@ -77,7 +81,9 @@ class Endpoint:
         Raises:
             requests.HTTPError: If the API request fails.
         """
-        r = requests.post(*args, **kwargs)
+        headers = kwargs.pop('headers', {})
+        headers.update(self._auth_header)
+        r = requests.post(headers=headers, *args, **kwargs)
         try:
             r.raise_for_status()
         except requests.HTTPError:
@@ -101,7 +107,9 @@ class Endpoint:
         Raises:
             requests.HTTPError: If the API request fails.
         """
-        r = requests.delete(*args, **kwargs)
+        headers = kwargs.pop('headers', {})
+        headers.update(self._auth_header)
+        r = requests.delete(headers=headers, *args, **kwargs)
         try:
             r.raise_for_status()
         except requests.HTTPError:
