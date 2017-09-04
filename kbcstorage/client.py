@@ -35,13 +35,3 @@ class Client:
     @property
     def token(self):
         return self._token
-
-    @token.setter
-    def token(self, token):
-        self._token = token
-        # Make sure the endpoint tokens are updated too!
-        self.buckets.token = token
-        self.files.token = token
-        self.jobs.token = token
-        self.tables.token = token
-        self.workspaces.token = token
