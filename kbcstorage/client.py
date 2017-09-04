@@ -27,10 +27,10 @@ class Client:
         self._token = token
 
         self.buckets = Buckets(self.root_url, self.token)
-        self.workspaces = Workspaces(self.root_url, self.token)
+        self.files = Files(self.root_url, self.token)
         self.jobs = Jobs(self.root_url, self.token)
         self.tables = Tables(self.root_url, self.token)
-        self.files = Files(self.root_url, self.token)
+        self.workspaces = Workspaces(self.root_url, self.token)
 
     @property
     def token(self):
