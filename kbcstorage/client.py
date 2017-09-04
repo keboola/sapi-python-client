@@ -18,7 +18,6 @@ class Client:
         """
         Initialise a client.
 
-
         Args:
             api_domain (str): The domain on which the API sits. eg.
                 "https://connection.keboola.com".
