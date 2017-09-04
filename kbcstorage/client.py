@@ -18,17 +18,20 @@ class Client:
         """
         Initialise a client.
 
-
         Args:
             api_domain (str): The domain on which the API sits. eg.
                 "https://connection.keboola.com".
             token (str): A storage API key.
         """
         self.root_url = api_domain
-        self.token = token
+        self._token = token
 
         self.buckets = Buckets(self.root_url, self.token)
-        self.workspaces = Workspaces(self.root_url, self.token)
+        self.files = Files(self.root_url, self.token)
         self.jobs = Jobs(self.root_url, self.token)
         self.tables = Tables(self.root_url, self.token)
-        self.files = Files(self.root_url, self.token)
+        self.workspaces = Workspaces(self.root_url, self.token)
+
+    @property
+    def token(self):
+        return self._token
