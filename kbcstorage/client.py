@@ -24,10 +24,24 @@ class Client:
             token (str): A storage API key.
         """
         self.root_url = api_domain
-        self.token = token
+        self._token = token
 
         self.buckets = Buckets(self.root_url, self.token)
         self.workspaces = Workspaces(self.root_url, self.token)
         self.jobs = Jobs(self.root_url, self.token)
         self.tables = Tables(self.root_url, self.token)
         self.files = Files(self.root_url, self.token)
+
+    @property
+    def token(self):
+        return self._token
+
+    @token.setter
+    def token(self, token):
+        self._token = token
+        # Make sure the endpoint tokens are updated too!
+        self.buckets.token = token
+        self.files.token = token
+        self.jobs.token = token
+        self.tables.token = token
+        self.workspaces.token = token
