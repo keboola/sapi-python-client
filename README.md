@@ -83,6 +83,9 @@ or
 $ docker-compose run --rm -e KBC_TEST_TOKEN -e KBC_TEST_API_URL sapi-python-client -m unittest discover
 ```
 
-Under development -- all contributions very welcome :)
+## Contribution Guide
+The client is far from supporting the entire API, all contributions are very welcome. New API endpoints should 
+be implemeneted in their own class extending `Endpoint`. Naming conventions should follow existing naming conventions
+or those of the [API](http://docs.keboola.apiary.io/#). If the method contains some processing of the request or response, consult the corresponing [PHP implementation](https://github.com/keboola/storage-api-php-client) for reference. New code should be covered by tests.
 
-Kickstarted via https://gist.github.com/Halama/6006960 
+Note that if you submit a PR from your own forked repository, the automated functional tests will fail. This is limitation of [Travis](https://docs.travis-ci.com/user/pull-requests/#Pull-Requests-and-Security-Restrictions). Either run the tests locally (set `KBC_TEST_TOKEN` (your token to test project) and `KBC_TEST_API_URL` (https://connection.keboola.com) variables) or ask for access. In case, you need a project for local testing, feel free to [ask for one](https://developers.keboola.com/#development-project).
