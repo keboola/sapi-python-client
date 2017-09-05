@@ -52,7 +52,7 @@ class Workspaces(Endpoint):
         Raises:
             requests.HTTPError: If the API request fails.
         """
-        return self._get(self.base_url)
+        return self._get(self.base_url).json()
 
     def detail(self, workspace_id):
         """
@@ -68,7 +68,7 @@ class Workspaces(Endpoint):
             requests.HTTPError: If the API request fails.
         """
         url = '{}/{}'.format(self.base_url, workspace_id)
-        return self._get(url)
+        return self._get(url).json()
 
     def create(self, backend=None, timeout=None):
         """
@@ -88,7 +88,7 @@ class Workspaces(Endpoint):
             'statementTimeoutSeconds': timeout
         }
 
-        return self._post(self.base_url, data=body)
+        return self._post(self.base_url, data=body).json()
 
     def delete(self, workspace_id):
         """
@@ -118,7 +118,7 @@ class Workspaces(Endpoint):
             requests.HTTPError: If the API request fails.
         """
         url = '{}/{}/password'.format(self.base_url, workspace_id)
-        return self._post(url)
+        return self._post(url).json()
 
     def load_tables(self, workspace_id, table_mapping, preserve=None):
         """
@@ -142,4 +142,4 @@ class Workspaces(Endpoint):
         body['preserve'] = preserve
         url = '{}/{}/load'.format(self.base_url, workspace_id)
 
-        return self._post(url, data=body)
+        return self._post(url, data=body).json()

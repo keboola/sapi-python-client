@@ -51,3 +51,14 @@ class TestEndpoint(unittest.TestCase):
         endpoint = Endpoint(self.root, 'delete', self.token)
         with self.assertRaises(HTTPError):
             endpoint._delete('{}/not-a-url'.format(endpoint.base_url))
+
+    def test_custom_headers(self):
+        """
+        Passing custom headers to Endpoint._get()
+        """
+        endpoint = Endpoint(self.root, '', self.token)
+        resp = endpoint._get(self.root, headers={'x-foo':'bar'})
+        request_headers = resp.request.headers
+        self.assertIn('x-foo', request_headers)
+        self.assertIn('X-StorageApi-Token', request_headers)
+        self.assertEqual('bar', request_headers['x-foo'])

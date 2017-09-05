@@ -39,7 +39,7 @@ class Endpoint:
         self.token = token
         self._auth_header = {'X-StorageApi-Token': self.token}
 
-    def _get(self, url, params=None, as_json=True, **kwargs):
+    def _get(self, url, params=None, **kwargs):
         """
         Construct a requests GET call with args and kwargs and process the
         results.
@@ -49,13 +49,10 @@ class Endpoint:
             url (str): requested url
             params (dict): additional url params to be passed to the underlying
                 requests.get
-            as_json (bool): whether to return json decoded response or raw
-                response object. It's important, because for example the
-                Tables.preview() returns a non-json response
             **kwargs: Key word arguments to pass to the get requests.get
 
         Returns:
-            body: Response body parsed from json.
+            r (requests.Response): object
 
         Raises:
             requests.HTTPError: If the API request fails.
@@ -70,7 +67,7 @@ class Endpoint:
             # Handle different error codes
             raise
         else:
-            return r.json() if as_json else r
+            return r
 
     def _post(self, *args, **kwargs):
         """
@@ -96,7 +93,7 @@ class Endpoint:
             # Handle different error codes
             raise
         else:
-            return r.json()
+            return r
 
     def _delete(self, *args, **kwargs):
         """

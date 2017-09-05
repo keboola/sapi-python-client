@@ -43,7 +43,7 @@ class Files(Endpoint):
         params = {}
         if federation_token:
             params['federationToken'] = 'true'
-        return self._get(url, params=params)
+        return self._get(url, params=params).json()
 
     def upload_file(self, file_path, tags=None, is_public=False,
                     is_permanent=False, is_encrypted=True,
@@ -135,7 +135,7 @@ class Files(Endpoint):
             body['sizeBytes'] = size_bytes
         if federation_token is not None:
             body['federationToken'] = int(federation_token)
-        return self._post(url, data=body)
+        return self._post(url, data=body).json()
 
     def delete(self, file_id):
         """
@@ -179,7 +179,7 @@ class Files(Endpoint):
             params['sinceId'] = since_id
         if max_id is not None:
             params['maxId'] = max_id
-        return self._get(self.base_url, params=params)
+        return self._get(self.base_url, params=params).json()
 
     def download(self, file_id, local_path):
         if not os.path.exists(local_path):

@@ -45,7 +45,7 @@ class Tables(Endpoint):
 
         url = '{}/tables'.format(self.base_url)
         params = {'include': ','.join(include)}
-        return self._get(url, params=params)
+        return self._get(url, params=params).json()
 
     def list_bucket(self, bucket_id, include=None):
         """
@@ -63,7 +63,7 @@ class Tables(Endpoint):
 
         url = '{}/{}/tables'.format(self.base_url, bucket_id)
         params = {'include': ','.join(include)}
-        return self._get(url, params=params)
+        return self._get(url, params=params).json()
 
     def detail(self, table_id):
         """
@@ -78,7 +78,7 @@ class Tables(Endpoint):
         if not isinstance(table_id, str) or table_id == '':
             raise ValueError("Invalid table_id '{}'.".format(table_id))
         url = '{}/{}'.format(self.base_url, table_id)
-        return self._get(url)
+        return self._get(url).json()
 
     def delete(self, table_id):
         """
@@ -175,7 +175,7 @@ class Tables(Endpoint):
         # todo solve this better
         url = '{}/v2/storage/buckets/{}/tables-async'.format(self.root_url,
                                                              bucket_id)
-        return self._post(url, data=body)
+        return self._post(url, data=body).json()
 
     @staticmethod
     def validate_data_source(data_url, data_file_id, snapshot_id,
@@ -313,7 +313,7 @@ class Tables(Endpoint):
         if columns is not None and isinstance(columns, list):
             body['primaryKey[]'] = columns
         url = '{}/{}/import-async'.format(self.base_url, table_id)
-        return self._post(url, data=body)
+        return self._post(url, data=body).json()
 
     @staticmethod
     def validate_filter(where_column, where_operator, where_values):
@@ -377,13 +377,8 @@ class Tables(Endpoint):
         if columns is not None and isinstance(columns, list):
             params['columns'] = ','.join(columns)
         url = '{}/{}/data-preview'.format(self.base_url, table_id)
-        r = self._get(url=url, params=params, as_json=False)
-        try:
-            r.raise_for_status()
-        except requests.HTTPError:
-            raise
-        else:
-            return r.content.decode('utf-8')
+        r = self._get(url=url, params=params)
+        return r.content.decode('utf-8')
 
     def export_to_file(self, table_id, path_name, limit=None,
                        file_format='rfc', changed_since=None,
@@ -541,4 +536,4 @@ class Tables(Endpoint):
         if columns is not None and isinstance(columns, list):
             params['columns'] = ','.join(columns)
         url = '{}/{}/export-async'.format(self.base_url, table_id)
-        return self._post(url, data=params)
+        return self._post(url, data=params).json()
