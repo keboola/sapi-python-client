@@ -1,5 +1,5 @@
 """
-Test basic fuinctionality of the Tables endpoint
+Test basic functionality of the Tables endpoint
 """
 import unittest
 
