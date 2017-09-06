@@ -44,9 +44,8 @@ class Tables(Endpoint):
         """
         headers = {'X-StorageApi-Token': self.token}
 
-        url = '{}/tables'.format(self.base_url)
-        params = {'include': ','.join(include)}
-        return self.get(url, headers=headers, params=params)
+        params = {'include': ','.join(include)} if include else {}
+        return self.get(self.base_url, headers=headers, params=params)
 
     def detail(self, table_id):
         """
