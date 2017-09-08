@@ -52,7 +52,7 @@ class Workspaces(Endpoint):
         Raises:
             requests.HTTPError: If the API request fails.
         """
-        return self._get(self.base_url).json()
+        return self._get_json(self.base_url)
 
     def detail(self, workspace_id):
         """
@@ -68,7 +68,7 @@ class Workspaces(Endpoint):
             requests.HTTPError: If the API request fails.
         """
         url = '{}/{}'.format(self.base_url, workspace_id)
-        return self._get(url).json()
+        return self._get_json(url)
 
     def create(self, backend=None, timeout=None):
         """

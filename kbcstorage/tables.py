@@ -42,7 +42,7 @@ class Tables(Endpoint):
 
         url = '{}/tables'.format(self.base_url)
         params = {'include': ','.join(include)}
-        return self._get(url, params=params).json()
+        return self._get_json(url, params=params)
 
     def list_bucket(self, bucket_id, include=None):
         """
@@ -60,7 +60,7 @@ class Tables(Endpoint):
 
         url = '{}/{}/tables'.format(self.base_url, bucket_id)
         params = {'include': ','.join(include)}
-        return self._get(url, params=params).json()
+        return self._get_json(url, params=params)
 
     def detail(self, table_id):
         """
@@ -75,7 +75,7 @@ class Tables(Endpoint):
         if not isinstance(table_id, str) or table_id == '':
             raise ValueError("Invalid table_id '{}'.".format(table_id))
         url = '{}/{}'.format(self.base_url, table_id)
-        return self._get(url).json()
+        return self._get_json(url)
 
     def delete(self, table_id):
         """

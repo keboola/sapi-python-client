@@ -69,6 +69,25 @@ class Endpoint:
         else:
             return r
 
+    def _get_json(self, url, params=None, **kwargs):
+        """
+        Make authenticated GET request and return json response
+
+        Args:
+            url (str): requested url
+            params (dict): additional url params to be passed to the underlying
+                requests.get
+            **kwargs: Key word arguments to pass to the get requests.get
+
+        Returns:
+            r (requests.Response): object
+
+        Raises:
+            requests.HTTPError: If the API request fails.
+
+        """
+        return self._get(url, params, **kwargs).json()
+
     def _post(self, *args, **kwargs):
         """
         Construct a requests POST call with args and kwargs and process the
