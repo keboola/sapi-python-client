@@ -98,7 +98,7 @@ class Buckets(Endpoint):
             'backend': backend
         }
 
-        return self._post(self.base_url, data=body).json()
+        return self._post(self.base_url, data=body)
 
     def delete(self, bucket_id, force=False):
         """

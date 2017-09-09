@@ -112,7 +112,7 @@ class Endpoint:
             # Handle different error codes
             raise
         else:
-            return r
+            return r.json()
 
     def _delete(self, *args, **kwargs):
         """

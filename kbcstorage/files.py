@@ -135,7 +135,7 @@ class Files(Endpoint):
             body['sizeBytes'] = size_bytes
         if federation_token is not None:
             body['federationToken'] = int(federation_token)
-        return self._post(url, data=body).json()
+        return self._post(url, data=body)
 
     def delete(self, file_id):
         """

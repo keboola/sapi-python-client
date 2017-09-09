@@ -88,7 +88,7 @@ class Workspaces(Endpoint):
             'statementTimeoutSeconds': timeout
         }
 
-        return self._post(self.base_url, data=body).json()
+        return self._post(self.base_url, data=body)
 
     def delete(self, workspace_id):
         """
@@ -118,7 +118,7 @@ class Workspaces(Endpoint):
             requests.HTTPError: If the API request fails.
         """
         url = '{}/{}/password'.format(self.base_url, workspace_id)
-        return self._post(url).json()
+        return self._post(url)
 
     def load_tables(self, workspace_id, table_mapping, preserve=None):
         """
@@ -142,4 +142,4 @@ class Workspaces(Endpoint):
         body['preserve'] = preserve
         url = '{}/{}/load'.format(self.base_url, workspace_id)
 
-        return self._post(url, data=body).json()
+        return self._post(url, data=body)

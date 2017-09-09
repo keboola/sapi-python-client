@@ -171,7 +171,7 @@ class Tables(Endpoint):
         # todo solve this better
         url = '{}/v2/storage/buckets/{}/tables-async'.format(self.root_url,
                                                              bucket_id)
-        return self._post(url, data=body).json()
+        return self._post(url, data=body)
 
     @staticmethod
     def validate_data_source(data_url, data_file_id, snapshot_id,
@@ -309,7 +309,7 @@ class Tables(Endpoint):
         if columns is not None and isinstance(columns, list):
             body['primaryKey[]'] = columns
         url = '{}/{}/import-async'.format(self.base_url, table_id)
-        return self._post(url, data=body).json()
+        return self._post(url, data=body)
 
     @staticmethod
     def validate_filter(where_column, where_operator, where_values):
@@ -532,4 +532,4 @@ class Tables(Endpoint):
         if columns is not None and isinstance(columns, list):
             params['columns'] = ','.join(columns)
         url = '{}/{}/export-async'.format(self.base_url, table_id)
-        return self._post(url, data=params).json()
+        return self._post(url, data=params)
