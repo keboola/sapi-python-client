@@ -39,7 +39,7 @@ class Endpoint:
         self.token = token
         self._auth_header = {'X-StorageApi-Token': self.token}
 
-    def _get(self, url, params=None, **kwargs):
+    def _get_raw(self, url, params=None, **kwargs):
         """
         Construct a requests GET call with args and kwargs and process the
         results.
@@ -69,9 +69,9 @@ class Endpoint:
         else:
             return r
 
-    def _get_json(self, url, params=None, **kwargs):
+    def _get(self, url, params=None, **kwargs):
         """
-        Make authenticated GET request and return json response
+        Make authenticated GET request and return json
 
         Args:
             url (str): requested url
@@ -86,7 +86,7 @@ class Endpoint:
             requests.HTTPError: If the API request fails.
 
         """
-        return self._get(url, params, **kwargs).json()
+        return self._get_raw(url, params, **kwargs).json()
 
     def _post(self, *args, **kwargs):
         """

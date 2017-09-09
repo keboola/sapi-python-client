@@ -43,7 +43,7 @@ class Files(Endpoint):
         params = {}
         if federation_token:
             params['federationToken'] = 'true'
-        return self._get_json(url, params=params)
+        return self._get(url, params=params)
 
     def upload_file(self, file_path, tags=None, is_public=False,
                     is_permanent=False, is_encrypted=True,
@@ -179,7 +179,7 @@ class Files(Endpoint):
             params['sinceId'] = since_id
         if max_id is not None:
             params['maxId'] = max_id
-        return self._get_json(self.base_url, params=params)
+        return self._get(self.base_url, params=params)
 
     def download(self, file_id, local_path):
         if not os.path.exists(local_path):

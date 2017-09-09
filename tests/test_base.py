@@ -57,7 +57,7 @@ class TestEndpoint(unittest.TestCase):
         Passing custom headers to Endpoint._get()
         """
         endpoint = Endpoint(self.root, '', self.token)
-        resp = endpoint._get(self.root, headers={'x-foo': 'bar'})
+        resp = endpoint._get_raw(self.root, headers={'x-foo': 'bar'})
         request_headers = resp.request.headers
         self.assertIn('x-foo', request_headers)
         self.assertIn('X-StorageApi-Token', request_headers)

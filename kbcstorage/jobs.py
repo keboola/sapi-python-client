@@ -53,7 +53,7 @@ class Jobs(Endpoint):
         Raises:
             requests.HTTPError: If the API request fails.
         """
-        return self._get_json(self.base_url)
+        return self._get(self.base_url)
 
     def detail(self, job_id):
         """
@@ -67,7 +67,7 @@ class Jobs(Endpoint):
         """
         url = '{}/{}'.format(self.base_url, job_id)
 
-        return self._get_json(url)
+        return self._get(url)
 
     def status(self, job_id):
         """

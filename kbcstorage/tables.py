@@ -41,7 +41,7 @@ class Tables(Endpoint):
         """
         url = '{}/tables'.format(self.base_url)
         params = {'include': ','.join(include)} if include else {}
-        return self._get_json(url, params=params)
+        return self._get(url, params=params)
 
     def list_bucket(self, bucket_id, include=None):
         """
@@ -59,7 +59,7 @@ class Tables(Endpoint):
 
         url = '{}/{}/tables'.format(self.base_url, bucket_id)
         params = {'include': ','.join(include)} if include else {}
-        return self._get_json(url, params=params)
+        return self._get(url, params=params)
 
     def detail(self, table_id):
         """
@@ -74,7 +74,7 @@ class Tables(Endpoint):
         if not isinstance(table_id, str) or table_id == '':
             raise ValueError("Invalid table_id '{}'.".format(table_id))
         url = '{}/{}'.format(self.base_url, table_id)
-        return self._get_json(url)
+        return self._get(url)
 
     def delete(self, table_id):
         """
@@ -373,7 +373,7 @@ class Tables(Endpoint):
         if columns is not None and isinstance(columns, list):
             params['columns'] = ','.join(columns)
         url = '{}/{}/data-preview'.format(self.base_url, table_id)
-        r = self._get(url=url, params=params)
+        r = self._get_raw(url=url, params=params)
         return r.content.decode('utf-8')
 
     def export_to_file(self, table_id, path_name, limit=None,

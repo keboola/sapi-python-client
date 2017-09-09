@@ -34,7 +34,7 @@ class Buckets(Endpoint):
             requests.HTTPError: If the API request fails.
         """
 
-        return self._get_json(self.base_url)
+        return self._get(self.base_url)
 
     def list_tables(self, bucket_id, include=None):
         """
@@ -55,7 +55,7 @@ class Buckets(Endpoint):
         params = {}
         if include is not None and isinstance(include, list):
             params['include'] = ','.join(include)
-        return self._get_json(url, headers=headers, params=params)
+        return self._get(url, headers=headers, params=params)
 
     def detail(self, bucket_id):
         """
@@ -69,7 +69,7 @@ class Buckets(Endpoint):
         """
         url = '{}/{}'.format(self.base_url, bucket_id)
 
-        return self._get_json(url)
+        return self._get(url)
 
     def create(self, name, stage='in', description='', backend=None):
         """
