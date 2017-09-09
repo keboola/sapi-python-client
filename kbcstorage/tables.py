@@ -39,9 +39,8 @@ class Tables(Endpoint):
         Raises:
             requests.HTTPError: If the API request fails.
         """
-        url = '{}/tables'.format(self.base_url)
         params = {'include': ','.join(include)} if include else {}
-        return self._get(url, params=params)
+        return self._get(self.base_url, params=params)
 
     def list_bucket(self, bucket_id, include=None):
         """
