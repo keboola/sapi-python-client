@@ -10,7 +10,7 @@ from kbcstorage.files import Files
 from kbcstorage.tables import Tables
 
 
-class TestFunctionalBuckets(unittest.TestCase):
+class TestFunctionalFiles(unittest.TestCase):
     def setUp(self):
         self.files = Files(os.getenv('KBC_TEST_API_URL'),
                            os.getenv('KBC_TEST_TOKEN'))
