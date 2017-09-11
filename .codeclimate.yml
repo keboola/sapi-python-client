@@ -1,0 +1,10 @@
+languages:
+  Python: true
+engines:
+  duplication:
+    enabled: true
+    config:
+      languages:
+      - python
+    exclude_paths:
+      - tests/      
