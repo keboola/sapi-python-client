@@ -80,7 +80,7 @@ class Endpoint:
             **kwargs: Key word arguments to pass to the get requests.get
 
         Returns:
-            r (requests.Response): object
+           body: Response body parsed from json.
 
         Raises:
             requests.HTTPError: If the API request fails.
