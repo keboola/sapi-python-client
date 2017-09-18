@@ -27,12 +27,18 @@ class Endpoint:
 
         Args
             root_url (str): Root url of API. eg.
-                "https://connection.keboola.com/v2/storage/"
+                "https://connection.keboola.com/"
             path_component (str): The section of the path specific to the
                 endpoint. eg. "buckets"
             token (str): A key for the Storage API. Can be found in the storage
                 console.
         """
+        if not root_url:
+            raise ValueError("Root URL is required.")
+        if not path_component:
+            raise ValueError("Path component is required.")
+        if not token:
+            raise ValueError("Token is required.")
         self.root_url = root_url
         self.base_url = '{}/v2/storage/{}'.format(root_url.strip('/'),
                                                   path_component.strip('/'))

@@ -13,7 +13,7 @@ class TestEndpoint(unittest.TestCase):
         self.token = 'some-token'
 
     def test_get(self):
-        endpoint = Endpoint(self.root, '', self.token)
+        endpoint = Endpoint(self.root, '/', self.token)
         self.assertEqual(os.getenv('KBC_TEST_API_URL'), endpoint.root_url)
         self.assertEqual(os.getenv('KBC_TEST_API_URL') + '/v2/storage/',
                          endpoint.base_url)
@@ -29,7 +29,7 @@ class TestEndpoint(unittest.TestCase):
             endpoint._get(endpoint.base_url)
 
     def test_get_404_2(self):
-        endpoint = Endpoint(self.root, '', self.token)
+        endpoint = Endpoint(self.root, '/', self.token)
         self.assertEqual(os.getenv('KBC_TEST_API_URL') +
                          '/v2/storage/',
                          endpoint.base_url)
@@ -40,7 +40,7 @@ class TestEndpoint(unittest.TestCase):
         """
         Post to inexistent resource raises HTTPError.
         """
-        endpoint = Endpoint(self.root, '', self.token)
+        endpoint = Endpoint(self.root, '/', self.token)
         with self.assertRaises(HTTPError):
             endpoint._post('{}/not-a-url'.format(endpoint.base_url))
 
@@ -56,9 +56,22 @@ class TestEndpoint(unittest.TestCase):
         """
         Passing custom headers to Endpoint._get()
         """
-        endpoint = Endpoint(self.root, '', self.token)
+        endpoint = Endpoint(self.root, '/', self.token)
         resp = endpoint._get_raw(self.root, headers={'x-foo': 'bar'})
         request_headers = resp.request.headers
         self.assertIn('x-foo', request_headers)
         self.assertIn('X-StorageApi-Token', request_headers)
         self.assertEqual('bar', request_headers['x-foo'])
+
+    def test_missing_url(self):
+        with self.assertRaisesRegexp(ValueError, "Root URL is required."):
+            Endpoint(None, '', None)
+
+    def test_missing_part(self):
+        with self.assertRaisesRegexp(ValueError,
+                                     "Path component is required."):
+            Endpoint('https://connection.keboola.com/', '', None)
+
+    def test_missing_token(self):
+        with self.assertRaisesRegexp(ValueError, "Token is required."):
+            Endpoint('https://connection.keboola.com/', 'tables', None)
