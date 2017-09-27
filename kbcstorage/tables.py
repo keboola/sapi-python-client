@@ -526,8 +526,10 @@ class Tables(Endpoint):
         Returns:
             json object with optimization statistics. The optimization
             happens asynchronously. You can use the 'id' parameter from the
-            response body to poll the status of the job using methods implemented in
-            Client.Jobs endpoint. (detail, block_for_success, block_until_completed, etc...)
+            response body to poll the status of the job using methods
+            implemented in Client.Jobs endpoint. (detail, block_for_success,
+            block_until_completed, etc...)
+
         """
         url = '{}/{}/optimize'.format(self.base_url, table_id)
         return self._post(url)
