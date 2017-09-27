@@ -514,3 +514,20 @@ class Tables(Endpoint):
             params['columns'] = ','.join(columns)
         url = '{}/{}/export-async'.format(self.base_url, table_id)
         return self._post(url, data=params)
+
+    def optimize(self, table_id):
+        """Optimize RedShift table size
+
+        http://docs.keboola.apiary.io/#reference/tables/table-optimize/optimize-table
+
+        Args:
+            table_id (str): table id to optimize ("in.c-my-bucket.table666")
+
+        Returns:
+            json object with optimization statistics. The optimization
+            happens asynchronously. You can use the 'id' parameter from the
+            response body to poll the status of the job using methods implemented in
+            Client.Jobs endpoint. (detail, block_for_success, block_until_completed, etc...)
+        """
+        url = '{}/{}/optimize'.format(self.base_url, table_id)
+        return self._post(url)
