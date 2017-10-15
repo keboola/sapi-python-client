@@ -100,3 +100,5 @@ git checkout -b my-new-feature
 # work on branch my-new-feature
 git push origin my-new-feature:my-new-feature
 ```
+
+This will create a new branch which can be used to make a pull request for your new feature.
