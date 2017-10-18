@@ -90,7 +90,7 @@ or those of the [API](http://docs.keboola.apiary.io/#). If the method contains s
 
 Note that if you submit a PR from your own forked repository, the automated functional tests will fail. This is limitation of [Travis](https://docs.travis-ci.com/user/pull-requests/#Pull-Requests-and-Security-Restrictions). Either run the tests locally (set `KBC_TEST_TOKEN` (your token to test project) and `KBC_TEST_API_URL` (https://connection.keboola.com) variables) or ask for access. In case, you need a project for local testing, feel free to [ask for one](https://developers.keboola.com/#development-project).
 
-The reccommended workflow for making a pull request is:
+The recommended workflow for making a pull request is:
 
 ```bash
 git clone https://github.com/keboola/sapi-python-client.git
