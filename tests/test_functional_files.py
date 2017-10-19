@@ -31,27 +31,42 @@ class TestFunctionalFiles(unittest.TestCase):
         file_id = self.files.upload_file(path, tags=['py-test', 'file1'])
         os.close(file)
         file_info = self.files.detail(file_id)
-        self.assertEqual(file_id, file_info['id'])
-        self.assertEqual(6, file_info['sizeBytes'])
-        self.assertFalse(file_info['isPublic'])
-        self.assertFalse(file_info['isSliced'])
-        self.assertTrue(file_info['isEncrypted'])
-        self.assertTrue('name' in file_info)
-        self.assertTrue('created' in file_info)
-        self.assertTrue('url' in file_info)
-        self.assertTrue('region' in file_info)
-        self.assertTrue('creatorToken' in file_info)
-        self.assertTrue('tags' in file_info)
-        self.assertTrue('py-test' in file_info['tags'])
-        self.assertTrue('file1' in file_info['tags'])
-        self.assertFalse('credentials' in file_info)
+        with self.subTest():
+            self.assertEqual(file_id, file_info['id'])
+        with self.subTest():
+            self.assertEqual(6, file_info['sizeBytes'])
+        with self.subTest():
+            self.assertFalse(file_info['isPublic'])
+        with self.subTest():
+            self.assertFalse(file_info['isSliced'])
+        with self.subTest():
+            self.assertTrue(file_info['isEncrypted'])
+        with self.subTest():
+            self.assertTrue('name' in file_info)
+        with self.subTest():
+            self.assertTrue('created' in file_info)
+        with self.subTest():
+            self.assertTrue('url' in file_info)
+        with self.subTest():
+            self.assertTrue('region' in file_info)
+        with self.subTest():
+            self.assertTrue('creatorToken' in file_info)
+        with self.subTest():
+            self.assertTrue('tags' in file_info)
+        with self.subTest():
+            self.assertTrue('py-test' in file_info['tags'])
+        with self.subTest():
+            self.assertTrue('file1' in file_info['tags'])
+        with self.subTest():
+            self.assertFalse('credentials' in file_info)
 
     def test_delete_file(self):
         file, path = tempfile.mkstemp(prefix='sapi-test')
         os.write(file, bytes('fooBar', 'utf-8'))
         file_id = self.files.upload_file(path, tags=['py-test', 'file1'])
         os.close(file)
-        self.assertEqual(file_id, self.files.detail(file_id)['id'])
+        with self.subTest():
+            self.assertEqual(file_id, self.files.detail(file_id)['id'])
         self.files.delete(file_id)
         try:
             self.assertEqual(file_id, self.files.detail(file_id)['id'])
@@ -65,11 +80,16 @@ class TestFunctionalFiles(unittest.TestCase):
         file_id = self.files.upload_file(path, tags=['py-test', 'file1'])
         os.close(file)
         file_info = self.files.detail(file_id, federation_token=True)
-        self.assertEqual(file_id, file_info['id'])
-        self.assertTrue('credentials' in file_info)
-        self.assertTrue('AccessKeyId' in file_info['credentials'])
-        self.assertTrue('SecretAccessKey' in file_info['credentials'])
-        self.assertTrue('SessionToken' in file_info['credentials'])
+        with self.subTest():
+            self.assertEqual(file_id, file_info['id'])
+        with self.subTest():
+            self.assertTrue('credentials' in file_info)
+        with self.subTest():
+            self.assertTrue('AccessKeyId' in file_info['credentials'])
+        with self.subTest():
+            self.assertTrue('SecretAccessKey' in file_info['credentials'])
+        with self.subTest():
+            self.assertTrue('SessionToken' in file_info['credentials'])
 
     def test_download_file(self):
         file, path = tempfile.mkstemp(prefix='sapi-test')
