@@ -69,7 +69,7 @@ class TestEndpoint(unittest.TestCase):
 
     def test_missing_part(self):
         with self.assertRaisesRegex(ValueError,
-                                     "Path component is required."):
+                                    "Path component is required."):
             Endpoint('https://connection.keboola.com/', '', None)
 
     def test_missing_token(self):
