@@ -63,8 +63,9 @@ class TestFunctionalTables(unittest.TestCase):
         with self.subTest():
             self.assertEqual('some-table', table_info['name'])
         with self.subTest():
-            self.assertEqual('https://connection.keboola.com/v2/storage/tables/in'
-                             '.c-py-test.some-table', table_info['uri'])
+            self.assertEqual('https://connection.keboola.com/v2/storage/'
+                             'tables/in.c-py-test.some-table',
+                             table_info['uri'])
         with self.subTest():
             self.assertEqual([], table_info['primaryKey'])
         with self.subTest():
