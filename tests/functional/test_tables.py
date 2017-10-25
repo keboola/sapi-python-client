@@ -8,7 +8,7 @@ from kbcstorage.tables import Tables
 from kbcstorage.buckets import Buckets
 
 
-class TestFunctionalTables(unittest.TestCase):
+class TestTables(unittest.TestCase):
     def setUp(self):
         self.tables = Tables(os.getenv('KBC_TEST_API_URL'),
                              os.getenv('KBC_TEST_TOKEN'))
