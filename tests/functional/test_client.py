@@ -8,7 +8,7 @@ from requests import exceptions
 from kbcstorage.client import Client
 
 
-class TestBuckets(unittest.TestCase):
+class TestClient(unittest.TestCase):
     def setUp(self):
         self.client = Client(os.getenv('KBC_TEST_API_URL'),
                              os.getenv('KBC_TEST_TOKEN'))
@@ -39,12 +39,17 @@ class TestBuckets(unittest.TestCase):
             writer.writeheader()
             writer.writerow({'col1': 'ping', 'col2': 'pong'})
         os.close(file)
-        self.assertEqual(bucket_id,
-                         self.client.buckets.detail(bucket_id)['id'])
+        with self.subTest():
+            self.assertEqual(bucket_id,
+                             self.client.buckets.detail(bucket_id)['id'])
         table_id = self.client.tables.create(name='some-table', file_path=path,
                                              bucket_id='in.c-py-test')
         table_info = self.client.tables.detail(table_id)
-        self.assertEqual(table_id, table_info['id'])
-        self.assertEqual('in.c-py-test', table_info['bucket']['id'])
-        self.assertTrue(len(self.client.jobs.list()) > 2)
-        self.assertEqual(1, len(self.client.files.list(limit=1)))
+        with self.subTest():
+            self.assertEqual(table_id, table_info['id'])
+        with self.subTest():
+            self.assertEqual('in.c-py-test', table_info['bucket']['id'])
+        with self.subTest():
+            self.assertTrue(len(self.client.jobs.list()) > 2)
+        with self.subTest():
+            self.assertEqual(1, len(self.client.files.list(limit=1)))

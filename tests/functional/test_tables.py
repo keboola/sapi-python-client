@@ -42,8 +42,10 @@ class TestTables(unittest.TestCase):
         table_id = self.tables.create(name='some-table', file_path=path,
                                       bucket_id='in.c-py-test')
         table_info = self.tables.detail(table_id)
-        self.assertEqual(table_id, table_info['id'])
-        self.assertEqual('in.c-py-test', table_info['bucket']['id'])
+        with self.subTest():
+            self.assertEqual(table_id, table_info['id'])
+        with self.subTest():
+            self.assertEqual('in.c-py-test', table_info['bucket']['id'])
 
     def test_table_detail(self):
         file, path = tempfile.mkstemp(prefix='sapi-test')
@@ -56,20 +58,34 @@ class TestTables(unittest.TestCase):
         table_id = self.tables.create(name='some-table', file_path=path,
                                       bucket_id='in.c-py-test')
         table_info = self.tables.detail(table_id)
-        self.assertEqual(table_id, table_info['id'])
-        self.assertEqual('some-table', table_info['name'])
-        self.assertEqual('https://connection.keboola.com/v2/storage/tables/in'
-                         '.c-py-test.some-table', table_info['uri'])
-        self.assertEqual([], table_info['primaryKey'])
-        self.assertEqual([], table_info['indexedColumns'])
-        self.assertEqual(['col1', 'col2'], table_info['columns'])
-        self.assertTrue('created' in table_info)
-        self.assertTrue('lastImportDate' in table_info)
-        self.assertTrue('lastChangeDate' in table_info)
-        self.assertTrue('rowsCount' in table_info)
-        self.assertTrue('metadata' in table_info)
-        self.assertTrue('bucket' in table_info)
-        self.assertTrue('columnMetadata' in table_info)
+        with self.subTest():
+            self.assertEqual(table_id, table_info['id'])
+        with self.subTest():
+            self.assertEqual('some-table', table_info['name'])
+        with self.subTest():
+            self.assertEqual('https://connection.keboola.com/v2/storage/'
+                             'tables/in.c-py-test.some-table',
+                             table_info['uri'])
+        with self.subTest():
+            self.assertEqual([], table_info['primaryKey'])
+        with self.subTest():
+            self.assertEqual([], table_info['indexedColumns'])
+        with self.subTest():
+            self.assertEqual(['col1', 'col2'], table_info['columns'])
+        with self.subTest():
+            self.assertTrue('created' in table_info)
+        with self.subTest():
+            self.assertTrue('lastImportDate' in table_info)
+        with self.subTest():
+            self.assertTrue('lastChangeDate' in table_info)
+        with self.subTest():
+            self.assertTrue('rowsCount' in table_info)
+        with self.subTest():
+            self.assertTrue('metadata' in table_info)
+        with self.subTest():
+            self.assertTrue('bucket' in table_info)
+        with self.subTest():
+            self.assertTrue('columnMetadata' in table_info)
 
     def test_delete_table(self):
         file, path = tempfile.mkstemp(prefix='sapi-test')
@@ -109,8 +125,10 @@ class TestTables(unittest.TestCase):
         table_id = self.tables.create(name='some-table', file_path=path,
                                       bucket_id='in.c-py-test')
         table_info = self.tables.detail(table_id)
-        self.assertEqual(table_id, table_info['id'])
-        self.assertEqual(1, table_info['rowsCount'])
+        with self.subTest():
+            self.assertEqual(table_id, table_info['id'])
+        with self.subTest():
+            self.assertEqual(1, table_info['rowsCount'])
 
         file, path = tempfile.mkstemp(prefix='sapi-test')
         with open(path, 'w') as csv_file:
@@ -123,8 +141,10 @@ class TestTables(unittest.TestCase):
         self.tables.load(table_id=table_id, file_path=path,
                          is_incremental=True)
         table_info = self.tables.detail(table_id)
-        self.assertEqual(table_id, table_info['id'])
-        self.assertEqual(2, table_info['rowsCount'])
+        with self.subTest():
+            self.assertEqual(table_id, table_info['id'])
+        with self.subTest():
+            self.assertEqual(2, table_info['rowsCount'])
 
     def test_import_table_no_incremental(self):
         file, path = tempfile.mkstemp(prefix='sapi-test')
@@ -138,8 +158,10 @@ class TestTables(unittest.TestCase):
         table_id = self.tables.create(name='some-table', file_path=path,
                                       bucket_id='in.c-py-test')
         table_info = self.tables.detail(table_id)
-        self.assertEqual(table_id, table_info['id'])
-        self.assertEqual(1, table_info['rowsCount'])
+        with self.subTest():
+            self.assertEqual(table_id, table_info['id'])
+        with self.subTest():
+            self.assertEqual(1, table_info['rowsCount'])
 
         file, path = tempfile.mkstemp(prefix='sapi-test')
         with open(path, 'w') as csv_file:
@@ -152,8 +174,10 @@ class TestTables(unittest.TestCase):
         self.tables.load(table_id=table_id, file_path=path,
                          is_incremental=False)
         table_info = self.tables.detail(table_id)
-        self.assertEqual(table_id, table_info['id'])
-        self.assertEqual(1, table_info['rowsCount'])
+        with self.subTest():
+            self.assertEqual(table_id, table_info['id'])
+        with self.subTest():
+            self.assertEqual(1, table_info['rowsCount'])
 
     def test_table_preview(self):
         file, path = tempfile.mkstemp(prefix='sapi-test')
@@ -199,8 +223,10 @@ class TestTables(unittest.TestCase):
         table_id = self.tables.create(name='some-table', file_path=path,
                                       bucket_id='in.c-py-test')
         table_info = self.tables.detail(table_id)
-        self.assertEqual(table_id, table_info['id'])
-        self.assertEqual(1, table_info['rowsCount'])
+        with self.subTest():
+            self.assertEqual(table_id, table_info['id'])
+        with self.subTest():
+            self.assertEqual(1, table_info['rowsCount'])
 
         file, path = tempfile.mkstemp(prefix='sapi-test')
         with open(path, 'w') as csv_file:
