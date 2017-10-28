@@ -43,7 +43,9 @@ class Endpoint:
         self.base_url = '{}/v2/storage/{}'.format(root_url.strip('/'),
                                                   path_component.strip('/'))
         self.token = token
-        self._auth_header = {'X-StorageApi-Token': self.token}
+        self._auth_header = {'X-StorageApi-Token': self.token,
+                             'Accept-Encoding': 'gzip',
+                             'User-Agent': 'Keboola Storage API Python Client'}
 
     def _get_raw(self, url, params=None, **kwargs):
         """
