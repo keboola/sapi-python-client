@@ -12,6 +12,17 @@ class TestEndpoint(unittest.TestCase):
         self.root = os.getenv('KBC_TEST_API_URL')
         self.token = 'some-token'
 
+    def test_props(self):
+        endpoint = Endpoint(self.root, '/', self.token)
+        with self.subTest():
+            self.assertEqual(os.getenv('KBC_TEST_API_URL'), endpoint.root_url)
+        with self.subTest():
+            self.assertEqual(os.getenv('KBC_TEST_API_URL') + '/v2/storage/',
+                             endpoint.base_url)
+        with self.subTest():
+            self.assertEqual('some-token',
+                             endpoint.token)
+
     def test_get(self):
         endpoint = Endpoint(self.root, '/', self.token)
         with self.subTest():
@@ -22,6 +33,15 @@ class TestEndpoint(unittest.TestCase):
         with self.subTest():
             self.assertEqual('some-token',
                              endpoint.token)
+        response = endpoint._get(endpoint.base_url)
+        with self.subTest():
+            self.assertEqual('storage', response['api'])
+        with self.subTest():
+            self.assertEqual('v2', response['version'])
+        with self.subTest():
+            self.assertIn('components', response)
+        with self.subTest():
+            self.assertIn('services', response)
 
     def test_get_404(self):
         endpoint = Endpoint(self.root, 'not-a-url', self.token)
