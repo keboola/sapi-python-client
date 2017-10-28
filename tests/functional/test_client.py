@@ -8,7 +8,7 @@ from requests import exceptions
 from kbcstorage.client import Client
 
 
-class TestFunctionalClient(unittest.TestCase):
+class TestClient(unittest.TestCase):
     def setUp(self):
         self.client = Client(os.getenv('KBC_TEST_API_URL'),
                              os.getenv('KBC_TEST_TOKEN'))

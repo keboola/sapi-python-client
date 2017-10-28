@@ -9,7 +9,7 @@ from kbcstorage.buckets import Buckets
 from kbcstorage.tables import Tables
 
 
-class TestFunctionalBuckets(unittest.TestCase):
+class TestBuckets(unittest.TestCase):
     def setUp(self):
         self.buckets = Buckets(os.getenv('KBC_TEST_API_URL'),
                                os.getenv('KBC_TEST_TOKEN'))
