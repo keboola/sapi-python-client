@@ -64,14 +64,14 @@ class TestEndpoint(unittest.TestCase):
         self.assertEqual('bar', request_headers['x-foo'])
 
     def test_missing_url(self):
-        with self.assertRaisesRegexp(ValueError, "Root URL is required."):
+        with self.assertRaisesRegex(ValueError, "Root URL is required."):
             Endpoint(None, '', None)
 
     def test_missing_part(self):
-        with self.assertRaisesRegexp(ValueError,
-                                     "Path component is required."):
+        with self.assertRaisesRegex(ValueError,
+                                    "Path component is required."):
             Endpoint('https://connection.keboola.com/', '', None)
 
     def test_missing_token(self):
-        with self.assertRaisesRegexp(ValueError, "Token is required."):
+        with self.assertRaisesRegex(ValueError, "Token is required."):
             Endpoint('https://connection.keboola.com/', 'tables', None)
