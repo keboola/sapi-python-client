@@ -51,21 +51,30 @@ class TestFunctionalBuckets(unittest.TestCase):
         tables.create(name='some-table', file_path=path,
                       bucket_id='in.c-py-test')
         tables = self.buckets.list_tables(bucket_id)
-        self.assertEqual(1, len(tables))
-        self.assertEqual('in.c-py-test.some-table', tables[0]['id'])
+        with self.subTest():
+            self.assertEqual(1, len(tables))
+        with self.subTest():
+            self.assertEqual('in.c-py-test.some-table', tables[0]['id'])
 
     def test_bucket_detail(self):
         bucket_id = self.buckets.create(name='py-test',
                                         stage='in',
                                         description='Test bucket')['id']
         detail = self.buckets.detail(bucket_id)
-        self.assertEqual(bucket_id, detail['id'])
-        self.assertEqual('c-py-test', detail['name'])
-        self.assertIsNotNone(detail['uri'])
-        self.assertIsNotNone(detail['created'])
-        self.assertEqual('Test bucket', detail['description'])
-        self.assertEqual([], detail['tables'])
-        self.assertEqual([], detail['attributes'])
+        with self.subTest():
+            self.assertEqual(bucket_id, detail['id'])
+        with self.subTest():
+            self.assertEqual('c-py-test', detail['name'])
+        with self.subTest():
+            self.assertIsNotNone(detail['uri'])
+        with self.subTest():
+            self.assertIsNotNone(detail['created'])
+        with self.subTest():
+            self.assertEqual('Test bucket', detail['description'])
+        with self.subTest():
+            self.assertEqual([], detail['tables'])
+        with self.subTest():
+            self.assertEqual([], detail['attributes'])
 
     def test_invalid_bucket(self):
         try:
