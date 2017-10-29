@@ -106,11 +106,11 @@ class TestFiles(unittest.TestCase):
         buckets = Buckets(os.getenv('KBC_TEST_API_URL'),
                           os.getenv('KBC_TEST_TOKEN'))
         try:
-            buckets.delete('in.c-py-test', force=True)
+            buckets.delete('in.c-py-test-files', force=True)
         except exceptions.HTTPError as e:
             if e.response.status_code != 404:
                 raise
-        buckets.create(name='py-test', stage='in')
+        buckets.create(name='py-test-files', stage='in')
 
         tables = Tables(os.getenv('KBC_TEST_API_URL'),
                         os.getenv('KBC_TEST_TOKEN'))
@@ -123,7 +123,7 @@ class TestFiles(unittest.TestCase):
             writer.writerow({'col1': 'ping', 'col2': 'pong'})
         os.close(file)
         table_id = tables.create(name='some-table', file_path=path,
-                                      bucket_id='in.c-py-test')
+                                      bucket_id='in.c-py-test-files')
         file, path = tempfile.mkstemp(prefix='sapi-test')
         with open(path, 'w') as csv_file:
             writer = csv.DictWriter(csv_file, fieldnames=['col1', 'col2'],

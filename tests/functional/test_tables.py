@@ -15,17 +15,17 @@ class TestTables(unittest.TestCase):
         self.buckets = Buckets(os.getenv('KBC_TEST_API_URL'),
                                os.getenv('KBC_TEST_TOKEN'))
         try:
-            self.buckets.delete('in.c-py-test', force=True)
+            self.buckets.delete('in.c-py-test-tables', force=True)
         except exceptions.HTTPError as e:
             if e.response.status_code != 404:
                 raise
-        self.buckets.create(name='py-test', stage='in')
+        self.buckets.create(name='py-test-tables', stage='in')
         # https://github.com/boto/boto3/issues/454
         warnings.simplefilter("ignore", ResourceWarning)
 
     def tearDown(self):
         try:
-            self.buckets.delete('in.c-py-test', force=True)
+            self.buckets.delete('in.c-py-test-tables', force=True)
         except exceptions.HTTPError as e:
             if e.response.status_code != 404:
                 raise
@@ -40,12 +40,12 @@ class TestTables(unittest.TestCase):
             writer.writerow({'col1': 'ping', 'col2': 'pong'})
         os.close(file)
         table_id = self.tables.create(name='some-table', file_path=path,
-                                      bucket_id='in.c-py-test')
+                                      bucket_id='in.c-py-test-tables')
         table_info = self.tables.detail(table_id)
         with self.subTest():
             self.assertEqual(table_id, table_info['id'])
         with self.subTest():
-            self.assertEqual('in.c-py-test', table_info['bucket']['id'])
+            self.assertEqual('in.c-py-test-tables', table_info['bucket']['id'])
 
     def test_table_detail(self):
         file, path = tempfile.mkstemp(prefix='sapi-test')
@@ -56,7 +56,7 @@ class TestTables(unittest.TestCase):
             writer.writeheader()
             writer.writerow({'col1': 'ping', 'col2': 'pong'})
         table_id = self.tables.create(name='some-table', file_path=path,
-                                      bucket_id='in.c-py-test')
+                                      bucket_id='in.c-py-test-tables')
         table_info = self.tables.detail(table_id)
         with self.subTest():
             self.assertEqual(table_id, table_info['id'])
@@ -64,7 +64,7 @@ class TestTables(unittest.TestCase):
             self.assertEqual('some-table', table_info['name'])
         with self.subTest():
             self.assertEqual('https://connection.keboola.com/v2/storage/'
-                             'tables/in.c-py-test.some-table',
+                             'tables/in.c-py-test-tables.some-table',
                              table_info['uri'])
         with self.subTest():
             self.assertEqual([], table_info['primaryKey'])
@@ -96,7 +96,7 @@ class TestTables(unittest.TestCase):
             writer.writeheader()
             writer.writerow({'col1': 'ping', 'col2': 'pong'})
         table_id = self.tables.create(name='some-table', file_path=path,
-                                      bucket_id='in.c-py-test')
+                                      bucket_id='in.c-py-test-tables')
         table_info = self.tables.detail(table_id)
         self.assertEqual(table_id, table_info['id'])
         self.tables.delete(table_id)
@@ -123,7 +123,7 @@ class TestTables(unittest.TestCase):
             writer.writerow({'col1': 'ping', 'col2': 'pong'})
         os.close(file)
         table_id = self.tables.create(name='some-table', file_path=path,
-                                      bucket_id='in.c-py-test')
+                                      bucket_id='in.c-py-test-tables')
         table_info = self.tables.detail(table_id)
         with self.subTest():
             self.assertEqual(table_id, table_info['id'])
@@ -156,7 +156,7 @@ class TestTables(unittest.TestCase):
             writer.writerow({'col1': 'ping', 'col2': 'pong'})
         os.close(file)
         table_id = self.tables.create(name='some-table', file_path=path,
-                                      bucket_id='in.c-py-test')
+                                      bucket_id='in.c-py-test-tables')
         table_info = self.tables.detail(table_id)
         with self.subTest():
             self.assertEqual(table_id, table_info['id'])
@@ -190,7 +190,7 @@ class TestTables(unittest.TestCase):
             writer.writerow({'col1': 'foo', 'col2': 'bar'})
         os.close(file)
         table_id = self.tables.create(name='some-table', file_path=path,
-                                      bucket_id='in.c-py-test')
+                                      bucket_id='in.c-py-test-tables')
         contents = self.tables.preview(table_id=table_id)
         lines = contents.split('\n')
         self.assertEqual(['', '"col1","col2"', '"foo","bar"', '"ping","pong"'],
@@ -207,7 +207,7 @@ class TestTables(unittest.TestCase):
             writer.writerow({'col1': 'foo', 'col2': 'bar'})
         os.close(file)
         table_id = self.tables.create(name='some-table', file_path=path,
-                                      bucket_id='in.c-py-test')
+                                      bucket_id='in.c-py-test-tables')
         result = self.tables.export(table_id=table_id)
         self.assertIsNotNone(result)
 
@@ -221,7 +221,7 @@ class TestTables(unittest.TestCase):
             writer.writerow({'col1': 'ping', 'col2': 'pong'})
         os.close(file)
         table_id = self.tables.create(name='some-table', file_path=path,
-                                      bucket_id='in.c-py-test')
+                                      bucket_id='in.c-py-test-tables')
         table_info = self.tables.detail(table_id)
         with self.subTest():
             self.assertEqual(table_id, table_info['id'])
