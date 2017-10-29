@@ -361,7 +361,7 @@ class Tables(Endpoint):
                        file_format='rfc', changed_since=None,
                        changed_until=None, columns=None,
                        where_column=None, where_values=None,
-                       where_operator='eq', is_gzip=False):
+                       where_operator='eq', is_gzip=True):
         """
         Export data from a table to a local file
 
@@ -406,6 +406,17 @@ class Tables(Endpoint):
         local_file = files.download(file_id=job['results']['file']['id'],
                                     local_path=temp_path.name)
         destination_file = os.path.join(path_name, table_detail['name'])
+        # the file containing table export is always without headers (it is
+        # always sliced on Snowflake and Redshift
+        if is_gzip:
+            import gzip
+            import shutil
+            with gzip.open(local_file, 'rb') as f_in, \
+                    open(local_file + '.un', 'wb') as f_out:
+                shutil.copyfileobj(f_in, f_out)
+            os.remove(local_file)
+            local_file = local_file + '.un'
+
         with open(local_file, mode='rb') as in_file, \
                 open(destination_file, mode='wb') as out_file:
             columns = table_detail['columns']

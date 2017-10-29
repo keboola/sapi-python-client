@@ -211,6 +211,50 @@ class TestTables(unittest.TestCase):
         result = self.tables.export(table_id=table_id)
         self.assertIsNotNone(result)
 
+    def test_table_export_file_plain(self):
+        file, path = tempfile.mkstemp(prefix='sapi-test')
+        with open(path, 'w') as csv_file:
+            writer = csv.DictWriter(csv_file, fieldnames=['col1', 'col2'],
+                                    lineterminator='\n', delimiter=',',
+                                    quotechar='"')
+            writer.writeheader()
+            writer.writerow({'col1': 'ping', 'col2': 'pong'})
+            writer.writerow({'col1': 'foo', 'col2': 'bar'})
+        os.close(file)
+        table_id = self.tables.create(name='some-table', file_path=path,
+                                      bucket_id='in.c-py-test')
+        temp_path = tempfile.TemporaryDirectory()
+        local_path = self.tables.export_to_file(table_id=table_id,
+                                                path_name=temp_path.name,
+                                                is_gzip=False)
+        with open(local_path, mode='rt') as file:
+            lines = file.readlines()
+        self.assertEqual(['"col1","col2"\n', '"foo","bar"\n',
+                          '"ping","pong"\n'],
+                         sorted(lines))
+
+    def test_table_export_file_gzip(self):
+        file, path = tempfile.mkstemp(prefix='sapi-test')
+        with open(path, 'w') as csv_file:
+            writer = csv.DictWriter(csv_file, fieldnames=['col1', 'col2'],
+                                    lineterminator='\n', delimiter=',',
+                                    quotechar='"')
+            writer.writeheader()
+            writer.writerow({'col1': 'ping', 'col2': 'pong'})
+            writer.writerow({'col1': 'foo', 'col2': 'bar'})
+        os.close(file)
+        table_id = self.tables.create(name='some-table', file_path=path,
+                                      bucket_id='in.c-py-test')
+        temp_path = tempfile.TemporaryDirectory()
+        local_path = self.tables.export_to_file(table_id=table_id,
+                                                path_name=temp_path.name,
+                                                is_gzip=True)
+        with open(local_path, mode='rt') as file:
+            lines = file.readlines()
+        self.assertEqual(['"col1","col2"\n', '"foo","bar"\n',
+                          '"ping","pong"\n'],
+                         sorted(lines))
+
     def test_table_export_sliced(self):
         file, path = tempfile.mkstemp(prefix='sapi-test')
         with open(path, 'w') as csv_file:
