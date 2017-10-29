@@ -87,7 +87,7 @@ class TestJobsEndpointWithMocks(unittest.TestCase):
         """
         Jobs mock blocking polls until completion.
         """
-        for _ in range(5):
+        for _ in range(2):
             responses.add(
                 responses.Response(
                     method='GET',
@@ -112,7 +112,7 @@ class TestJobsEndpointWithMocks(unittest.TestCase):
         """
         Jobs mock blocking polls until completion.
         """
-        for _ in range(5):
+        for _ in range(2):
             responses.add(
                 responses.Response(
                     method='GET',
@@ -137,7 +137,7 @@ class TestJobsEndpointWithMocks(unittest.TestCase):
         """
         Jobs mock blocking polls until completion.
         """
-        for _ in range(5):
+        for _ in range(2):
             responses.add(
                 responses.Response(
                     method='GET',
