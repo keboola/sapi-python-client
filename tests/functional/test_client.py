@@ -13,7 +13,7 @@ class TestClient(unittest.TestCase):
         self.client = Client(os.getenv('KBC_TEST_API_URL'),
                              os.getenv('KBC_TEST_TOKEN'))
         try:
-            self.client.buckets.delete('in.c-py-test', force=True)
+            self.client.buckets.delete('in.c-py-test-client', force=True)
         except exceptions.HTTPError as e:
             if e.response.status_code != 404:
                 raise
@@ -22,13 +22,13 @@ class TestClient(unittest.TestCase):
 
     def tearDown(self):
         try:
-            self.client.buckets.delete('in.c-py-test', force=True)
+            self.client.buckets.delete('in.c-py-test-client', force=True)
         except exceptions.HTTPError as e:
             if e.response.status_code != 404:
                 raise
 
     def test_client(self):
-        bucket_id = self.client.buckets.create(name='py-test',
+        bucket_id = self.client.buckets.create(name='py-test-client',
                                                stage='in',
                                                description='Test bucket')['id']
         file, path = tempfile.mkstemp(prefix='sapi-test')
@@ -43,12 +43,12 @@ class TestClient(unittest.TestCase):
             self.assertEqual(bucket_id,
                              self.client.buckets.detail(bucket_id)['id'])
         table_id = self.client.tables.create(name='some-table', file_path=path,
-                                             bucket_id='in.c-py-test')
+                                             bucket_id='in.c-py-test-client')
         table_info = self.client.tables.detail(table_id)
         with self.subTest():
             self.assertEqual(table_id, table_info['id'])
         with self.subTest():
-            self.assertEqual('in.c-py-test', table_info['bucket']['id'])
+            self.assertEqual('in.c-py-test-client', table_info['bucket']['id'])
         with self.subTest():
             self.assertTrue(len(self.client.jobs.list()) > 2)
         with self.subTest():
