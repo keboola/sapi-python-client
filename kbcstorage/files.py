@@ -47,7 +47,7 @@ class Files(Endpoint):
 
     def upload_file(self, file_path, tags=None, is_public=False,
                     is_permanent=False, is_encrypted=True,
-                    is_sliced=False, do_notify=False):
+                    is_sliced=False, do_notify=False, compress=False):
         """
         Upload a file to storage
 
@@ -68,6 +68,13 @@ class Files(Endpoint):
         """
         if not os.path.exists(file_path) or not os.path.isfile(file_path):
             raise ValueError("File " + file_path + " does not exist")
+        if compress:
+            import gzip
+            import shutil
+            with open(file_path, 'rb') as f_in, gzip.open(file_path + '.gz',
+                                                          'wb') as f_out:
+                shutil.copyfileobj(f_in, f_out)
+            file_path = file_path + '.gz'
         file_name = os.path.basename(file_path)
         size = os.path.getsize(file_path)
         file_resource = self.prepare_upload(file_name, size, tags, is_public,

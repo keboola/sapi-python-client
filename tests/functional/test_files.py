@@ -60,6 +60,16 @@ class TestFiles(unittest.TestCase):
         with self.subTest():
             self.assertFalse('credentials' in file_info)
 
+    def test_create_file_compress(self):
+        file, path = tempfile.mkstemp(prefix='sapi-test')
+        os.write(file, bytes('fooBar', 'utf-8'))
+        file_id = self.files.upload_file(path, tags=['py-test', 'file1'],
+                                         compress=True)
+        os.close(file)
+        file_info = self.files.detail(file_id)
+        with self.subTest():
+            self.assertEqual(file_id, file_info['id'])
+
     def test_delete_file(self):
         file, path = tempfile.mkstemp(prefix='sapi-test')
         os.write(file, bytes('fooBar', 'utf-8'))
