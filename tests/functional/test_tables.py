@@ -222,7 +222,7 @@ class TestTables(unittest.TestCase):
             writer.writerow({'col1': 'foo', 'col2': 'bar'})
         os.close(file)
         table_id = self.tables.create(name='some-table', file_path=path,
-                                      bucket_id='in.c-py-test')
+                                      bucket_id='in.c-py-test-tables')
         temp_path = tempfile.TemporaryDirectory()
         local_path = self.tables.export_to_file(table_id=table_id,
                                                 path_name=temp_path.name,
@@ -244,7 +244,7 @@ class TestTables(unittest.TestCase):
             writer.writerow({'col1': 'foo', 'col2': 'bar'})
         os.close(file)
         table_id = self.tables.create(name='some-table', file_path=path,
-                                      bucket_id='in.c-py-test')
+                                      bucket_id='in.c-py-test-tables')
         temp_path = tempfile.TemporaryDirectory()
         local_path = self.tables.export_to_file(table_id=table_id,
                                                 path_name=temp_path.name,
