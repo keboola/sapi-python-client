@@ -34,7 +34,7 @@ client.buckets.list()
 client.buckets.list_tables('in.c-demo')
 
 # get table info
-client.tables.detail('in.c-demo')
+client.tables.detail('in.c-demo.some-table')
 
 ```
 
@@ -59,7 +59,7 @@ buckets.list()
 buckets.list_tables('in.c-demo')
 
 # get table info
-tables.detail('in.c-demo')
+tables.detail('in.c-demo.some-table')
 
 ```
 
