@@ -148,7 +148,7 @@ class Tables(Endpoint):
             raise ValueError("Only one of enclosure and escaped_by may be "
                              "specified.")
         if primary_key is not None and isinstance(primary_key, list):
-            body['primaryKey[]'] = primary_key
+            body['primaryKey'] = ",".join(primary_key)
         # todo solve this better
         url = '{}/v2/storage/buckets/{}/tables-async'.format(self.root_url,
                                                              bucket_id)

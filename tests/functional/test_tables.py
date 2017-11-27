@@ -47,6 +47,27 @@ class TestTables(unittest.TestCase):
         with self.subTest():
             self.assertEqual('in.c-py-test-tables', table_info['bucket']['id'])
 
+    def test_create_table_primary_key(self):
+        file, path = tempfile.mkstemp(prefix='sapi-test')
+        with open(path, 'w') as csv_file:
+            writer = csv.DictWriter(csv_file, fieldnames=['col1', 'col2'],
+                                    lineterminator='\n', delimiter=',',
+                                    quotechar='"')
+            writer.writeheader()
+            writer.writerow({'col1': 'ping', 'col2': 'pong'})
+            writer.writerow({'col1': 'pong', 'col2': 'ping'})
+        os.close(file)
+        table_id = self.tables.create(name='some-table', file_path=path,
+                                      bucket_id='in.c-py-test-tables',
+                                      primary_key=['col1', 'col2'])
+        table_info = self.tables.detail(table_id)
+        with self.subTest():
+            self.assertEqual(table_id, table_info['id'])
+        with self.subTest():
+            self.assertEqual('in.c-py-test-tables', table_info['bucket']['id'])
+        with self.subTest():
+            self.assertEqual(['col1', 'col2'], table_info['primaryKey'])
+
     def test_table_detail(self):
         file, path = tempfile.mkstemp(prefix='sapi-test')
         with open(path, 'w') as csv_file:
