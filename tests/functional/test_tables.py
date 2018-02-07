@@ -90,8 +90,6 @@ class TestTables(unittest.TestCase):
         with self.subTest():
             self.assertEqual([], table_info['primaryKey'])
         with self.subTest():
-            self.assertEqual([], table_info['indexedColumns'])
-        with self.subTest():
             self.assertEqual(['col1', 'col2'], table_info['columns'])
         with self.subTest():
             self.assertTrue('created' in table_info)
