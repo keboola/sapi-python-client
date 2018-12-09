@@ -79,6 +79,7 @@ class TestFiles(unittest.TestCase):
         os.write(file, bytes('fooBar', 'utf-8'))
         file_id = self.files.upload_file(path, tags=['py-test', 'file1'])
         os.close(file)
+        time.sleep(1)
         with self.subTest():
             self.assertEqual(file_id, self.files.detail(file_id)['id'])
         self.files.delete(file_id)
