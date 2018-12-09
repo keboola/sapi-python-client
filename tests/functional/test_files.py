@@ -61,11 +61,13 @@ class TestFiles(unittest.TestCase):
             self.assertFalse('credentials' in file_info)
 
     def test_create_file_compress(self):
+        import time
         file, path = tempfile.mkstemp(prefix='sapi-test')
         os.write(file, bytes('fooBar', 'utf-8'))
         file_id = self.files.upload_file(path, tags=['py-test', 'file1'],
                                          compress=True)
         os.close(file)
+        time.sleep(1)
         file_info = self.files.detail(file_id)
         with self.subTest():
             self.assertEqual(file_id, file_info['id'])
@@ -85,10 +87,12 @@ class TestFiles(unittest.TestCase):
                 raise
 
     def test_download_file_credentials(self):
+        import time
         file, path = tempfile.mkstemp(prefix='sapi-test')
         os.write(file, bytes('fooBar', 'utf-8'))
         file_id = self.files.upload_file(path, tags=['py-test', 'file1'])
         os.close(file)
+        time.sleep(1)
         file_info = self.files.detail(file_id, federation_token=True)
         with self.subTest():
             self.assertEqual(file_id, file_info['id'])
