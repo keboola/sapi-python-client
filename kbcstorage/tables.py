@@ -208,7 +208,7 @@ class Tables(Endpoint):
              enclosure='"', escaped_by='', columns=None,
              without_headers=False):
         """
-        Create a new table from CSV file.
+        Load data into an existing table
 
         Args:
             table_id (str): Table id
