@@ -3,6 +3,7 @@ import os
 import unittest
 import tempfile
 import warnings
+import time
 from requests import exceptions
 
 from kbcstorage.buckets import Buckets
@@ -12,6 +13,8 @@ from kbcstorage.tables import Tables
 
 class TestFiles(unittest.TestCase):
     def setUp(self):
+
+        time.sleep(1) # timeout for files from previous tests to appear
         self.files = Files(os.getenv('KBC_TEST_API_URL'),
                            os.getenv('KBC_TEST_TOKEN'))
         files = self.files.list(tags=['py-test'])
@@ -61,7 +64,6 @@ class TestFiles(unittest.TestCase):
             self.assertFalse('credentials' in file_info)
 
     def test_create_file_compress(self):
-        import time
         file, path = tempfile.mkstemp(prefix='sapi-test')
         os.write(file, bytes('fooBar', 'utf-8'))
         file_id = self.files.upload_file(path, tags=['py-test', 'file1'],
@@ -87,7 +89,6 @@ class TestFiles(unittest.TestCase):
                 raise
 
     def test_download_file_credentials(self):
-        import time
         file, path = tempfile.mkstemp(prefix='sapi-test')
         os.write(file, bytes('fooBar', 'utf-8'))
         file_id = self.files.upload_file(path, tags=['py-test', 'file1'])
