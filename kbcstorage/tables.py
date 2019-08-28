@@ -144,7 +144,7 @@ class Tables(Endpoint):
         body.update(self.validate_data_source(data_url, data_file_id,
                                               snapshot_id, data_workspace_id,
                                               data_table_name))
-        if enclosure is not '' and escaped_by is not '':
+        if enclosure != '' and escaped_by != '':
             raise ValueError("Only one of enclosure and escaped_by may be "
                              "specified.")
         if primary_key is not None and isinstance(primary_key, list):
@@ -284,7 +284,7 @@ class Tables(Endpoint):
         body.update(self.validate_data_source(data_url, data_file_id,
                                               snapshot_id, data_workspace_id,
                                               data_table_name))
-        if enclosure is not '' and escaped_by is not '':
+        if enclosure != '' and escaped_by != '':
             raise ValueError("Only one of enclosure and escaped_by may be "
                              "specified.")
         if columns is not None and isinstance(columns, list):
