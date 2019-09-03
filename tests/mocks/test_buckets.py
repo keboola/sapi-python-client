@@ -6,9 +6,9 @@ from .bucket_responses import list_response, detail_response, create_response
 
 class TestBucketsWithMocks(unittest.TestCase):
     def setUp(self):
-            token = 'dummy_token'
-            base_url = 'https://connection.keboola.com/'
-            self.buckets = Buckets(base_url, token)
+        token = 'dummy_token'
+        base_url = 'https://connection.keboola.com/'
+        self.buckets = Buckets(base_url, token)
 
     @responses.activate
     def test_list(self):
