@@ -10,6 +10,9 @@ import os
 import boto3
 import requests
 
+from azure.storage.blob import BlobServiceClient, ContentSettings, ContainerClient, __version__
+
+
 from kbcstorage.base import Endpoint
 
 
@@ -80,27 +83,11 @@ class Files(Endpoint):
         file_resource = self.prepare_upload(file_name, size, tags, is_public,
                                             is_permanent, is_encrypted,
                                             is_sliced, do_notify, True)
-        upload_params = file_resource['uploadParams']
-        key_id = upload_params['credentials']['AccessKeyId']
-        key = upload_params['credentials']['SecretAccessKey']
-        token = upload_params['credentials']['SessionToken']
-        s3 = boto3.resource('s3', aws_access_key_id=key_id,
-                            aws_secret_access_key=key,
-                            aws_session_token=token,
-                            region_name=file_resource['region'])
+        if file_resource['provider'] == 'azure':
+            self.__upload_to_azure(file_resource, file_path)
+        elif file_resource['provider'] == 'aws':
+            self.__upload_to_aws(file_resource, file_path, is_encrypted)
 
-        s3_object = s3.Object(bucket_name=upload_params['bucket'],
-                              key=upload_params['key'])
-        disposition = 'attachment; filename={};'.format(file_resource['name'])
-        with open(file_path, mode='rb') as file:
-            if is_encrypted:
-                encryption = upload_params['x-amz-server-side-encryption']
-                s3_object.put(ACL=upload_params['acl'], Body=file,
-                              ContentDisposition=disposition,
-                              ServerSideEncryption=encryption)
-            else:
-                s3_object.put(ACL=upload_params['acl'], Body=file,
-                              ContentDisposition=disposition)
         return file_resource['id']
 
     def prepare_upload(self, name, size_bytes=None, tags=None, is_public=False,
@@ -222,3 +209,45 @@ class Files(Endpoint):
             bucket = s3.Bucket(file_info["s3Path"]["bucket"])
             bucket.download_file(file_info["s3Path"]["key"], local_file)
         return local_file
+
+    def __upload_to_aazure(self, preparation_result, file_path):
+
+        blob_service_client = BlobServiceClient.from_connection_string(
+            preparation_result['absUploadParams']['absCredentials']['SASConnectionString']
+        )
+        blob_client = blob_service_client.get_blob_client(
+            container=preparation_result['absUploadParams']['container'],
+            blob=file_path
+        )
+
+        container_client = blob_service_client.get_container_client(preparation_result['absUploadParams']['container'])
+
+        container_client.upload_blob(
+            preparation_result['absUploadParams']['blobName'],
+            open(file_path, 'rb'),
+            ContentSettings(content_disposition='attachment;filename="%s"' % (preparation_result['name']))
+        )
+
+    def __upload_to_aws(self, prepare_result, file_path, is_encrypted):
+        upload_params = prepare_result['uploadParams']
+        key_id = upload_params['credentials']['AccessKeyId']
+        key = upload_params['credentials']['SecretAccessKey']
+        token = upload_params['credentials']['SessionToken']
+        s3 = boto3.resource('s3', aws_access_key_id=key_id,
+                            aws_secret_access_key=key,
+                            aws_session_token=token,
+                            region_name=prepare_result['region'])
+
+        s3_object = s3.Object(bucket_name=upload_params['bucket'],
+                              key=upload_params['key'])
+        disposition = 'attachment; filename={};'.format(prepare_result['name'])
+        with open(file_path, mode='rb') as file:
+            if is_encrypted:
+                encryption = upload_params['x-amz-server-side-encryption']
+                s3_object.put(ACL=upload_params['acl'], Body=file,
+                              ContentDisposition=disposition,
+                              ServerSideEncryption=encryption)
+            else:
+                s3_object.put(ACL=upload_params['acl'], Body=file,
+                              ContentDisposition=disposition)
+        return
