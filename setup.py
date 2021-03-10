@@ -12,6 +12,7 @@ setup(
     packages=find_packages(exclude=['tests']),
     install_requires=[
         'boto3',
+        'azure-storage-blob',
         'requests'
     ],
     test_suite='tests',
