@@ -11,7 +11,7 @@ import os
 import boto3
 import requests
 
-from azure.storage.blob import BlobServiceClient, ContentSettings, ContainerClient, __version__
+from azure.storage.blob import BlobServiceClient, ContentSettings
 
 
 from kbcstorage.base import Endpoint
@@ -75,7 +75,8 @@ class Files(Endpoint):
         if compress:
             import gzip
             import shutil
-            with open(file_path, 'rb') as f_in, gzip.open(file_path + '.gz', 'wb') as f_out:
+            with open(file_path, 'rb') as f_in, \
+                    gzip.open(file_path + '.gz', 'wb') as f_out:
                 shutil.copyfileobj(f_in, f_out)
             file_path = file_path + '.gz'
         file_name = os.path.basename(file_path)
