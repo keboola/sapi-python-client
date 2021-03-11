@@ -6,6 +6,7 @@ Full documentation `here`.
 .. _here:
     http://docs.keboola.apiary.io/#reference/files/
 """
+import json
 import os
 import boto3
 import requests
@@ -181,18 +182,14 @@ class Files(Endpoint):
         local_file = os.path.join(local_path, file_info['name'])
         if file_info['provider'] == 'azure':
             if file_info['isSliced']:
-                self.__download_sliced_file_from_azure()
+                self.__download_sliced_file_from_azure(file_info, local_file)
             else:
-                self.__download_file_from_azure()
+                self.__download_file_from_azure(file_info, local_file)
         elif file_info['provider'] == 'aws':
             if file_info['isSliced']:
-                self.__download_sliced_file_from_aws()
+                self.__download_sliced_file_from_aws(file_info, local_file)
             else:
                 self.__download_file_from_aws(file_info, local_file)
-
-        if file_info['isSliced']:
-
-        else:
 
         return local_file
 
@@ -296,7 +293,7 @@ class Files(Endpoint):
         manifest_stream = container_client.download_blob(
             file_info['absPath']['name'] + 'manifest'
         )
-        manifest = manifest_stream.readall().json()
+        manifest = json.loads(manifest_stream.readall())
         file_names = [];
 
         for entry in manifest['entries']:
