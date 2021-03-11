@@ -210,23 +210,22 @@ class Files(Endpoint):
             bucket.download_file(file_info["s3Path"]["key"], local_file)
         return local_file
 
-    def __upload_to_aazure(self, preparation_result, file_path):
+    def __upload_to_azure(self, preparation_result, file_path):
 
         blob_service_client = BlobServiceClient.from_connection_string(
             preparation_result['absUploadParams']['absCredentials']['SASConnectionString']
         )
         blob_client = blob_service_client.get_blob_client(
             container=preparation_result['absUploadParams']['container'],
-            blob=file_path
+            blob=preparation_result['absUploadParams']['blobName']
         )
 
-        container_client = blob_service_client.get_container_client(preparation_result['absUploadParams']['container'])
-
-        container_client.upload_blob(
-            preparation_result['absUploadParams']['blobName'],
-            open(file_path, 'rb'),
-            ContentSettings(content_disposition='attachment;filename="%s"' % (preparation_result['name']))
-        )
+        with open(file_path, "rb") as blob_data:
+            blob_client.upload_blob(
+                blob_data,
+                blob_type='BlockBlob',
+                content_settings=ContentSettings(content_disposition='attachment;filename="%s"' % (preparation_result['name']))
+            )
 
     def __upload_to_aws(self, prepare_result, file_path, is_encrypted):
         upload_params = prepare_result['uploadParams']
