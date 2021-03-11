@@ -74,8 +74,7 @@ class Files(Endpoint):
         if compress:
             import gzip
             import shutil
-            with open(file_path, 'rb') as f_in, gzip.open(file_path + '.gz',
-                                                          'wb') as f_out:
+            with open(file_path, 'rb') as f_in, gzip.open(file_path + '.gz', 'wb') as f_out:
                 shutil.copyfileobj(f_in, f_out)
             file_path = file_path + '.gz'
         file_name = os.path.basename(file_path)
@@ -180,34 +179,21 @@ class Files(Endpoint):
             os.mkdir(local_path)
         file_info = self.detail(file_id=file_id, federation_token=True)
         local_file = os.path.join(local_path, file_info['name'])
-        s3 = boto3.resource(
-            's3',
-            aws_access_key_id=file_info['credentials']['AccessKeyId'],
-            aws_secret_access_key=file_info['credentials']['SecretAccessKey'],
-            aws_session_token=file_info['credentials']['SessionToken'],
-            region_name=file_info['region']
-        )
+        if file_info['provider'] == 'azure':
+            if file_info['isSliced']:
+                self.__download_sliced_file_from_azure()
+            else:
+                self.__download_file_from_azure()
+        elif file_info['provider'] == 'aws':
+            if file_info['isSliced']:
+                self.__download_sliced_file_from_aws()
+            else:
+                self.__download_file_from_aws(file_info, local_file)
+
         if file_info['isSliced']:
-            manifest = requests.get(url=file_info['url']).json()
-            file_names = []
-            for entry in manifest["entries"]:
-                full_path = entry["url"]
-                file_name = full_path.rsplit("/", 1)[1]
-                file_names.append(file_name)
-                splitted_path = full_path.split("/")
-                file_key = "/".join(splitted_path[3:])
-                bucket = s3.Bucket(file_info['s3Path']['bucket'])
-                bucket.download_file(file_key, file_name)
-            # merge the downloaded files
-            with open(local_file, mode='wb') as out_file:
-                for file_name in file_names:
-                    with open(file_name, mode='rb') as in_file:
-                        for line in in_file:
-                            out_file.write(line)
-                    os.remove(file_name)
+
         else:
-            bucket = s3.Bucket(file_info["s3Path"]["bucket"])
-            bucket.download_file(file_info["s3Path"]["key"], local_file)
+
         return local_file
 
     def __upload_to_azure(self, preparation_result, file_path):
@@ -250,3 +236,81 @@ class Files(Endpoint):
                 s3_object.put(ACL=upload_params['acl'], Body=file,
                               ContentDisposition=disposition)
         return
+
+    def __download_file_from_aws(self, file_info, destination):
+        s3 = boto3.resource(
+            's3',
+            aws_access_key_id=file_info['credentials']['AccessKeyId'],
+            aws_secret_access_key=file_info['credentials']['SecretAccessKey'],
+            aws_session_token=file_info['credentials']['SessionToken'],
+            region_name=file_info['region']
+        )
+        bucket = s3.Bucket(file_info["s3Path"]["bucket"])
+        bucket.download_file(file_info["s3Path"]["key"], destination)
+
+    def __download_sliced_file_from_aws(self, file_info, destination):
+        s3 = boto3.resource(
+            's3',
+            aws_access_key_id=file_info['credentials']['AccessKeyId'],
+            aws_secret_access_key=file_info['credentials']['SecretAccessKey'],
+            aws_session_token=file_info['credentials']['SessionToken'],
+            region_name=file_info['region']
+        )
+        manifest = requests.get(url=file_info['url']).json()
+        file_names = []
+        for entry in manifest["entries"]:
+            full_path = entry["url"]
+            file_name = full_path.rsplit("/", 1)[1]
+            file_names.append(file_name)
+            splitted_path = full_path.split("/")
+            file_key = "/".join(splitted_path[3:])
+            bucket = s3.Bucket(file_info['s3Path']['bucket'])
+            bucket.download_file(file_key, file_name)
+        # merge the downloaded files
+        with open(destination, mode='wb') as out_file:
+            for file_name in file_names:
+                with open(file_name, mode='rb') as in_file:
+                    for line in in_file:
+                        out_file.write(line)
+                os.remove(file_name)
+
+    def __download_file_from_azure(self, file_info, destination):
+        blob_service_client = BlobServiceClient.from_connection_string(
+            file_info['absCredentials']['SASConnectionString']
+        )
+        blob_client = blob_service_client.get_blob_client(
+            container=file_info['absPath']['container'],
+            blob=file_info['absPath']['name']
+        )
+        with open(destination, "wb") as downloaded_blob:
+            download_stream = blob_client.download_blob()
+            downloaded_blob.write(download_stream.readall())
+
+    def __download_sliced_file_from_azure(self, file_info, destination):
+        blob_service_client = BlobServiceClient.from_connection_string(
+            file_info['absCredentials']['SASConnectionString']
+        )
+        container_client = blob_service_client.get_container_client(
+            container=file_info['absPath']['container']
+        )
+        manifest_stream = container_client.download_blob(
+            file_info['absPath']['name'] + 'manifest'
+        )
+        manifest = manifest_stream.readall().json()
+        file_names = [];
+
+        for entry in manifest['entries']:
+            blob_path = entry['url'].split('blob.core.windows.net/%s/' % (file_info['absPath']['container']))[1]
+            full_path = entry["url"]
+            file_name = full_path.rsplit("/", 1)[1]
+            file_names.append(file_name)
+            with open(file_name, "wb") as file_slice:
+                file_slice.write(container_client.download_blob(blob_path).readall())
+
+        # merge the downloaded files into one
+        with open(destination, mode='wb') as out_file:
+            for file_name in file_names:
+                with open(file_name, mode='rb') as in_file:
+                    for line in in_file:
+                        out_file.write(line)
+                os.remove(file_name)
