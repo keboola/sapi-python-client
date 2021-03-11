@@ -208,7 +208,9 @@ class Files(Endpoint):
             blob_client.upload_blob(
                 blob_data,
                 blob_type='BlockBlob',
-                content_settings=ContentSettings(content_disposition='attachment;filename="%s"' % (preparation_result['name']))
+                content_settings=ContentSettings(
+                    content_disposition='attachment;filename="%s"' % (preparation_result['name'])
+                )
             )
 
     def __upload_to_aws(self, prepare_result, file_path, is_encrypted):
@@ -295,7 +297,7 @@ class Files(Endpoint):
             file_info['absPath']['name'] + 'manifest'
         )
         manifest = json.loads(manifest_stream.readall())
-        file_names = [];
+        file_names = []
 
         for entry in manifest['entries']:
             blob_path = entry['url'].split('blob.core.windows.net/%s/' % (file_info['absPath']['container']))[1]
