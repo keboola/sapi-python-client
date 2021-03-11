@@ -12,10 +12,7 @@ import boto3
 import requests
 
 from azure.storage.blob import BlobServiceClient, ContentSettings
-
-
 from kbcstorage.base import Endpoint
-
 
 class Files(Endpoint):
     """
@@ -187,11 +184,17 @@ class Files(Endpoint):
             else:
                 self.__download_file_from_azure(file_info, local_file)
         elif file_info['provider'] == 'aws':
+            s3 = boto3.resource(
+                's3',
+                aws_access_key_id=file_info['credentials']['AccessKeyId'],
+                aws_secret_access_key=file_info['credentials']['SecretAccessKey'],
+                aws_session_token=file_info['credentials']['SessionToken'],
+                region_name=file_info['region']
+            )
             if file_info['isSliced']:
-                self.__download_sliced_file_from_aws(file_info, local_file)
+                self.__download_sliced_file_from_aws(file_info, local_file, s3)
             else:
-                self.__download_file_from_aws(file_info, local_file)
-
+                self.__download_file_from_aws(file_info, local_file, s3)
         return local_file
 
     def __upload_to_azure(self, preparation_result, file_path):
@@ -203,7 +206,6 @@ class Files(Endpoint):
             container=preparation_result['absUploadParams']['container'],
             blob=preparation_result['absUploadParams']['blobName']
         )
-
         with open(file_path, "rb") as blob_data:
             blob_client.upload_blob(
                 blob_data,
@@ -235,27 +237,12 @@ class Files(Endpoint):
             else:
                 s3_object.put(ACL=upload_params['acl'], Body=file,
                               ContentDisposition=disposition)
-        return
 
-    def __download_file_from_aws(self, file_info, destination):
-        s3 = boto3.resource(
-            's3',
-            aws_access_key_id=file_info['credentials']['AccessKeyId'],
-            aws_secret_access_key=file_info['credentials']['SecretAccessKey'],
-            aws_session_token=file_info['credentials']['SessionToken'],
-            region_name=file_info['region']
-        )
+    def __download_file_from_aws(self, file_info, destination, s3):
         bucket = s3.Bucket(file_info["s3Path"]["bucket"])
         bucket.download_file(file_info["s3Path"]["key"], destination)
 
-    def __download_sliced_file_from_aws(self, file_info, destination):
-        s3 = boto3.resource(
-            's3',
-            aws_access_key_id=file_info['credentials']['AccessKeyId'],
-            aws_secret_access_key=file_info['credentials']['SecretAccessKey'],
-            aws_session_token=file_info['credentials']['SessionToken'],
-            region_name=file_info['region']
-        )
+    def __download_sliced_file_from_aws(self, file_info, destination, s3):
         manifest = requests.get(url=file_info['url']).json()
         file_names = []
         for entry in manifest["entries"]:
@@ -266,13 +253,7 @@ class Files(Endpoint):
             file_key = "/".join(splitted_path[3:])
             bucket = s3.Bucket(file_info['s3Path']['bucket'])
             bucket.download_file(file_key, file_name)
-        # merge the downloaded files
-        with open(destination, mode='wb') as out_file:
-            for file_name in file_names:
-                with open(file_name, mode='rb') as in_file:
-                    for line in in_file:
-                        out_file.write(line)
-                os.remove(file_name)
+        self.__merge_split_files(file_names, destination)
 
     def __download_file_from_azure(self, file_info, destination):
         blob_service_client = BlobServiceClient.from_connection_string(
@@ -306,8 +287,9 @@ class Files(Endpoint):
             file_names.append(file_name)
             with open(file_name, "wb") as file_slice:
                 file_slice.write(container_client.download_blob(blob_path).readall())
+        self.__merge_split_files(file_names, destination)
 
-        # merge the downloaded files into one
+    def __merge_split_files(self, file_names, destination):
         with open(destination, mode='wb') as out_file:
             for file_name in file_names:
                 with open(file_name, mode='rb') as in_file:
