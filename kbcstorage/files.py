@@ -14,6 +14,7 @@ import requests
 from azure.storage.blob import BlobServiceClient, ContentSettings
 from kbcstorage.base import Endpoint
 
+
 class Files(Endpoint):
     """
     Buckets Endpoint
