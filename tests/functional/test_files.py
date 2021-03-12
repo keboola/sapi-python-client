@@ -101,6 +101,8 @@ class TestFiles(unittest.TestCase):
         file_info = self.files.detail(file_id, federation_token=True)
         with self.subTest():
             self.assertEqual(file_id, file_info['id'])
+        with self.subTest():
+            self.assertTrue(file_info['provider'] in ['aws', 'azure'])
         if file_info['provider'] == 'aws':
             with self.subTest():
                 self.assertTrue('credentials' in file_info)
