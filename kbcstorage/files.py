@@ -198,13 +198,10 @@ class Files(Endpoint):
         return local_file
 
     def __upload_to_azure(self, preparation_result, file_path):
-
-        blob_service_client = BlobServiceClient.from_connection_string(
-            preparation_result['absUploadParams']['absCredentials']['SASConnectionString']
-        )
-        blob_client = blob_service_client.get_blob_client(
-            container=preparation_result['absUploadParams']['container'],
-            blob=preparation_result['absUploadParams']['blobName']
+        blob_client = self.__get_blob_client(
+            preparation_result['absUploadParams']['absCredentials']['SASConnectionString'],
+            preparation_result['absUploadParams']['container'],
+            preparation_result['absUploadParams']['blobName']
         )
         with open(file_path, "rb") as blob_data:
             blob_client.upload_blob(
@@ -224,16 +221,13 @@ class Files(Endpoint):
                             aws_secret_access_key=key,
                             aws_session_token=token,
                             region_name=prepare_result['region'])
-
-        s3_object = s3.Object(bucket_name=upload_params['bucket'],
-                              key=upload_params['key'])
+        s3_object = s3.Object(bucket_name=upload_params['bucket'], key=upload_params['key'])
         disposition = 'attachment; filename={};'.format(prepare_result['name'])
         with open(file_path, mode='rb') as file:
             if is_encrypted:
                 encryption = upload_params['x-amz-server-side-encryption']
                 s3_object.put(ACL=upload_params['acl'], Body=file,
-                              ContentDisposition=disposition,
-                              ServerSideEncryption=encryption)
+                              ContentDisposition=disposition, ServerSideEncryption=encryption)
             else:
                 s3_object.put(ACL=upload_params['acl'], Body=file,
                               ContentDisposition=disposition)
@@ -256,12 +250,10 @@ class Files(Endpoint):
         self.__merge_split_files(file_names, destination)
 
     def __download_file_from_azure(self, file_info, destination):
-        blob_service_client = BlobServiceClient.from_connection_string(
-            file_info['absCredentials']['SASConnectionString']
-        )
-        blob_client = blob_service_client.get_blob_client(
-            container=file_info['absPath']['container'],
-            blob=file_info['absPath']['name']
+        blob_client = self.__get_blob_client(
+            file_info['absCredentials']['SASConnectionString'],
+            file_info['absPath']['container'],
+            file_info['absPath']['name']
         )
         with open(destination, "wb") as downloaded_blob:
             download_stream = blob_client.download_blob()
@@ -279,7 +271,6 @@ class Files(Endpoint):
         )
         manifest = json.loads(manifest_stream.readall())
         file_names = []
-
         for entry in manifest['entries']:
             blob_path = entry['url'].split('blob.core.windows.net/%s/' % (file_info['absPath']['container']))[1]
             full_path = entry["url"]
@@ -296,3 +287,7 @@ class Files(Endpoint):
                     for line in in_file:
                         out_file.write(line)
                 os.remove(file_name)
+
+    def __get_blob_client(self, connection_string, container, blob_name):
+        blob_service_client = BlobServiceClient.from_connection_string(connection_string)
+        return blob_service_client.get_blob_client(container=container, blob=blob_name)
