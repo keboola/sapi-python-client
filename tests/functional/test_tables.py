@@ -84,9 +84,7 @@ class TestTables(unittest.TestCase):
         with self.subTest():
             self.assertEqual('some-table', table_info['name'])
         with self.subTest():
-            self.assertEqual('https://connection.keboola.com/v2/storage/'
-                             'tables/in.c-py-test-tables.some-table',
-                             table_info['uri'])
+            self.assertTrue('in.c-py-test-tables.some-table' in table_info['uri'])
         with self.subTest():
             self.assertEqual([], table_info['primaryKey'])
         with self.subTest():

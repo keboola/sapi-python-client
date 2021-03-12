@@ -102,13 +102,29 @@ class TestFiles(unittest.TestCase):
         with self.subTest():
             self.assertEqual(file_id, file_info['id'])
         with self.subTest():
-            self.assertTrue('credentials' in file_info)
-        with self.subTest():
-            self.assertTrue('AccessKeyId' in file_info['credentials'])
-        with self.subTest():
-            self.assertTrue('SecretAccessKey' in file_info['credentials'])
-        with self.subTest():
-            self.assertTrue('SessionToken' in file_info['credentials'])
+            self.assertTrue(file_info['provider'] in ['aws', 'azure'])
+        if file_info['provider'] == 'aws':
+            with self.subTest():
+                self.assertTrue('credentials' in file_info)
+            with self.subTest():
+                self.assertTrue('AccessKeyId' in file_info['credentials'])
+            with self.subTest():
+                self.assertTrue('SecretAccessKey' in file_info['credentials'])
+            with self.subTest():
+                self.assertTrue('SessionToken' in file_info['credentials'])
+        elif file_info['provider'] == 'azure':
+            with self.subTest():
+                self.assertTrue('absCredentials' in file_info)
+            with self.subTest():
+                self.assertTrue('SASConnectionString' in file_info['absCredentials'])
+            with self.subTest():
+                self.assertTrue('expiration' in file_info['absCredentials'])
+            with self.subTest():
+                self.assertTrue('absPath' in file_info)
+            with self.subTest():
+                self.assertTrue('container' in file_info['absPath'])
+            with self.subTest():
+                self.assertTrue('name' in file_info['absPath'])
 
     def test_download_file(self):
         file, path = tempfile.mkstemp(prefix='sapi-test')
