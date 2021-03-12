@@ -76,7 +76,7 @@ class Workspaces(Endpoint):
 
         Args:
             backend (:obj:`str`): The type of engine for the workspace.
-                'redshift' or 'snowflake'. Default redshift.
+                'redshift', 'snowflake' or 'synapse'. Defaults to the project's default backend.
             timeout (int): The timeout, in seconds, for SQL statements.
                 Only supported by snowflake backends.
 
