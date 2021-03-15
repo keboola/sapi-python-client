@@ -8,17 +8,27 @@ import warnings
 
 from azure.storage.blob import BlobServiceClient
 from requests import exceptions
-from kbcstorage.workspaces import Workspaces
 from kbcstorage.buckets import Buckets
-from kbcstorage.tables import Tables
 from kbcstorage.jobs import Jobs
+from kbcstorage.files import Files
+from kbcstorage.tables import Tables
+from kbcstorage.workspaces import Workspaces
 
 
 class TestWorkspaces(unittest.TestCase):
     def setUp(self):
         self.workspaces = Workspaces(os.getenv('KBC_TEST_API_URL'), os.getenv('KBC_TEST_TOKEN'))
         self.buckets = Buckets(os.getenv('KBC_TEST_API_URL'), os.getenv('KBC_TEST_TOKEN'))
+        self.jobs = Jobs(os.getenv('KBC_TEST_API_URL'), os.getenv('KBC_TEST_TOKEN'))
         self.tables = Tables(os.getenv('KBC_TEST_API_URL'), os.getenv('KBC_TEST_TOKEN'))
+        self.files = Files(os.getenv('KBC_TEST_API_URL'), os.getenv('KBC_TEST_TOKEN'))
+        try:
+            file_list = self.files.list(tags=['sapi-client-pythen-tests'])
+            for file in file_list:
+                self.files.delete(file['id'])
+        except exceptions.HTTPError as e:
+            if e.response.status_code != 404:
+                raise
         try:
             self.buckets.delete('in.c-py-test-buckets', force=True)
         except exceptions.HTTPError as e:
@@ -64,7 +74,7 @@ class TestWorkspaces(unittest.TestCase):
             self.assertTrue('creatorToken' in workspace)
 
     def test_load_tables_to_workspace(self):
-        bucket_id = self.buckets.create('py-test-tables')
+        bucket_id = self.buckets.create('py-test-tables')['id']
         table1_id = self.__create_table(bucket_id, 'test-table-1', {'col1': 'ping', 'col2': 'pong'})
         table2_id = self.__create_table(bucket_id, 'test-table-2', {'col1': 'king', 'col2': 'kong'})
         workspace = self.workspaces.create()
@@ -73,30 +83,37 @@ class TestWorkspaces(unittest.TestCase):
             workspace['id'],
             {table1_id: 'destination_1', table2_id: 'destination_2'}
         )
-        Jobs.block_until_completed(job['id'])
+        self.jobs.block_until_completed(job['id'])
         conn = self.__get_snowflake_conenction(workspace['connection'])
         cursor = conn.cursor()
         cursor.execute('SELECT * FROM "destination_1"')
-        self.assertEquals(('ping', 'pong'), cursor.fetchone())
+        self.assertEqual(('ping', 'pong'), cursor.fetchone())
         cursor.execute('SELECT * FROM "destination_2"')
-        self.assertEquals(('king', 'kong'), cursor.fetchone())
+        self.assertEqual(('king', 'kong'), cursor.fetchone())
 
     # test load files into an abs workspace
     def test_load_files_from_workspace(self):
+        # put a test file to storage
+        file, path = tempfile.mkstemp(prefix='sapi-test')
+        os.write(file, bytes('fooBar', 'utf-8'))
+        file_id = self.files.upload_file(path, tags=['sapi-client-pythen-tests', 'file1'])
+
+        # create a workspace and load the file to it
         workspace = self.workspaces.create('abs')
         self.workspace_id = workspace['id']
         job = self.workspaces.load_files(
-            workspace['id'],
-            {{'tags': ['sapi-client-pythen-tests']}}
+            workspace,
+            {'tags': ['sapi-client-pythen-tests'], 'destination': 'data/in/files'}
         )
-        Jobs.block_until_completed(job['id'])
+        self.jobs.block_until_completed(job['id'])
+
+        # assert that the file was loaded to the workspace
         blob_service_client = BlobServiceClient.from_connection_string(workspace['connection']['connectionString'])
-        container_client = blob_service_client.get_container_client(
-            container=workspace['connection']['container']
+        blob_client = blob_service_client.get_blob_client(
+            container=workspace['connection']['container'],
+            blob='data/in/files/%s' % str(file_id)
         )
-        blob_list = container_client.list_blobs()
-        for blob in blob_list:
-            print(blob)
+        self.assertEqual('fooBar', blob_client.download_blob().readall().decode('utf-8'))
 
     def __create_table(self, bucket_id, table_name, row):
         file, path = tempfile.mkstemp(prefix='sapi-test')
