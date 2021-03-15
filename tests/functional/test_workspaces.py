@@ -22,7 +22,7 @@ class TestWorkspaces(unittest.TestCase):
         self.tables = Tables(os.getenv('KBC_TEST_API_URL'), os.getenv('KBC_TEST_TOKEN'))
         self.files = Files(os.getenv('KBC_TEST_API_URL'), os.getenv('KBC_TEST_TOKEN'))
         try:
-            file_list = self.files.list(tags=['sapi-client-pythen-tests'])
+            file_list = self.files.list(tags=['sapi-client-python-tests'])
             for file in file_list:
                 self.files.delete(file['id'])
         except exceptions.HTTPError as e:
@@ -83,12 +83,14 @@ class TestWorkspaces(unittest.TestCase):
             {table1_id: 'destination_1', table2_id: 'destination_2'}
         )
         self.jobs.block_until_completed(job['id'])
+
         conn = self.__get_snowflake_conenction(workspace['connection'])
         cursor = conn.cursor()
         cursor.execute('SELECT * FROM "destination_1"')
         self.assertEqual(('ping', 'pong'), cursor.fetchone())
         cursor.execute('SELECT * FROM "destination_2"')
         self.assertEqual(('king', 'kong'), cursor.fetchone())
+        conn.close()
 
     # test load files into an abs workspace
     def test_load_files_from_workspace(self):
@@ -97,14 +99,15 @@ class TestWorkspaces(unittest.TestCase):
         # put a test file to storage
         file, path = tempfile.mkstemp(prefix='sapi-test')
         os.write(file, bytes('fooBar', 'utf-8'))
-        file_id = self.files.upload_file(path, tags=['sapi-client-pythen-tests', 'file1'])
+        os.close(file)
+        file_id = self.files.upload_file(path, tags=['sapi-client-python-tests', 'file1'])
 
         # create a workspace and load the file to it
         workspace = self.workspaces.create('abs')
         self.workspace_id = workspace['id']
         job = self.workspaces.load_files(
             workspace,
-            {'tags': ['sapi-client-pythen-tests'], 'destination': 'data/in/files'}
+            {'tags': ['sapi-client-python-tests'], 'destination': 'data/in/files'}
         )
         self.jobs.block_until_completed(job['id'])
 
@@ -122,7 +125,7 @@ class TestWorkspaces(unittest.TestCase):
         try:
             self.workspaces.load_files(
                 workspace,
-                {'tags': ['sapi-client-pythen-tests'], 'destination': 'data/in/files'}
+                {'tags': ['sapi-client-python-tests'], 'destination': 'data/in/files'}
             )
             self.assertFail()
         except Exception as exception:
