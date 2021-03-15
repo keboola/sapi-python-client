@@ -39,7 +39,7 @@ class TestWorkspaces(unittest.TestCase):
 
     def tearDown(self):
         try:
-            if self.workspace_id:
+            if hasattr(self, 'workspace_id'):
                 self.workspaces.delete(self.workspace_id)
         except exceptions.HTTPError as e:
             if e.response.status_code != 404:
