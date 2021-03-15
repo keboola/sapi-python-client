@@ -2,7 +2,6 @@ import csv
 import os
 import snowflake.connector
 import tempfile
-import time
 import unittest
 import warnings
 
@@ -121,7 +120,7 @@ class TestWorkspaces(unittest.TestCase):
         workspace = self.workspaces.create()
         self.workspace_id = workspace['id']
         try:
-            job = self.workspaces.load_files(
+            self.workspaces.load_files(
                 workspace,
                 {'tags': ['sapi-client-pythen-tests'], 'destination': 'data/in/files'}
             )
