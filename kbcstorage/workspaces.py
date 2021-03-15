@@ -7,6 +7,7 @@ Full documentation `here`.
     http://docs.keboola.apiary.io/#reference/workspaces/
 """
 from kbcstorage.base import Endpoint
+from kbcstorage.files import Files
 
 
 def _make_body(mapping):
@@ -142,4 +143,27 @@ class Workspaces(Endpoint):
         body['preserve'] = preserve
         url = '{}/{}/load'.format(self.base_url, workspace_id)
 
+        return self._post(url, data=body)
+
+    # only supports abs workspace
+    # the workspace must be the object returned by the create method otherwise it won't have the connectionString
+    def load_files(self, workspace, file_mapping, preserve=None):
+        if (workspace['type'] != 'file' and workspace['connection']['backend'] != 'abs'):
+            raise Exception('Loading files to workspace is only available for ABS workspaces')
+        files = Files(self.root_url, self.token)
+        file_list = files.list(tags=file_mapping['tags'])
+        inputs = []
+        for file in file_list:
+            inputs.append({
+                'dataFileId': file['id'],
+                'destination': file_mapping['destination']
+            })
+        body = {}
+        i = 0
+        for input in inputs:
+            body['input[%s][dataFileId]' % (i)] = input['dataFileId']
+            body['input[%s][destination]' % (i)] = input['destination']
+            i += 1
+        body['preserve'] = preserve
+        url = '{}/{}/load'.format(self.base_url, workspace['id'])
         return self._post(url, data=body)
