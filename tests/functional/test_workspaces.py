@@ -93,6 +93,8 @@ class TestWorkspaces(unittest.TestCase):
 
     # test load files into an abs workspace
     def test_load_files_from_workspace(self):
+        if (os.environ['SKIP_ABS_TESTS']):
+            self.skipTest('Skipping ABS test because env var SKIP_ABS_TESTS was set')
         # put a test file to storage
         file, path = tempfile.mkstemp(prefix='sapi-test')
         os.write(file, bytes('fooBar', 'utf-8'))
