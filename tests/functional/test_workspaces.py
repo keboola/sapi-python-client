@@ -1,7 +1,6 @@
 import csv
 import os
 import tempfile
-import time
 import unittest
 import warnings
 
@@ -142,4 +141,3 @@ class TestWorkspaces(unittest.TestCase):
             writer.writeheader()
             writer.writerow(row)
         return self.tables.create(name=table_name, file_path=path, bucket_id=bucket_id)
-
