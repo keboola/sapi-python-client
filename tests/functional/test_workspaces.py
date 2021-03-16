@@ -1,6 +1,5 @@
 import csv
 import os
-import snowflake.connector
 import tempfile
 import time
 import unittest
@@ -144,12 +143,3 @@ class TestWorkspaces(unittest.TestCase):
             writer.writerow(row)
         return self.tables.create(name=table_name, file_path=path, bucket_id=bucket_id)
 
-    def __get_snowflake_conenction(self, connection_properties):
-        return snowflake.connector.connect(
-            user=connection_properties['user'],
-            password=connection_properties['password'],
-            account=connection_properties['host'].split('.snowflakecomputing')[0],
-            warehouse=connection_properties['warehouse'],
-            database=connection_properties['database'],
-            schema=connection_properties['schema']
-        )
