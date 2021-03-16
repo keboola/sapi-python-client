@@ -2,6 +2,7 @@ import csv
 import os
 import snowflake.connector
 import tempfile
+import time
 import unittest
 import warnings
 
@@ -106,7 +107,7 @@ class TestWorkspaces(unittest.TestCase):
         workspace = self.workspaces.create('abs')
         self.workspace_id = workspace['id']
         job = self.workspaces.load_files(
-            workspace,
+            workspace['id'],
             {'tags': ['sapi-client-python-tests'], 'destination': 'data/in/files'}
         )
         self.jobs.block_until_completed(job['id'])

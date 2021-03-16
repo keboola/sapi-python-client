@@ -146,8 +146,8 @@ class Workspaces(Endpoint):
         return self._post(url, data=body)
 
     # only supports abs workspace
-    # the workspace must be the object returned by the create method otherwise it won't have the connectionString
-    def load_files(self, workspace, file_mapping, preserve=None):
+    def load_files(self, workspace_id, file_mapping, preserve=None):
+        workspace = self.detail(workspace_id)
         if (workspace['type'] != 'file' and workspace['connection']['backend'] != 'abs'):
             raise Exception('Loading files to workspace is only available for ABS workspaces')
         files = Files(self.root_url, self.token)
