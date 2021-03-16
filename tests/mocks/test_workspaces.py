@@ -217,3 +217,22 @@ class TestWorkspacesEndpointWithMocks(unittest.TestCase):
         with self.assertRaises(HTTPError) as error_context:
             self.ws.reset_password(workspace_id)
         assert error_context.exception.args[0] == msg
+
+    @responses.activate
+    def test_load_files_to_invalid_workspace(self):
+        """
+        Raises exception when mock loading_files to invalid workspace
+        """
+        msg = ('Loading files to workspace is only available for ABS workspaces')
+        responses.add(
+            responses.Response(
+                method='GET',
+                url='https://connection.keboola.com/v2/storage/workspaces/1',
+                json=detail_response
+            )
+        )
+        workspace_id = '1'
+        try:
+            self.ws.load_files(workspace_id, {'tags': ['sapi-client-python-tests'], 'destination': 'data/in/files'})
+        except Exception as ex:
+            assert str(ex) == msg

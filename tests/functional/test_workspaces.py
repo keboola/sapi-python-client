@@ -121,18 +121,6 @@ class TestWorkspaces(unittest.TestCase):
         )
         self.assertEqual('fooBar', blob_client.download_blob().readall().decode('utf-8'))
 
-    def test_load_files_invalid_workspace(self):
-        workspace = self.workspaces.create()
-        self.workspace_id = workspace['id']
-        try:
-            self.workspaces.load_files(
-                workspace['id'],
-                {'tags': ['sapi-client-python-tests'], 'destination': 'data/in/files'}
-            )
-            self.fail('Should throw invalid workspace error')
-        except Exception as exception:
-            self.assertEqual('Loading files to workspace is only available for ABS workspaces', str(exception))
-
     def __create_table(self, bucket_id, table_name, row):
         file, path = tempfile.mkstemp(prefix='sapi-test')
         with open(path, 'w') as csv_file:
