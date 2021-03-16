@@ -85,16 +85,19 @@ class TestWorkspaces(unittest.TestCase):
         )
         self.jobs.block_until_completed(job['id'])
 
-        conn = self.__get_snowflake_conenction(workspace['connection'])
-        cursor = conn.cursor()
-        cursor.execute('SELECT * FROM "destination_1"')
-        self.assertEqual(('ping', 'pong'), cursor.fetchone())
-        cursor.execute('SELECT * FROM "destination_2"')
-        self.assertEqual(('king', 'kong'), cursor.fetchone())
-        conn.close()
+        job = self.tables.create_raw(
+            bucket_id,
+            'back-and-forth-table',
+            data_workspace_id=workspace['id'],
+            data_table_name='destination_1'
+        )
+        self.jobs.block_until_completed(job['id'])
+
+        new_table = self.tables.detail(bucket_id + '.back-and-forth-table')
+        self.assertEqual('back-and-forth-table', new_table['name'])
 
     # test load files into an abs workspace
-    def test_load_files_from_workspace(self):
+    def test_load_files_to_workspace(self):
         if (os.getenv('SKIP_ABS_TEST')):
             self.skipTest('Skipping ABS test because env var SKIP_ABS_TESTS was set')
         # put a test file to storage
@@ -128,7 +131,7 @@ class TestWorkspaces(unittest.TestCase):
                 workspace['id'],
                 {'tags': ['sapi-client-python-tests'], 'destination': 'data/in/files'}
             )
-            self.assertFail()
+            self.fail('Should throw invalid workspace error')
         except Exception as exception:
             self.assertEqual('Loading files to workspace is only available for ABS workspaces', str(exception))
 
