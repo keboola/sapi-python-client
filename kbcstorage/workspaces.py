@@ -10,7 +10,7 @@ from kbcstorage.base import Endpoint
 from kbcstorage.files import Files
 
 
-def _make_body(mapping):
+def _make_body(mapping, source_key='source'):
     """
     Given a dict mapping Keboola tables to aliases, construct the body of
     the HTTP request to load said tables.
@@ -23,7 +23,7 @@ def _make_body(mapping):
     body = {}
     template = 'input[{0}][{1}]'
     for i, (k, v) in enumerate(mapping.items()):
-        body[template.format(i, 'source')] = k
+        body[template.format(i, source_key)] = k
         body[template.format(i, 'destination')] = v
 
     return body
@@ -152,18 +152,10 @@ class Workspaces(Endpoint):
             raise Exception('Loading files to workspace is only available for ABS workspaces')
         files = Files(self.root_url, self.token)
         file_list = files.list(tags=file_mapping['tags'])
-        inputs = []
+        inputs = {}
         for file in file_list:
-            inputs.append({
-                'dataFileId': file['id'],
-                'destination': file_mapping['destination']
-            })
-        body = {}
-        i = 0
-        for input in inputs:
-            body['input[%s][dataFileId]' % (i)] = input['dataFileId']
-            body['input[%s][destination]' % (i)] = input['destination']
-            i += 1
+            inputs[file['id']] = file_mapping['destination']
+        body = _make_body(inputs, source_key='dataFileId')
         body['preserve'] = preserve
         url = '{}/{}/load'.format(self.base_url, workspace['id'])
         return self._post(url, data=body)

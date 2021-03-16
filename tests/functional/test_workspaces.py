@@ -125,7 +125,7 @@ class TestWorkspaces(unittest.TestCase):
         self.workspace_id = workspace['id']
         try:
             self.workspaces.load_files(
-                workspace,
+                workspace['id'],
                 {'tags': ['sapi-client-python-tests'], 'destination': 'data/in/files'}
             )
             self.assertFail()
