@@ -147,6 +147,18 @@ class Workspaces(Endpoint):
 
     # only supports abs workspace
     def load_files(self, workspace_id, file_mapping, preserve=None):
+        """
+        Load tabes from storage into a workspace.
+
+        Args:
+            workspace_id (int or str): The id of the workspace to which to load
+                the tables.
+            file_mapping (:obj:`dict`): contains tags: [], destination: string
+            preserve (bool): If False, drop files, else keep files in workspace.
+
+        Raises:
+            requests.HTTPError: If the API request fails.
+        """
         workspace = self.detail(workspace_id)
         if (workspace['type'] != 'file' and workspace['connection']['backend'] != 'abs'):
             raise Exception('Loading files to workspace is only available for ABS workspaces')
