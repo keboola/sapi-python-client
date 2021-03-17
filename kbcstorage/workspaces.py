@@ -7,9 +7,10 @@ Full documentation `here`.
     http://docs.keboola.apiary.io/#reference/workspaces/
 """
 from kbcstorage.base import Endpoint
+from kbcstorage.files import Files
 
 
-def _make_body(mapping):
+def _make_body(mapping, source_key='source'):
     """
     Given a dict mapping Keboola tables to aliases, construct the body of
     the HTTP request to load said tables.
@@ -22,7 +23,7 @@ def _make_body(mapping):
     body = {}
     template = 'input[{0}][{1}]'
     for i, (k, v) in enumerate(mapping.items()):
-        body[template.format(i, 'source')] = k
+        body[template.format(i, source_key)] = k
         body[template.format(i, 'destination')] = v
 
     return body
@@ -76,7 +77,7 @@ class Workspaces(Endpoint):
 
         Args:
             backend (:obj:`str`): The type of engine for the workspace.
-                'redshift' or 'snowflake'. Default redshift.
+                'redshift', 'snowflake' or 'synapse'. Defaults to the project's default backend.
             timeout (int): The timeout, in seconds, for SQL statements.
                 Only supported by snowflake backends.
 
@@ -142,4 +143,31 @@ class Workspaces(Endpoint):
         body['preserve'] = preserve
         url = '{}/{}/load'.format(self.base_url, workspace_id)
 
+        return self._post(url, data=body)
+
+    def load_files(self, workspace_id, file_mapping, preserve=None):
+        """
+        Load tabes from storage into a workspace.
+        * only supports abs workspace
+
+        Args:
+            workspace_id (int or str): The id of the workspace to which to load
+                the tables.
+            file_mapping (:obj:`dict`): contains tags: [], destination: string
+            preserve (bool): If False, drop files, else keep files in workspace.
+
+        Raises:
+            requests.HTTPError: If the API request fails.
+        """
+        workspace = self.detail(workspace_id)
+        if (workspace['type'] != 'file' and workspace['connection']['backend'] != 'abs'):
+            raise Exception('Loading files to workspace is only available for ABS workspaces')
+        files = Files(self.root_url, self.token)
+        file_list = files.list(tags=file_mapping['tags'])
+        inputs = {}
+        for file in file_list:
+            inputs[file['id']] = file_mapping['destination']
+        body = _make_body(inputs, source_key='dataFileId')
+        body['preserve'] = preserve
+        url = '{}/{}/load'.format(self.base_url, workspace['id'])
         return self._post(url, data=body)

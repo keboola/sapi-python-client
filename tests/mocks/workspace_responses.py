@@ -27,6 +27,7 @@ list_response = [
 detail_response = {
     "id": 1,
     "name": "boring_wozniak",
+    "type": "table",
     "component": "wr-db",
     "configurationId": "aws-1",
     "created": "2016-05-17T11:11:20+0200",
@@ -51,6 +52,7 @@ detail_response = {
 create_response = {
     "id": 234,
     "name": "boring_wozniak",
+    "type": "table",
     "component": "wr-db",
     "configurationId": "aws-1",
     "created": "2016-05-17T11:11:20+0200",

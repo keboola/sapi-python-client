@@ -7,7 +7,7 @@ before_script:
 - docker-compose build sapi-python-client
 script:
 - docker-compose run --rm --entrypoint=flake8 sapi-python-client
-- docker-compose run --rm -e KBC_TEST_TOKEN -e KBC_TEST_API_URL sapi-python-client -m unittest discover
+- docker-compose run --rm -e KBC_TEST_TOKEN -e KBC_TEST_API_URL -e SKIP_ABS_TEST=1 sapi-python-client -m unittest discover
 - docker-compose run --rm -e KBC_TEST_TOKEN=$KBC_AZ_TEST_TOKEN -e KBC_TEST_API_URL=$KBC_AZ_TEST_API_URL sapi-python-client -m unittest discover
 after_success:
 - docker images
