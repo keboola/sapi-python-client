@@ -145,10 +145,10 @@ class Workspaces(Endpoint):
 
         return self._post(url, data=body)
 
-    # only supports abs workspace
     def load_files(self, workspace_id, file_mapping, preserve=None):
         """
         Load tabes from storage into a workspace.
+        * only supports abs workspace
 
         Args:
             workspace_id (int or str): The id of the workspace to which to load
