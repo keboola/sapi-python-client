@@ -169,9 +169,8 @@ class Workspaces(Endpoint):
             inputs = {
                 file['id']: "%s/%s" % (file_mapping['destination'], file['name'])
             }
-            print(inputs)
             body = _make_body(inputs, source_key='dataFileId')
-            body['preserve'] = True # always preserve the workspace, otherwise it would be silly
+            body['preserve'] = 1 # always preserve the workspace, otherwise it would be silly
             url = '{}/{}/load'.format(self.base_url, workspace['id'])
             job = self._post(url, data=body)
             jobs.block_until_completed(job['id'])
