@@ -8,7 +8,7 @@ Full documentation `here`.
 """
 from kbcstorage.base import Endpoint
 from kbcstorage.files import Files
-
+from kbcstorage.jobs import Jobs
 
 def _make_body(mapping, source_key='source'):
     """
@@ -145,7 +145,7 @@ class Workspaces(Endpoint):
 
         return self._post(url, data=body)
 
-    def load_files(self, workspace_id, file_mapping, preserve=None):
+    def load_files(self, workspace_id, file_mapping):
         """
         Load files from file storage into a workspace.
         * only supports abs workspace
@@ -155,7 +155,6 @@ class Workspaces(Endpoint):
             workspace_id (int or str): The id of the workspace to which to load
                 the tables.
             file_mapping (:obj:`dict`): contains tags: [], destination: string path without trailing /
-            preserve (bool): If False, drop files, else keep files in workspace.
 
         Raises:
             requests.HTTPError: If the API request fails.
@@ -166,10 +165,14 @@ class Workspaces(Endpoint):
         files = Files(self.root_url, self.token)
         file_list = files.list(tags=file_mapping['tags'])
         inputs = {}
+        jobs = []
         for file in file_list:
             # append the file name and id to the path because destinations must be unique
-            inputs[file['id']] = file_mapping['destination'] + '/' + file['name'] + '/' + str(file['id'])
-        body = _make_body(inputs, source_key='dataFileId')
-        body['preserve'] = preserve
-        url = '{}/{}/load'.format(self.base_url, workspace['id'])
-        return self._post(url, data=body)
+            inputs[file['id']] = file_mapping['destination'] + '/' + file['name']
+            body = _make_body(inputs, source_key='dataFileId')
+            body['preserve'] = True # always preserve the workspace, otherwise it would be silly
+            url = '{}/{}/load'.format(self.base_url, workspace['id'])
+            jobs.append(self._post(url, data=body))
+        jobs = Jobs(self.root_url, self.token)
+        for job in jobs:
+            Jobs.block_until_completed(job['id'])
