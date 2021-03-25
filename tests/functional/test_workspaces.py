@@ -119,20 +119,22 @@ class TestWorkspaces(unittest.TestCase):
                 'destination': 'data/in/files'
             }
         )
-        self.jobs.block_until_completed(job['id'])
 
         # assert that the file was loaded to the workspace
         blob_service_client = BlobServiceClient.from_connection_string(workspace['connection']['connectionString'])
-
+        container_client = blob_service_client.get_container_client(container=workspace['connection']['container'])
+        blobs = container_client.list_blobs()
+        for blob in blobs:
+            print(blob['name'])
         blob_client_1 = blob_service_client.get_blob_client(
             container=workspace['connection']['container'],
-            blob='data/in/files/%s/%s/%s' % (file1['name'], str(file1['id']), str(file1['id']))
+            blob='data/in/files/%s/%s' % (file1['name'], str(file1['id']))
         )
         self.assertEqual('fooBar', blob_client_1.download_blob().readall().decode('utf-8'))
 
         blob_client_2 = blob_service_client.get_blob_client(
             container=workspace['connection']['container'],
-            blob='data/in/files/%s/%s/%s' % (file2['name'], str(file2['id']), str(file2['id']))
+            blob='data/in/files/%s/%s' % (file2['name'], str(file2['id']))
         )
         self.assertEqual('fooBar', blob_client_2.download_blob().readall().decode('utf-8'))
 

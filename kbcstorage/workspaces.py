@@ -164,15 +164,14 @@ class Workspaces(Endpoint):
             raise Exception('Loading files to workspace is only available for ABS workspaces')
         files = Files(self.root_url, self.token)
         file_list = files.list(tags=file_mapping['tags'])
-        inputs = {}
-        jobs = []
+        jobs = Jobs(self.root_url, self.token)
         for file in file_list:
-            # append the file name and id to the path because destinations must be unique
-            inputs[file['id']] = file_mapping['destination'] + '/' + file['name']
+            inputs = {
+                file['id']: "%s/%s" % (file_mapping['destination'], file['name'])
+            }
+            print(inputs)
             body = _make_body(inputs, source_key='dataFileId')
             body['preserve'] = True # always preserve the workspace, otherwise it would be silly
             url = '{}/{}/load'.format(self.base_url, workspace['id'])
-            jobs.append(self._post(url, data=body))
-        jobs = Jobs(self.root_url, self.token)
-        for job in jobs:
-            Jobs.block_until_completed(job['id'])
+            job = self._post(url, data=body)
+            jobs.block_until_completed(job['id'])
