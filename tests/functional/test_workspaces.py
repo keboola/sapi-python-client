@@ -122,10 +122,6 @@ class TestWorkspaces(unittest.TestCase):
 
         # assert that the file was loaded to the workspace
         blob_service_client = BlobServiceClient.from_connection_string(workspace['connection']['connectionString'])
-        container_client = blob_service_client.get_container_client(container=workspace['connection']['container'])
-        blobs = container_client.list_blobs()
-        for blob in blobs:
-            print(blob['name'])
         blob_client_1 = blob_service_client.get_blob_client(
             container=workspace['connection']['container'],
             blob='data/in/files/%s/%s' % (file1['name'], str(file1['id']))
