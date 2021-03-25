@@ -102,24 +102,39 @@ class TestWorkspaces(unittest.TestCase):
         file, path = tempfile.mkstemp(prefix='sapi-test')
         os.write(file, bytes('fooBar', 'utf-8'))
         os.close(file)
-        file_id = self.files.upload_file(path, tags=['sapi-client-python-tests', 'file1'])
 
+        # We'll put 2 files with the same tag to test multiple results
+        file1_id = self.files.upload_file(path, tags=['sapi-client-python-tests', 'file1'])
+        file2_id = self.files.upload_file(path, tags=['sapi-client-python-tests', 'file2'])
+
+        file1 = self.files.detail(file1_id)
+        file2 = self.files.detail(file2_id)
         # create a workspace and load the file to it
         workspace = self.workspaces.create('abs')
         self.workspace_id = workspace['id']
         job = self.workspaces.load_files(
             workspace['id'],
-            {'tags': ['sapi-client-python-tests'], 'destination': 'data/in/files'}
+            {
+                'tags': ['sapi-client-python-tests'],
+                'destination': 'data/in/files'
+            }
         )
         self.jobs.block_until_completed(job['id'])
 
         # assert that the file was loaded to the workspace
         blob_service_client = BlobServiceClient.from_connection_string(workspace['connection']['connectionString'])
-        blob_client = blob_service_client.get_blob_client(
+
+        blob_client_1 = blob_service_client.get_blob_client(
             container=workspace['connection']['container'],
-            blob='data/in/files/%s' % str(file_id)
+            blob='data/in/files/%s/%s/%s' % (file1['name'], str(file1['id']), str(file1['id']))
         )
-        self.assertEqual('fooBar', blob_client.download_blob().readall().decode('utf-8'))
+        self.assertEqual('fooBar', blob_client_1.download_blob().readall().decode('utf-8'))
+
+        blob_client_2 = blob_service_client.get_blob_client(
+            container=workspace['connection']['container'],
+            blob='data/in/files/%s/%s/%s' % (file2['name'], str(file2['id']), str(file2['id']))
+        )
+        self.assertEqual('fooBar', blob_client_2.download_blob().readall().decode('utf-8'))
 
     def __create_table(self, bucket_id, table_name, row):
         file, path = tempfile.mkstemp(prefix='sapi-test')

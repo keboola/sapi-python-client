@@ -147,13 +147,14 @@ class Workspaces(Endpoint):
 
     def load_files(self, workspace_id, file_mapping, preserve=None):
         """
-        Load tabes from storage into a workspace.
+        Load files from file storage into a workspace.
         * only supports abs workspace
+        writes the matching files to "{destination}/file_name/file_id"
 
         Args:
             workspace_id (int or str): The id of the workspace to which to load
                 the tables.
-            file_mapping (:obj:`dict`): contains tags: [], destination: string
+            file_mapping (:obj:`dict`): contains tags: [], destination: string path without trailing /
             preserve (bool): If False, drop files, else keep files in workspace.
 
         Raises:
@@ -166,7 +167,8 @@ class Workspaces(Endpoint):
         file_list = files.list(tags=file_mapping['tags'])
         inputs = {}
         for file in file_list:
-            inputs[file['id']] = file_mapping['destination']
+            # append the file name and id to the path because destinations must be unique
+            inputs[file['id']] = file_mapping['destination'] + '/' + file['name'] + '/' + str(file['id'])
         body = _make_body(inputs, source_key='dataFileId')
         body['preserve'] = preserve
         url = '{}/{}/load'.format(self.base_url, workspace['id'])
