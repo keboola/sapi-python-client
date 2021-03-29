@@ -10,6 +10,7 @@ from kbcstorage.base import Endpoint
 from kbcstorage.files import Files
 from kbcstorage.jobs import Jobs
 
+
 def _make_body(mapping, source_key='source'):
     """
     Given a dict mapping Keboola tables to aliases, construct the body of
@@ -170,7 +171,8 @@ class Workspaces(Endpoint):
                 file['id']: "%s/%s" % (file_mapping['destination'], file['name'])
             }
             body = _make_body(inputs, source_key='dataFileId')
-            body['preserve'] = 1 # always preserve the workspace, otherwise it would be silly
+            # always preserve the workspace, otherwise it would be silly
+            body['preserve'] = 1
             url = '{}/{}/load'.format(self.base_url, workspace['id'])
             job = self._post(url, data=body)
             jobs.block_until_completed(job['id'])

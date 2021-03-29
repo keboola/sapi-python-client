@@ -112,7 +112,7 @@ class TestWorkspaces(unittest.TestCase):
         # create a workspace and load the file to it
         workspace = self.workspaces.create('abs')
         self.workspace_id = workspace['id']
-        job = self.workspaces.load_files(
+        self.workspaces.load_files(
             workspace['id'],
             {
                 'tags': ['sapi-client-python-tests'],
