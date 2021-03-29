@@ -166,6 +166,7 @@ class Workspaces(Endpoint):
         files = Files(self.root_url, self.token)
         file_list = files.list(tags=file_mapping['tags'])
         jobs = Jobs(self.root_url, self.token)
+        jobs_list = []
         for file in file_list:
             inputs = {
                 file['id']: "%s/%s" % (file_mapping['destination'], file['name'])
@@ -175,4 +176,11 @@ class Workspaces(Endpoint):
             body['preserve'] = 1
             url = '{}/{}/load'.format(self.base_url, workspace['id'])
             job = self._post(url, data=body)
-            jobs.block_until_completed(job['id'])
+            jobs_list.append(job)
+
+        for job in jobs_list:
+            if (jobs.block_for_success(job['id']) != True):
+                try:
+                    print("Failed to load a file with error: %s" % job['results']['message'])
+                except IndexError:
+                    print("An unknown error occurred loading data.  Job ID %s" % job['id'])
