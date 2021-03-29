@@ -179,7 +179,7 @@ class Workspaces(Endpoint):
             jobs_list.append(job)
 
         for job in jobs_list:
-            if (jobs.block_for_success(job['id']) != True):
+            if not (jobs.block_for_success(job['id'])):
                 try:
                     print("Failed to load a file with error: %s" % job['results']['message'])
                 except IndexError:
