@@ -8,6 +8,7 @@ Full documentation `here`.
 """
 from kbcstorage.base import Endpoint
 from kbcstorage.files import Files
+from kbcstorage.jobs import Jobs
 
 
 def _make_body(mapping, source_key='source'):
@@ -145,16 +146,16 @@ class Workspaces(Endpoint):
 
         return self._post(url, data=body)
 
-    def load_files(self, workspace_id, file_mapping, preserve=None):
+    def load_files(self, workspace_id, file_mapping):
         """
-        Load tabes from storage into a workspace.
+        Load files from file storage into a workspace.
         * only supports abs workspace
+        writes the matching files to "{destination}/file_name/file_id"
 
         Args:
             workspace_id (int or str): The id of the workspace to which to load
                 the tables.
-            file_mapping (:obj:`dict`): contains tags: [], destination: string
-            preserve (bool): If False, drop files, else keep files in workspace.
+            file_mapping (:obj:`dict`): contains tags: [], destination: string path without trailing /
 
         Raises:
             requests.HTTPError: If the API request fails.
@@ -164,10 +165,22 @@ class Workspaces(Endpoint):
             raise Exception('Loading files to workspace is only available for ABS workspaces')
         files = Files(self.root_url, self.token)
         file_list = files.list(tags=file_mapping['tags'])
-        inputs = {}
+        jobs = Jobs(self.root_url, self.token)
+        jobs_list = []
         for file in file_list:
-            inputs[file['id']] = file_mapping['destination']
-        body = _make_body(inputs, source_key='dataFileId')
-        body['preserve'] = preserve
-        url = '{}/{}/load'.format(self.base_url, workspace['id'])
-        return self._post(url, data=body)
+            inputs = {
+                file['id']: "%s/%s" % (file_mapping['destination'], file['name'])
+            }
+            body = _make_body(inputs, source_key='dataFileId')
+            # always preserve the workspace, otherwise it would be silly
+            body['preserve'] = 1
+            url = '{}/{}/load'.format(self.base_url, workspace['id'])
+            job = self._post(url, data=body)
+            jobs_list.append(job)
+
+        for job in jobs_list:
+            if not (jobs.block_for_success(job['id'])):
+                try:
+                    print("Failed to load a file with error: %s" % job['results']['message'])
+                except IndexError:
+                    print("An unknown error occurred loading data.  Job ID %s" % job['id'])
