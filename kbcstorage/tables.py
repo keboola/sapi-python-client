@@ -419,7 +419,8 @@ class Tables(Endpoint):
 
         with open(local_file, mode='rb') as in_file, \
                 open(destination_file, mode='wb') as out_file:
-            columns = table_detail['columns']
+            if columns is None:
+                columns = table_detail['columns']
             columns = ['"{}"'.format(col) for col in columns]
             header = ",".join(columns) + '\n'
             out_file.write(header.encode('utf-8'))
