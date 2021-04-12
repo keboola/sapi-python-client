@@ -307,3 +307,23 @@ class TestTables(unittest.TestCase):
         self.assertEqual(['"col1","col2"\n', '"foo","bar"\n',
                           '"ping","pong"\n'],
                          sorted(lines))
+
+    def test_table_columns(self):
+        file, path = tempfile.mkstemp(prefix='sapi-test')
+        with open(path, 'w') as csv_file:
+            writer = csv.DictWriter(csv_file, fieldnames=['col1', 'col2', 'col3', 'col4'],
+                                    lineterminator='\n', delimiter=',',
+                                    quotechar='"')
+            writer.writeheader()
+            writer.writerow({'col1': 'ping', 'col2': 'pong', 'col3': 'king', 'col4': 'kong'})
+        os.close(file)
+        table_id = self.tables.create(name='some-table', file_path=path, bucket_id='in.c-py-test-tables')
+        temp_path = tempfile.TemporaryDirectory()
+        local_path = self.tables.export_to_file(table_id=table_id,
+                                                path_name=temp_path.name,
+                                                is_gzip=False,
+                                                columns=['col3', 'col2'])
+
+        with open(local_path, mode='rt') as file:
+            lines = file.readlines()
+        self.assertEqual(['"col3","col2"\n', '"king","pong"\n'], sorted(lines))
