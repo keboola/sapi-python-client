@@ -173,7 +173,6 @@ class Workspaces(Endpoint):
         else:
             file_list = files.list(tags=file_mapping['tags'])
 
-
         jobs = Jobs(self.root_url, self.token)
         jobs_list = []
         for file in file_list:
