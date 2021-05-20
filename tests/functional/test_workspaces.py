@@ -5,6 +5,7 @@ import unittest
 import warnings
 
 from azure.storage.blob import BlobServiceClient
+from azure.core.exceptions import ResourceNotFoundError
 from requests import exceptions
 from kbcstorage.buckets import Buckets
 from kbcstorage.jobs import Jobs
@@ -133,6 +134,32 @@ class TestWorkspaces(unittest.TestCase):
             blob='data/in/files/%s/%s' % (file2['name'], str(file2['id']))
         )
         self.assertEqual('fooBar', blob_client_2.download_blob().readall().decode('utf-8'))
+
+        # now let's test that we can use the 'and' operator.  in this case file2 should not get loaded
+        self.workspaces.load_files(
+            workspace['id'],
+            {
+                'tags': ['sapi-client-python-tests', 'file1'],
+                'operator': 'and',
+                'destination': 'data/in/and_files'
+            }
+        )
+        # file 1 should be there
+        blob_client_1 = blob_service_client.get_blob_client(
+            container=workspace['connection']['container'],
+            blob='data/in/and_files/%s/%s' % (file1['name'], str(file1['id']))
+        )
+        self.assertEqual('fooBar', blob_client_1.download_blob().readall().decode('utf-8'))
+
+        # file 2 should not
+        blob_client_2 = blob_service_client.get_blob_client(
+            container=workspace['connection']['container'],
+            blob='data/in/and_files/%s/%s' % (file2['name'], str(file2['id']))
+        )
+        with self.assertRaises(ResourceNotFoundError) as context:
+            blob_client_2.download_blob().readall().decode('utf-8')
+
+        self.assertTrue('The specified blob does not exist' in str(context.exception))
 
     def __create_table(self, bucket_id, table_name, row):
         file, path = tempfile.mkstemp(prefix='sapi-test')

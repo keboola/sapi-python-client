@@ -155,7 +155,10 @@ class Workspaces(Endpoint):
         Args:
             workspace_id (int or str): The id of the workspace to which to load
                 the tables.
-            file_mapping (:obj:`dict`): contains tags: [], destination: string path without trailing /
+            file_mapping (:obj:`dict`):
+                tags: [],
+                operator: enum('or', 'and') default or,
+                destination: string path without trailing /
 
         Raises:
             requests.HTTPError: If the API request fails.
@@ -164,7 +167,13 @@ class Workspaces(Endpoint):
         if (workspace['type'] != 'file' and workspace['connection']['backend'] != 'abs'):
             raise Exception('Loading files to workspace is only available for ABS workspaces')
         files = Files(self.root_url, self.token)
-        file_list = files.list(tags=file_mapping['tags'])
+        if ('operator' in file_mapping and file_mapping['operator'] == 'and'):
+            query = ' AND '.join(map(lambda tag: 'tags:"' + tag + '"', file_mapping['tags']))
+            file_list = files.list(q=query)
+        else:
+            file_list = files.list(tags=file_mapping['tags'])
+
+
         jobs = Jobs(self.root_url, self.token)
         jobs_list = []
         for file in file_list:
