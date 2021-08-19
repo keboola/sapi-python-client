@@ -116,6 +116,7 @@ class Jobs(Endpoint):
             job = self.detail(job_id)
             if job['status'] in ('error', 'success'):
                 return job
+            retries += 1
             time.sleep(min(2 ** retries, 20))
 
     def block_for_success(self, job_id):
