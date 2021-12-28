@@ -7,6 +7,7 @@ setup(
     name='kbcstorage',
     use_scm_version=True,
     setup_requires=['setuptools_scm'],
+    version="0.5.0",
     url='https://github.com/keboola/sapi-python-client',
     download_url='https://github.com/keboola/sapi-python-client',
     packages=find_packages(exclude=['tests']),
