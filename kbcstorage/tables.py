@@ -6,9 +6,13 @@ Full documentation `here`.
 .. _here:
     http://docs.keboola.apiary.io/#reference/tables/
 """
-import tempfile
 import os
+import tempfile
+from dataclasses import asdict
+from typing import List, Optional
+
 from kbcstorage.base import Endpoint
+from kbcstorage.dataclasses.tables import Column
 from kbcstorage.files import Files
 from kbcstorage.jobs import Jobs
 
@@ -17,6 +21,7 @@ class Tables(Endpoint):
     """
     Buckets Endpoint
     """
+
     def __init__(self, root_url, token):
         """
         Create a Tables endpoint.
@@ -356,6 +361,72 @@ class Tables(Endpoint):
         url = '{}/{}/data-preview'.format(self.base_url, table_id)
         r = self._get_raw(url=url, params=params)
         return r.content.decode('utf-8')
+
+    def _remove_none_values(self, data: dict):
+        new_data = data.copy()
+        for k in data:
+            if data.get(k) is None:
+                new_data.pop(k, None)
+        return new_data
+
+    def create_definition(self, bucket_id: str, name: str, primary_keys: List[str], columns: List[Column],
+                          distribution: Optional[dict] = None, index: Optional[dict] = None):
+        """
+          Create a table definition.
+
+          See https://keboola.docs.apiary.io/#reference/tables/create-new-table-definition
+
+        Args:
+            bucket_id (str): Bucket id where table is created. e.g. in.c-mybucket
+            name (str): The new table name (only alphanumeric and underscores)
+            primary_keys (str): (list): List of column names. Primary key of a table.
+            columns (list): List of column definitions
+            distribution (dict): Only some backend (Synapse). See the docs for more details on the structure
+            index (dict): Only some backend (Synapse). See the docs for more details on the structure
+
+        Returns:
+            table_id (str): Id of the created table.
+
+        Raises:
+            requests.HTTPError: If the API request fails.
+        """
+        if not isinstance(bucket_id, str) or bucket_id == '':
+            raise ValueError(f"Invalid bucket_id '{bucket_id}'.")
+        if not isinstance(name, str) or name == '':
+            raise ValueError(f"Invalid name_id '{name}'.")
+
+        if not columns:
+            raise ValueError("The column list cannot be empty!")
+
+        columns_data = []
+        # convert from dataclass
+        for col in columns:
+            col_data = asdict(col)
+            # remove null values
+            col_data['definition'] = self._remove_none_values(col_data['definition'])
+            columns_data.append(col_data)
+
+        json_data = {"name": name,
+                     "primaryKeysNames": primary_keys,
+                     "columns": columns_data}
+
+        if distribution:
+            json_data["distribution"] = distribution
+
+        if index:
+            json_data["index"] = index
+
+        endpoint_path = f'buckets/{bucket_id}/tables-definition'
+        base_url = f'{self.root_url.strip("/")}/v2/storage'
+
+        response = self._post(url=f"{base_url}/{endpoint_path}", json=json_data)
+        job_id = response['url'].split('/')[-1]
+        self._wait_for_job_finished(job_id)
+        return response
+
+    def _wait_for_job_finished(self, job_id: str):
+        client = Jobs(root_url=self.root_url, token=self.token)
+        client.block_until_completed(job_id)
 
     def export_to_file(self, table_id, path_name, limit=None,
                        file_format='rfc', changed_since=None,
