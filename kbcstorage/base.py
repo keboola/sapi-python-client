@@ -21,6 +21,7 @@ class Endpoint:
         base_url (str): The base URL for this endpoint.
         token (str): A key for the Storage API.
     """
+
     def __init__(self, root_url, path_component, token):
         """
         Create an endpoint.
@@ -114,6 +115,32 @@ class Endpoint:
         headers = kwargs.pop('headers', {})
         headers.update(self._auth_header)
         r = requests.post(headers=headers, *args, **kwargs)
+        try:
+            r.raise_for_status()
+        except requests.HTTPError:
+            # Handle different error codes
+            raise
+        else:
+            return r.json()
+
+    def _put(self, *args, **kwargs):
+        """
+        Construct a requests PUT call with args and kwargs and process the
+        results.
+
+        Args:
+            *args: Positional arguments to pass to the post request.
+            **kwargs: Key word arguments to pass to the post request.
+
+        Returns:
+            body: Response body parsed from json.
+
+        Raises:
+            requests.HTTPError: If the API request fails.
+        """
+        headers = kwargs.pop('headers', {})
+        headers.update(self._auth_header)
+        r = requests.put(headers=headers, *args, **kwargs)
         try:
             r.raise_for_status()
         except requests.HTTPError:
