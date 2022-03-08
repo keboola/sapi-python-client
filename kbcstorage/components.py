@@ -117,7 +117,7 @@ class Components(Endpoint):
 
         """
         parameters = {}
-        url = '{}/configs/{}'.format(self.base_url, component_id, configuration_id)
+        url = '{}/{}/configs/{}'.format(self.base_url, component_id, configuration_id)
         # convert objects to string
         parameters['configuration'] = json.dumps(configuration)
         parameters['name'] = name
@@ -127,7 +127,7 @@ class Components(Endpoint):
         if state:
             parameters['state'] = json.dumps(state)
 
-        return self._put(url, params=parameters)
+        return self._put(url, data=parameters)
 
     def create(self, component_id, name, description, configuration, configurationId=None, state=None,
                changeDescription='', **kwargs):
