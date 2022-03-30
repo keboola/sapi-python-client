@@ -238,3 +238,21 @@ class Components(Endpoint):
         header = {'Content-Type': 'application/x-www-form-urlencoded'}
         data = urllib.parse.urlencode(parameters)
         return self._put(url, data=data, headers=header)
+
+    def get_all_component_configurations(self, component_id, include: str = 'configuration,rows,state'):
+        """
+        Get all component configurations
+        Args:
+            component_id:
+            include:
+
+        Returns:
+
+        """
+        parameters = {}
+        url = f'{self.base_url}/{component_id}/configs'
+
+        if include:
+            parameters['include'] = include
+
+        return self._get(url, params=parameters)
