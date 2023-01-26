@@ -18,5 +18,6 @@ setup(
     test_suite='tests',
     tests_require=['responses'],
     long_description=readme,
+    long_description_content_type='text/markdown',
     license="MIT"
 )
