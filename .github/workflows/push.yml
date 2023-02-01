@@ -21,8 +21,9 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       is_semantic_tag: ${{steps.tag.outputs.is_semantic_tag}}
-    uses: actions/checkout@v3
     steps:
+      - name: Checkout the repo
+        uses: actions/checkout@v3
       - name: Print Docker version
         run: |
           docker -v
@@ -49,8 +50,9 @@ jobs:
       - build_and_test
     runs-on: ubuntu-latest
     if: startsWith(github.ref, 'refs/tags/') && needs.build_and_test.outputs.is_semantic_tag == 'true'
-    uses: actions/checkout@v3
     steps:
+      - name: Checkout the repo
+        uses: actions/checkout@v3
       - name: Set up Python
         uses: actions/setup-python@v3
         with:
