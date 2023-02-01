@@ -3,8 +3,7 @@ name: Build test and release
 
 on:
   workflow_dispatch:
-  release:
-    types: [published]
+  push:
 
 permissions:
   contents: read
