@@ -1,14 +1,8 @@
-# This workflow will upload a Python Package using Twine when a release is created
-# For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-python#publishing-to-package-registries
 
-# This workflow uses actions that are not certified by GitHub.
-# They are provided by a third-party and are governed by
-# separate terms of service, privacy policy, and support
-# documentation.
-
-name: Upload Python Package
+name: Build test and release
 
 on:
+  workflow_dispatch:
   release:
     types: [published]
 
@@ -16,7 +10,6 @@ permissions:
   contents: read
 
 jobs:
-
   build_and_test:
     runs-on: ubuntu-latest
     outputs:
