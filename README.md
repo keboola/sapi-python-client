@@ -102,3 +102,7 @@ git push origin my-new-feature:my-new-feature
 ```
 
 This will create a new branch which can be used to make a pull request for your new feature.
+
+## License
+
+MIT licensed, see [LICENSE](./LICENSE) file.
