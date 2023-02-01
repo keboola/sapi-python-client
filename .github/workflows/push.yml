@@ -5,9 +5,6 @@ on:
   workflow_dispatch:
   push:
 
-permissions:
-  contents: read
-
 jobs:
   build_and_test:
     runs-on: ubuntu-latest
@@ -25,11 +22,24 @@ jobs:
       - name: build
         run: |
           docker-compose build sapi-python-client
+      - name: debug
+        env:
+          KBC_TEST_TOKEN: ${{ secrets.KBC_TEST_TOKEN }}
+          KBC_TEST_API_URL: https://connection.keboola.com
+          KBC_AZ_TEST_TOKEN: ${{ secrets.KBC_AZ_TEST_TOKEN }}
+          KBC_AZ_TEST_API_URL: https://connection.north-europe.azure.keboola.com
+        run: echo "my kbc $KBC_TEST_API_URL test token is $KBC_TEST_TOKEN"
       - name: run tests
+        env:
+          KBC_TEST_TOKEN: ${{ secrets.KBC_TEST_TOKEN }}
+          KBC_TEST_API_URL: https://connection.keboola.com
+          KBC_AZ_TEST_TOKEN: ${{ secrets.KBC_AZ_TEST_TOKEN }}
+          KBC_AZ_TEST_API_URL: https://connection.north-europe.azure.keboola.com
         run: |
           docker-compose run --rm --entrypoint=flake8 sapi-python-client
-          docker-compose run --rm -e KBC_TEST_TOKEN -e KBC_TEST_API_URL -e SKIP_ABS_TEST=1 sapi-python-client -m unittest discover
+          docker-compose run --rm -e KBC_TEST_TOKEN=$KBC_TEST_TOKEN -e KBC_TEST_API_URL=$KBC_TEST_API_URL -e SKIP_ABS_TEST=1 sapi-python-client -m unittest discover
           docker-compose run --rm -e KBC_TEST_TOKEN=$KBC_AZ_TEST_TOKEN -e KBC_TEST_API_URL=$KBC_AZ_TEST_API_URL sapi-python-client -m unittest discover
+
       - name: Check if tag is semantic
         id: tag
         run: |
