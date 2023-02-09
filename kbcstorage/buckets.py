@@ -100,7 +100,7 @@ class Buckets(Endpoint):
 
         return self._post(self.base_url, data=body)
 
-    def delete(self, bucket_id, force=False):
+    def delete(self, bucket_id, force=False, asynchronous=True):
         """
         Delete a bucket referenced by ``bucket_id``.
 
@@ -116,7 +116,7 @@ class Buckets(Endpoint):
         # How does the API handle it when force == False and the bucket is non-
         # empty?
         url = '{}/{}'.format(self.base_url, bucket_id)
-        params = {'force': force}
+        params = {'force': force, 'async': asynchronous}
         self._delete(url, params=params)
 
     def link(self, *args, **kwargs):

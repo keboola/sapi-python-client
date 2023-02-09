@@ -26,8 +26,7 @@ jobs:
         if: env.DOCKERHUB_TOKEN
         run: docker login --username "$DOCKERHUB_USER" --password "$DOCKERHUB_TOKEN"
       - name: build
-        run: |
-          docker-compose build sapi-python-client
+        run: docker-compose build sapi-python-client
       - name: show images
         run: docker images
       - name: run tests flake8
