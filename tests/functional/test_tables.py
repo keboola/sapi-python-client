@@ -2,6 +2,7 @@ import os
 import unittest
 import tempfile
 import csv
+import time
 import warnings
 from requests import exceptions
 from kbcstorage.tables import Tables
@@ -19,6 +20,8 @@ class TestTables(unittest.TestCase):
         except exceptions.HTTPError as e:
             if e.response.status_code != 404:
                 raise
+        # the delete is asyncronous so let's wait a bit until it finishes
+        time.sleep(3)
         self.buckets.create(name='py-test-tables', stage='in')
         # https://github.com/boto/boto3/issues/454
         warnings.simplefilter("ignore", ResourceWarning)
