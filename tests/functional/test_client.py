@@ -1,6 +1,7 @@
 import csv
 import os
 import tempfile
+import time
 import unittest
 import warnings
 
@@ -17,6 +18,8 @@ class TestClient(unittest.TestCase):
         except exceptions.HTTPError as e:
             if e.response.status_code != 404:
                 raise
+        # give the async call time to complete
+        time.sleep(2)
         # https://github.com/boto/boto3/issues/454
         warnings.simplefilter("ignore", ResourceWarning)
 

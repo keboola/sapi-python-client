@@ -145,6 +145,8 @@ class TestFiles(unittest.TestCase):
         except exceptions.HTTPError as e:
             if e.response.status_code != 404:
                 raise
+        # wait for async job to complete
+        time.sleep(2)
         buckets.create(name='py-test-files', stage='in')
 
         tables = Tables(os.getenv('KBC_TEST_API_URL'),
