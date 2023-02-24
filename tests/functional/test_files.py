@@ -13,7 +13,6 @@ from kbcstorage.tables import Tables
 
 class TestFiles(unittest.TestCase):
     def setUp(self):
-
         # timeout for files from previous tests to appear
         time.sleep(1)
         self.files = Files(os.getenv('KBC_TEST_API_URL'),

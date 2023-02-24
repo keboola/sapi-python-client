@@ -33,6 +33,7 @@ class TestWorkspaces(unittest.TestCase):
         except exceptions.HTTPError as e:
             if e.response.status_code != 404:
                 raise
+
         # https://github.com/boto/boto3/issues/454
         warnings.simplefilter("ignore", ResourceWarning)
 

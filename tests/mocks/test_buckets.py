@@ -50,12 +50,12 @@ class TestBucketsWithMocks(unittest.TestCase):
         responses.add(
             responses.Response(
                 method='DELETE',
-                url='https://connection.keboola.com/v2/storage/buckets/1',
+                url='https://connection.keboola.com/v2/storage/buckets/1?force=False&async=False',
                 json={}
             )
         )
         bucket_id = '1'
-        deleted_detail = self.buckets.delete(bucket_id)
+        deleted_detail = self.buckets.delete(bucket_id, asynchronous=False)
         assert deleted_detail is None
 
     @responses.activate

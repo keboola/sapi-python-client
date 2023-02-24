@@ -1,0 +1,68 @@
+
+name: Build test and release
+
+on:
+  workflow_dispatch:
+  push:
+
+env:
+  KBC_TEST_TOKEN: ${{ secrets.KBC_TEST_TOKEN }}
+  KBC_TEST_API_URL: https://connection.keboola.com
+  KBC_AZ_TEST_TOKEN: ${{ secrets.KBC_AZ_TEST_TOKEN }}
+  KBC_AZ_TEST_API_URL: https://connection.north-europe.azure.keboola.com
+
+jobs:
+  build_and_test:
+    runs-on: ubuntu-latest
+    outputs:
+      is_semantic_tag: ${{steps.tag.outputs.is_semantic_tag}}
+    steps:
+      - name: Checkout the repo
+        uses: actions/checkout@v3
+      - name: Print Docker version
+        run: |
+          docker -v
+      - name: Docker login
+        if: env.DOCKERHUB_TOKEN
+        run: docker login --username "$DOCKERHUB_USER" --password "$DOCKERHUB_TOKEN"
+      - name: build
+        run: docker-compose build sapi-python-client
+      - name: show images
+        run: docker images
+      - name: run tests flake8
+        run: docker-compose run --rm --entrypoint=flake8 sapi-python-client
+      - name: run tests aws
+        run: docker-compose run --rm -e KBC_TEST_TOKEN=$KBC_TEST_TOKEN -e KBC_TEST_API_URL=$KBC_TEST_API_URL -e SKIP_ABS_TEST=1 sapi-python-client -m unittest discover
+      - name: run tests azure
+        run: docker-compose run --rm -e KBC_TEST_TOKEN=$KBC_AZ_TEST_TOKEN -e KBC_TEST_API_URL=$KBC_AZ_TEST_API_URL sapi-python-client -m unittest discover
+
+      - name: Check if tag is semantic
+        id: tag
+        run: |
+          TAG="${GITHUB_REF##*/}"
+          IS_SEMANTIC_TAG=$(echo "$TAG" | grep -q '^v\?[0-9]\+\.[0-9]\+\.[0-9]\+$' && echo true || echo false)
+          echo "Tag = '$TAG', is semantic tag = '$IS_SEMANTIC_TAG'"
+          echo "is_semantic_tag=$IS_SEMANTIC_TAG" >> $GITHUB_OUTPUT
+  deploy_to_pypi:
+    needs:
+      - build_and_test
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/') && needs.build_and_test.outputs.is_semantic_tag == 'true'
+    steps:
+      - name: Checkout the repo
+        uses: actions/checkout@v3
+      - name: Set up Python
+        uses: actions/setup-python@v3
+        with:
+          python-version: '3.x'
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install build
+      - name: Build package
+        run: python -m build
+      - name: Publish package
+        uses: pypa/gh-action-pypi-publish@27b31702a0e7fc50959f5ad993c78deac1bdfc29
+        with:
+          user: __token__
+          password: ${{ secrets.PYPI_API_TOKEN }}
