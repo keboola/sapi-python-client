@@ -50,7 +50,7 @@ class TestBucketsWithMocks(unittest.TestCase):
         responses.add(
             responses.Response(
                 method='DELETE',
-                url='https://connection.keboola.com/v2/storage/buckets/1?async=False',
+                url='https://connection.keboola.com/v2/storage/buckets/1?force=False&async=False',
                 json={}
             )
         )

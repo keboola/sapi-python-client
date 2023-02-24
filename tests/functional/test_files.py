@@ -13,6 +13,8 @@ from kbcstorage.tables import Tables
 
 class TestFiles(unittest.TestCase):
     def setUp(self):
+        # timeout for files from previous tests to appear
+        time.sleep(1)
         self.files = Files(os.getenv('KBC_TEST_API_URL'),
                            os.getenv('KBC_TEST_TOKEN'))
         files = self.files.list(tags=['py-test'])
@@ -22,6 +24,8 @@ class TestFiles(unittest.TestCase):
         warnings.simplefilter("ignore", ResourceWarning)
 
     def tearDown(self):
+        # timeout for files from previous tests to appear
+        time.sleep(1)
         files = self.files.list(tags=['py-test'])
         for file in files:
             self.files.delete(file['id'])
