@@ -58,7 +58,7 @@ class TestBucketsWithMocks(unittest.TestCase):
         )
         bucket_id = '1'
         deleted_detail = self.buckets.delete(bucket_id)
-        assert deleted_detail.id is '12345'
+        assert deleted_detail.id == '12345'
 
     @responses.activate
     def test_create(self):

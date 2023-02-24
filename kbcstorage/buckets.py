@@ -128,8 +128,6 @@ class Buckets(Endpoint):
         else:
             self._delete(url, params=params)
 
-
-
     def link(self, *args, **kwargs):
         """
         **Not implemented**

@@ -10,7 +10,7 @@ various endpoints, such as tables, workspaces, jobs, etc. as described in the
     http://docs.keboola.apiary.io/
 """
 import requests
-import json.decoder
+
 
 class Endpoint:
     """
