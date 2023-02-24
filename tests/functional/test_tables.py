@@ -2,7 +2,6 @@ import os
 import unittest
 import tempfile
 import csv
-import time
 import warnings
 from requests import exceptions
 from kbcstorage.tables import Tables
