@@ -51,14 +51,11 @@ class TestBucketsWithMocks(unittest.TestCase):
             responses.Response(
                 method='DELETE',
                 url='https://connection.keboola.com/v2/storage/buckets/1',
-                json={
-                    'id': '12345'
-                }
+                json={}
             )
         )
-        bucket_id = '1'
-        deleted_detail = self.buckets.delete(bucket_id)
-        assert deleted_detail.id == '12345'
+        deleted_detail = self.buckets.delete(bucket_id, asynchronous=False)
+        assert deleted_detail is None
 
     @responses.activate
     def test_create(self):
