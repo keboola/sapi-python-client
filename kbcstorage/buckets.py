@@ -7,6 +7,7 @@ Full documentation `here`.
     http://docs.keboola.apiary.io/#reference/buckets/
 """
 from kbcstorage.base import Endpoint
+from kbcstorage.jobs import Jobs
 
 
 class Buckets(Endpoint):
@@ -112,12 +113,22 @@ class Buckets(Endpoint):
             bucket_id (str): The id of the bucket to be deleted.
             force (bool): If ``True``, deletes the bucket even if it is not
                 empty. Default ``False``.
+            asynchronous (bool): if asynchronous then the
         """
         # How does the API handle it when force == False and the bucket is non-
         # empty?
         url = '{}/{}'.format(self.base_url, bucket_id)
         params = {'force': force, 'async': asynchronous}
-        self._delete(url, params=params)
+        if (asynchronous):
+            job = self._delete(url, params=params)
+            jobs = Jobs(self.root_url, self.token)
+            job = jobs.block_until_completed(job['id'])
+            if job['status'] == 'error':
+                raise RuntimeError(job['error']['message'])
+        else:
+            self._delete(url, params=params)
+
+
 
     def link(self, *args, **kwargs):
         """
