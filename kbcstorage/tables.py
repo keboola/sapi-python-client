@@ -15,7 +15,7 @@ from kbcstorage.jobs import Jobs
 
 class Tables(Endpoint):
     """
-    Buckets Endpoint
+    Tables Endpoint
     """
     def __init__(self, root_url, token):
         """
