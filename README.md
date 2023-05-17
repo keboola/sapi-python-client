@@ -63,13 +63,6 @@ tables.detail('in.c-demo.some-table')
 
 ```
 
-## Docker image
-Docker image with pre-installed library is also available, run it via:
-
-```
-docker run -i -t quay.io/keboola/sapi-python-client
-```
-
 ## Tests
 
 ```bash

@@ -6,6 +6,10 @@ on:
   push:
 
 env:
+  # DockerHub login
+  DOCKERHUB_USER: "keboolabot"
+  DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
+  # Keboola Connection test credentials
   KBC_TEST_TOKEN: ${{ secrets.KBC_TEST_TOKEN }}
   KBC_TEST_API_URL: https://connection.keboola.com
   KBC_AZ_TEST_TOKEN: ${{ secrets.KBC_AZ_TEST_TOKEN }}
@@ -32,9 +36,9 @@ jobs:
       - name: run tests flake8
         run: docker-compose run --rm --entrypoint=flake8 sapi-python-client
       - name: run tests aws
-        run: docker-compose run --rm -e KBC_TEST_TOKEN=$KBC_TEST_TOKEN -e KBC_TEST_API_URL=$KBC_TEST_API_URL -e SKIP_ABS_TEST=1 sapi-python-client -m unittest discover
+        run: docker-compose run --rm -e KBC_TEST_TOKEN=$KBC_TEST_TOKEN -e KBC_TEST_API_URL=$KBC_TEST_API_URL -e SKIP_ABS_TESTS=1 sapi-python-client -m unittest
       - name: run tests azure
-        run: docker-compose run --rm -e KBC_TEST_TOKEN=$KBC_AZ_TEST_TOKEN -e KBC_TEST_API_URL=$KBC_AZ_TEST_API_URL sapi-python-client -m unittest discover
+        run: docker-compose run --rm -e KBC_TEST_TOKEN=$KBC_AZ_TEST_TOKEN -e KBC_TEST_API_URL=$KBC_AZ_TEST_API_URL -e SKIP_ABS_TESTS=0 sapi-python-client -m unittest
 
       - name: Check if tag is semantic
         id: tag

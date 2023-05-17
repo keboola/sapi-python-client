@@ -23,7 +23,7 @@ class Client:
                 "https://connection.keboola.com".
             token (str): A storage API key.
         """
-        self.root_url = api_domain
+        self.root_url = api_domain.rstrip("/")
         self._token = token
 
         self.buckets = Buckets(self.root_url, self.token)

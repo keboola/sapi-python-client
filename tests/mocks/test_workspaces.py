@@ -2,7 +2,6 @@
 Asses basic functionality of the Workspace endpoint.
 """
 import unittest
-
 import responses
 from requests import HTTPError
 

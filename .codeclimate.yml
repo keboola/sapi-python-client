@@ -1,12 +1,8 @@
-languages:
-  Python: true
-engines:
-  duplication:
-    enabled: true
+version: "2"
+checks:
+  argument-count:
     config:
-      languages:
-        python:
-          python_version: 3
-          mass_threshold: 40
-    exclude_paths:
-      - tests/      
+      threshold: 4
+plugins:
+  sonar-python:
+    enabled: true
