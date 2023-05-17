@@ -1,9 +1,8 @@
 
 name: Build test and release
 
-on:
-  workflow_dispatch:
-  push:
+on: [ push ]
+concurrency: ci-${{ github.ref }}
 
 env:
   # DockerHub login
@@ -14,57 +13,102 @@ env:
   KBC_TEST_API_URL: https://connection.keboola.com
   KBC_AZ_TEST_TOKEN: ${{ secrets.KBC_AZ_TEST_TOKEN }}
   KBC_AZ_TEST_API_URL: https://connection.north-europe.azure.keboola.com
+  APP_IMAGE: sapi-python-client
 
 jobs:
-  build_and_test:
+  build:
     runs-on: ubuntu-latest
     outputs:
-      is_semantic_tag: ${{steps.tag.outputs.is_semantic_tag}}
+      is_semantic_tag: ${{ steps.tag.outputs.is_semantic_tag }}
     steps:
-      - name: Checkout the repo
+      - name: Check out the repo
         uses: actions/checkout@v3
+
       - name: Print Docker version
         run: |
           docker -v
+
       - name: Docker login
         if: env.DOCKERHUB_TOKEN
         run: docker login --username "$DOCKERHUB_USER" --password "$DOCKERHUB_TOKEN"
-      - name: build
-        run: docker-compose build sapi-python-client
-      - name: show images
-        run: docker images
-      - name: run tests flake8
-        run: docker-compose run --rm --entrypoint=flake8 sapi-python-client
-      - name: run tests aws
-        run: docker-compose run --rm -e KBC_TEST_TOKEN=$KBC_TEST_TOKEN -e KBC_TEST_API_URL=$KBC_TEST_API_URL -e SKIP_ABS_TESTS=1 sapi-python-client -m unittest
-      - name: run tests azure
-        run: docker-compose run --rm -e KBC_TEST_TOKEN=$KBC_AZ_TEST_TOKEN -e KBC_TEST_API_URL=$KBC_AZ_TEST_API_URL -e SKIP_ABS_TESTS=0 sapi-python-client -m unittest
 
-      - name: Check if tag is semantic
+      - name: Build image
+        run: docker build -t $APP_IMAGE .
+
+      - name: Check image
+        run: docker-compose run --rm sapi-python-client -m flake8
+
+      - name: Set image tag
         id: tag
         run: |
           TAG="${GITHUB_REF##*/}"
           IS_SEMANTIC_TAG=$(echo "$TAG" | grep -q '^v\?[0-9]\+\.[0-9]\+\.[0-9]\+$' && echo true || echo false)
           echo "Tag = '$TAG', is semantic tag = '$IS_SEMANTIC_TAG'"
           echo "is_semantic_tag=$IS_SEMANTIC_TAG" >> $GITHUB_OUTPUT
+
+      - name: Upload image
+        uses: ishworkh/docker-image-artifact-upload@v1
+        with:
+          image: "sapi-python-client"
+          retention_days: "1"
+
+  tests_aws:
+    name: Run tests (AWS)
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out the repo
+        uses: actions/checkout@v3
+
+      - name: Download image
+        uses: ishworkh/docker-image-artifact-download@v1
+        with:
+          image: "sapi-python-client"
+
+      - name: Run Tests
+        run: |
+          docker-compose run --rm -e KBC_TEST_TOKEN=$KBC_TEST_TOKEN -e KBC_TEST_API_URL=$KBC_TEST_API_URL -e SKIP_ABS_TESTS=1 sapi-python-client -m unittest --verbose
+
+  tests_azure:
+    name: Run tests (Azure)
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out the repo
+        uses: actions/checkout@v3
+
+      - name: Download image
+        uses: ishworkh/docker-image-artifact-download@v1
+        with:
+          image: "sapi-python-client"
+
+      - name: Run Tests
+        run: |
+          docker-compose run --rm -e KBC_TEST_TOKEN=$KBC_AZ_TEST_TOKEN -e KBC_TEST_API_URL=$KBC_AZ_TEST_API_URL -e SKIP_ABS_TESTS=0 sapi-python-client -m unittest --verbose
+
   deploy_to_pypi:
     needs:
-      - build_and_test
+      - tests_aws
+      - tests_azure
     runs-on: ubuntu-latest
     if: startsWith(github.ref, 'refs/tags/') && needs.build_and_test.outputs.is_semantic_tag == 'true'
     steps:
       - name: Checkout the repo
         uses: actions/checkout@v3
+
       - name: Set up Python
         uses: actions/setup-python@v3
         with:
           python-version: '3.x'
+
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
           pip install build
+
       - name: Build package
         run: python -m build
+
       - name: Publish package
         uses: pypa/gh-action-pypi-publish@27b31702a0e7fc50959f5ad993c78deac1bdfc29
         with:
