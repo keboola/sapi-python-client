@@ -6,17 +6,18 @@ for working with buckets, tables and workspaces are covered.
 
 ## Install
 
-`$ pip3 install git+https://github.com/keboola/sapi-python-client.git`
+```bash
+pip install kbcstorage
+```
 
 or 
 
 ```bash
-$ git clone https://github.com/keboola/sapi-python-client.git && cd sapi-python-client
-$ python setup.py install
+pip install git+https://github.com/keboola/sapi-python-client.git
 ```
 
 ## Client Class Usage
-```
+```python
 from kbcstorage.client import Client
 
 client = Client('https://connection.keboola.com', 'your-token')
@@ -39,7 +40,7 @@ client.tables.detail('in.c-demo.some-table')
 ```
 
 ## Endpoint Classes Usage 
-```
+```python
 from kbcstorage.tables import Tables
 from kbcstorage.buckets import Buckets
 
@@ -64,13 +65,7 @@ tables.detail('in.c-demo.some-table')
 ```
 
 ## Tests
-
-```bash
-$ git clone https://github.com/keboola/sapi-python-client.git && cd sapi-python-client
-$ python setup.py test
-```
-
-or 
+Create `.env` file according to the `.env.template` file and run the tests with:
 
 ```bash
 $ docker-compose run --rm -e KBC_TEST_TOKEN -e KBC_TEST_API_URL sapi-python-client -m unittest discover
@@ -78,10 +73,16 @@ $ docker-compose run --rm -e KBC_TEST_TOKEN -e KBC_TEST_API_URL sapi-python-clie
 
 ## Contribution Guide
 The client is far from supporting the entire API, all contributions are very welcome. New API endpoints should 
-be implemeneted in their own class extending `Endpoint`. Naming conventions should follow existing naming conventions
-or those of the [API](http://docs.keboola.apiary.io/#). If the method contains some processing of the request or response, consult the corresponing [PHP implementation](https://github.com/keboola/storage-api-php-client) for reference. New code should be covered by tests.
+be implemented in their own class extending `Endpoint`. Naming conventions should follow existing naming conventions
+or those of the [API](http://docs.keboola.apiary.io/#). If the method contains some processing of the request or 
+response, consult the corresponding [PHP implementation](https://github.com/keboola/storage-api-php-client) for 
+reference. New code should be covered by tests.
 
-Note that if you submit a PR from your own forked repository, the automated functional tests will fail. This is limitation of [Travis](https://docs.travis-ci.com/user/pull-requests/#Pull-Requests-and-Security-Restrictions). Either run the tests locally (set `KBC_TEST_TOKEN` (your token to test project) and `KBC_TEST_API_URL` (https://connection.keboola.com) variables) or ask for access. In case, you need a project for local testing, feel free to [ask for one](https://developers.keboola.com/#development-project).
+Note that if you submit a PR from your own forked repository, the automated functional tests will fail. 
+This is expected for security reasons, please do send the PR anyway. 
+Either run the tests locally (set `KBC_TEST_TOKEN` (your token to test project) and 
+`KBC_TEST_API_URL` (https://connection.keboola.com) variables) or ask for access. In case, you need a 
+project for local testing, feel free to [ask for one](https://developers.keboola.com/#development-project).
 
 The recommended workflow for making a pull request is:
 
