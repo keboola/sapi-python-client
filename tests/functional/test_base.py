@@ -1,10 +1,10 @@
-import unittest
 import os
 from requests import HTTPError
 from kbcstorage.base import Endpoint
+from tests.base_test_case import BaseTestCase
 
 
-class TestEndpoint(unittest.TestCase):
+class TestEndpoint(BaseTestCase):
     """
     Test Endpoint functionality.
     """
@@ -84,7 +84,7 @@ class TestEndpoint(unittest.TestCase):
         Passing custom headers to Endpoint._get()
         """
         endpoint = Endpoint(self.root, '/', self.token)
-        resp = endpoint._get_raw(self.root, headers={'x-foo': 'bar'})
+        resp = endpoint._get_raw(self.root + '/v2/storage', headers={'x-foo': 'bar'})
         request_headers = resp.request.headers
         with self.subTest():
             self.assertIn('x-foo', request_headers)

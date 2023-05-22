@@ -13,7 +13,10 @@ setup(
     install_requires=[
         'boto3',
         'azure-storage-blob',
-        'requests'
+        'requests',
+        'responses',
+        'python-dotenv',
+        'urllib3<2.0.0'  # Frozen until fixed: https://github.com/boto/botocore/issues/2926
     ],
     test_suite='tests',
     tests_require=['responses'],

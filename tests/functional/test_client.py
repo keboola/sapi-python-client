@@ -1,14 +1,13 @@
 import csv
 import os
 import tempfile
-import unittest
 import warnings
-
 from requests import exceptions
 from kbcstorage.client import Client
+from tests.base_test_case import BaseTestCase
 
 
-class TestClient(unittest.TestCase):
+class TestEndpoint(BaseTestCase):
     def setUp(self):
         self.client = Client(os.getenv('KBC_TEST_API_URL'),
                              os.getenv('KBC_TEST_TOKEN'))

@@ -1,14 +1,14 @@
 import os
-import unittest
 import tempfile
 import csv
 import warnings
 from requests import exceptions
 from kbcstorage.tables import Tables
 from kbcstorage.buckets import Buckets
+from tests.base_test_case import BaseTestCase
 
 
-class TestTables(unittest.TestCase):
+class TestEndpoint(BaseTestCase):
     def setUp(self):
         self.tables = Tables(os.getenv('KBC_TEST_API_URL'),
                              os.getenv('KBC_TEST_TOKEN'))
