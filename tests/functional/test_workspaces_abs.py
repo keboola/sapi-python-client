@@ -22,8 +22,8 @@ class TestEndpoint(BaseTestCase):
 
     # test load files into an abs workspace
     def test_load_files_to_workspace(self):
-        if os.getenv('SKIP_ABS_TESTS'):
-            self.skipTest('Skipping ABS test because env var SKIP_ABS_TESTS was set')
+        if int(os.getenv('SKIP_ABS_TESTS', 0)):
+            self.skipTest(f"Skipping ABS test because env var SKIP_ABS_TESTS was set: '{os.getenv('SKIP_ABS_TESTS')}'")
         # put a test file to storage
         file, path = tempfile.mkstemp(prefix='sapi-test')
         os.write(file, bytes('fooBar', 'utf-8'))
