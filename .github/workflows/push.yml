@@ -33,10 +33,10 @@ jobs:
         run: docker login --username "$DOCKERHUB_USER" --password "$DOCKERHUB_TOKEN"
 
       - name: Build image
-        run: docker build -t $APP_IMAGE .
+        run: docker-compose build ci
 
       - name: Check image
-        run: docker-compose run --rm sapi-python-client -m flake8
+        run: docker-compose run --rm ci -m flake8
 
       - name: Set image tag
         id: tag
@@ -67,7 +67,7 @@ jobs:
 
       - name: Run Tests
         run: |
-          docker-compose run --rm -e KBC_TEST_TOKEN=$KBC_TEST_TOKEN -e KBC_TEST_API_URL=$KBC_TEST_API_URL -e SKIP_ABS_TESTS=1 sapi-python-client -m unittest --verbose
+          docker-compose run --rm -e KBC_TEST_TOKEN=$KBC_TEST_TOKEN -e KBC_TEST_API_URL=$KBC_TEST_API_URL -e SKIP_ABS_TESTS=1 ci -m unittest --verbose
 
   tests_azure:
     name: Run tests (Azure)
@@ -84,7 +84,7 @@ jobs:
 
       - name: Run Tests
         run: |
-          docker-compose run --rm -e KBC_TEST_TOKEN=$KBC_AZ_TEST_TOKEN -e KBC_TEST_API_URL=$KBC_AZ_TEST_API_URL -e SKIP_ABS_TESTS=0 sapi-python-client -m unittest --verbose
+          docker-compose run --rm -e KBC_TEST_TOKEN=$KBC_AZ_TEST_TOKEN -e KBC_TEST_API_URL=$KBC_AZ_TEST_API_URL -e SKIP_ABS_TESTS=1 ci -m unittest --verbose
 
   deploy_to_pypi:
     needs:
