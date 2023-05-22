@@ -1,11 +1,9 @@
 import csv
 import os
 import tempfile
-import warnings
 from requests import exceptions
 from kbcstorage.buckets import Buckets
 from kbcstorage.jobs import Jobs
-from kbcstorage.files import Files
 from kbcstorage.tables import Tables
 from kbcstorage.workspaces import Workspaces
 from tests.base_test_case import BaseTestCase
@@ -17,22 +15,11 @@ class TestEndpoint(BaseTestCase):
         self.buckets = Buckets(os.getenv('KBC_TEST_API_URL'), os.getenv('KBC_TEST_TOKEN'))
         self.jobs = Jobs(os.getenv('KBC_TEST_API_URL'), os.getenv('KBC_TEST_TOKEN'))
         self.tables = Tables(os.getenv('KBC_TEST_API_URL'), os.getenv('KBC_TEST_TOKEN'))
-        self.files = Files(os.getenv('KBC_TEST_API_URL'), os.getenv('KBC_TEST_TOKEN'))
-        try:
-            file_list = self.files.list(tags=['sapi-client-python-tests'])
-            for file in file_list:
-                self.files.delete(file['id'])
-        except exceptions.HTTPError as e:
-            if e.response.status_code != 404:
-                raise
         try:
             self.buckets.delete('in.c-py-test-buckets', force=True)
         except exceptions.HTTPError as e:
             if e.response.status_code != 404:
                 raise
-
-        # https://github.com/boto/boto3/issues/454
-        warnings.simplefilter("ignore", ResourceWarning)
 
     def tearDown(self):
         try:
