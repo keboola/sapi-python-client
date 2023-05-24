@@ -38,7 +38,6 @@ class TestEndpoint(BaseTestCase):
                     self.assertFalse('rows' in configuration)
                     self.assertFalse('state' in configuration)
 
-
     def testListComponentsIncludeConfigurations(self):
         components = self.components.list(include=['configuration', 'rows', 'state'])
         self.assertTrue(len(components) > 0)
