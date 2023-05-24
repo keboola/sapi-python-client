@@ -96,6 +96,8 @@ class Configurations(Endpoint):
         Raises:
             requests.HTTPError: If the API request fails.
         """
+        if not isinstance(component_id, str) or component_id == '':
+            raise ValueError("Invalid component_id '{}'.".format(component_id))
         if state is None:
             state = {}
         if configuration is None:
