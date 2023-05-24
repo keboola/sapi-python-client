@@ -30,7 +30,7 @@ class TestEndpoint(BaseTestCase):
                 self.assertTrue('uri' in component)
 
             with self.subTest():
-                self.assertFalse('configuration' in component)
+                self.assertFalse('configurations' in component)
 
     def testListComponentsIncludeConfigurations(self):
         components = self.components.list(include=['configuration'])
