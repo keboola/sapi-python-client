@@ -30,10 +30,17 @@ class TestEndpoint(BaseTestCase):
                 self.assertTrue('uri' in component)
 
             with self.subTest():
-                self.assertFalse('configurations' in component)
+                for configuration in component['configurations']:
+                    self.assertTrue('id' in configuration)
+                    self.assertTrue('name' in configuration)
+                    self.assertTrue('description' in configuration)
+                    self.assertFalse('configuration' in configuration)
+                    self.assertFalse('rows' in configuration)
+                    self.assertFalse('state' in configuration)
+
 
     def testListComponentsIncludeConfigurations(self):
-        components = self.components.list(include=['configuration'])
+        components = self.components.list(include=['configuration', 'rows', 'state'])
         self.assertTrue(len(components) > 0)
         for component in components:
             with self.subTest():
@@ -49,3 +56,5 @@ class TestEndpoint(BaseTestCase):
                     self.assertTrue('name' in configuration)
                     self.assertTrue('description' in configuration)
                     self.assertTrue('configuration' in configuration)
+                    self.assertTrue('rows' in configuration)
+                    self.assertTrue('state' in configuration)
