@@ -4,6 +4,7 @@ from dotenv import load_dotenv
 
 
 class BaseTestCase(unittest.TestCase):
+    TEST_COMPONENT_NAME = 'keboola.runner-config-test'
 
     @classmethod
     def setUpClass(cls) -> None:
