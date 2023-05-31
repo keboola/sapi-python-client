@@ -30,7 +30,7 @@ class TestBranchesEndpointWithMocks(unittest.TestCase):
                 json=branches_metadata_response
             )
         )
-        branch_metadata = self.branches.metadata('default')
+        branch_metadata = self.branches.metadata()
         self.assertEqual(branches_metadata_response, branch_metadata)
 
     @responses.activate
