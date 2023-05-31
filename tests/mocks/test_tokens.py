@@ -9,9 +9,9 @@ from kbcstorage.tokens import Tokens
 from tests.mocks.token_responses import verify_token_response
 
 
-class TestTablesEndpointWithMocks(unittest.TestCase):
+class TestTokensEndpointWithMocks(unittest.TestCase):
     """
-    Test the methods of a Tables endpoint instance with mock HTTP responses
+    Test the methods of a Tokens endpoint instance with mock HTTP responses
     """
     def setUp(self):
         token = 'dummy_token'
@@ -21,7 +21,7 @@ class TestTablesEndpointWithMocks(unittest.TestCase):
     @responses.activate
     def test_verify(self):
         """
-        Tables mocks list correctly
+        Verify token returns correctly
         """
         responses.add(
             responses.Response(
