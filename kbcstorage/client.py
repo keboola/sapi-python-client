@@ -5,6 +5,7 @@ Entry point for the Storage API client.
 from kbcstorage.buckets import Buckets
 from kbcstorage.components import Components
 from kbcstorage.configurations import Configurations
+from kbcstorage.tokens import Tokens
 from kbcstorage.workspaces import Workspaces
 from kbcstorage.jobs import Jobs
 from kbcstorage.tables import Tables
@@ -37,6 +38,7 @@ class Client:
         self.workspaces = Workspaces(self.root_url, self.token)
         self.components = Components(self.root_url, self.token, self.branch_id)
         self.configurations = Configurations(self.root_url, self.token, self.branch_id)
+        self.tokens = Tokens(self.root_url, self.token)
 
     @property
     def token(self):
