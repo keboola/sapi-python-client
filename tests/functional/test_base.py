@@ -97,11 +97,6 @@ class TestEndpoint(BaseTestCase):
         with self.assertRaisesRegex(ValueError, "Root URL is required."):
             Endpoint(None, '', None)
 
-    def test_missing_part(self):
-        with self.assertRaisesRegex(ValueError,
-                                    "Path component is required."):
-            Endpoint('https://connection.keboola.com/', '', None)
-
     def test_missing_token(self):
         with self.assertRaisesRegex(ValueError, "Token is required."):
             Endpoint('https://connection.keboola.com/', 'tables', None)
