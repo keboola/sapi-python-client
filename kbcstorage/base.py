@@ -35,8 +35,6 @@ class Endpoint:
         """
         if not root_url:
             raise ValueError("Root URL is required.")
-        if not path_component:
-            raise ValueError("Path component is required.")
         if not token:
             raise ValueError("Token is required.")
         self.root_url = root_url
