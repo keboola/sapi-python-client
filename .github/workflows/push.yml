@@ -91,7 +91,7 @@ jobs:
       - tests_aws
       - tests_azure
     runs-on: ubuntu-latest
-    if: startsWith(github.ref, 'refs/tags/') && needs.build_and_test.outputs.is_semantic_tag == 'true'
+    if: startsWith(github.ref, 'refs/tags/') && needs.build.outputs.is_semantic_tag == 'true'
     steps:
       - name: Checkout the repo
         uses: actions/checkout@v3
