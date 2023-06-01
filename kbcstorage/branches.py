@@ -21,9 +21,9 @@ class Branches(Endpoint):
         """
         # Branches have inconsistent endpoint naming - it's either dev-branches or branch, so it need to be resolved
         # endpoint by endpoint.
-        super().__init__(root_url, '', token)
+        super().__init__(root_url, "", token)
 
-    def metadata(self, branch_id = 'default'):
+    def metadata(self, branch_id="default"):
         """
         Get branch metadata
 
