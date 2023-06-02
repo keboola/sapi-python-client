@@ -1,5 +1,5 @@
 [build-system]
-requires = ["setuptools", "setuptools-scm"]
+requires = ["setuptools", "setuptools-scm", "setuptools-git-versioning"]
 build-backend = "setuptools.build_meta"
 
 [project]
@@ -28,3 +28,6 @@ dependencies = [
     "python-dotenv",
 ]
 dynamic = ["version"]
+
+[tool.setuptools-git-versioning]
+enabled = true
