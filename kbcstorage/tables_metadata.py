@@ -28,6 +28,24 @@ class TablesMetadata(Endpoint):
         """
         super().__init__(root_url, 'tables', token)
 
+    def list(self, table_id):
+        """
+        List all metadata for table
+
+        Returns:
+            response_body: The parsed json from the HTTP response.
+
+        Raises:
+            requests.HTTPError: If the API request fails.
+            ValueError: If the table_id is not a string or is empty.
+        """
+        if not isinstance(table_id, str) or table_id == '':
+            raise ValueError("Invalid table_id '{}'.".format(table_id))
+
+        url = '{}/{}/metadata'.format(self.base_url, table_id)
+
+        return self._get(url)
+
     def create(self, table_id, provider, metadata, columns_metadata):
           """
           Post metadata to a table.

@@ -375,3 +375,11 @@ class TestEndpoint(BaseTestCase):
             self.assertEqual('test', table_info['columnMetadata']['col1'][0]['provider'])
             self.assertIn('timestamp', table_info['columnMetadata']['col1'][0])
             self.assertEqual('success', table_info['columnMetadata']['col1'][0]['value'])
+
+        listedMetadata = self.tables.metadata.list(table_id=table_id);
+
+        with self.subTest("Test metadata key in list response"):
+            self.assertEqual(1, len(listedMetadata))
+            self.assertEqual('test_table_with_metadata', listedMetadata[0]['key'])
+            self.assertEqual('test', listedMetadata[0]['provider'])
+            self.assertEqual('success', listedMetadata[0]['value'])
