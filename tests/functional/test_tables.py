@@ -383,3 +383,9 @@ class TestEndpoint(BaseTestCase):
             self.assertEqual('test_table_with_metadata', listedMetadata[0]['key'])
             self.assertEqual('test', listedMetadata[0]['provider'])
             self.assertEqual('success', listedMetadata[0]['value'])
+
+        self.tables.metadata.delete(table_id=table_id, metadata_id=listedMetadata[0]['id'])
+
+        listedMetadata = self.tables.metadata.list(table_id=table_id);
+        with self.subTest('Test metadata can was deleted'):
+            self.assertEqual(0, len(listedMetadata))

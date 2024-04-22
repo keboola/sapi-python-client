@@ -46,6 +46,26 @@ class TablesMetadata(Endpoint):
 
         return self._get(url)
 
+    def delete(self, table_id, metadata_id):
+        """
+        Delete a table referenced by ``table_id``.
+
+        Args:
+            table_id (str): The id of the table to be deleted.
+
+        Raises:
+            requests.HTTPError: If the API request fails.
+            ValueError: If the table_id is not a string or is empty.
+        """
+        if not isinstance(table_id, str) or table_id == '':
+            raise ValueError("Invalid table_id '{}'.".format(table_id))
+        if not isinstance(metadata_id, str) or metadata_id == '':
+            raise ValueError("Invalid metadata_id '{}'.".format(metadata_id))
+
+        url = '{}/{}/metadata/{}'.format(self.base_url, table_id, metadata_id)
+
+        self._delete(url)
+
     def create(self, table_id, provider, metadata, columns_metadata):
           """
           Post metadata to a table.
