@@ -11,6 +11,8 @@ import os
 from kbcstorage.base import Endpoint
 from kbcstorage.files import Files
 from kbcstorage.jobs import Jobs
+from kbcstorage.tables_metadata import TablesMetadata
+
 
 
 class Tables(Endpoint):
@@ -26,6 +28,7 @@ class Tables(Endpoint):
             token (:obj:`str`): A storage API key.
         """
         super().__init__(root_url, 'tables', token)
+        self.metadata = TablesMetadata(root_url, token)
 
     def list(self, include=None):
         """

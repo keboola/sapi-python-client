@@ -5,6 +5,7 @@ import warnings
 from requests import exceptions
 from kbcstorage.tables import Tables
 from kbcstorage.buckets import Buckets
+from kbcstorage.tables_metadata import TablesMetadata
 from tests.base_test_case import BaseTestCase
 
 
@@ -327,3 +328,50 @@ class TestEndpoint(BaseTestCase):
         with open(local_path, mode='rt') as file:
             lines = file.readlines()
         self.assertEqual(['"col3","col2"\n', '"king","pong"\n'], sorted(lines))
+
+    def test_table_with_metadata(self):
+        file, path = tempfile.mkstemp(prefix='sapi-test')
+        with open(path, 'w') as csv_file:
+            writer = csv.DictWriter(csv_file, fieldnames=['col1', 'col2'],
+                                    lineterminator='\n', delimiter=',',
+                                    quotechar='"')
+            writer.writeheader()
+            writer.writerow({'col1': 'ping', 'col2': 'pong'})
+        os.close(file)
+        table_id = self.tables.create(name='some-table', file_path=path,
+                                      bucket_id='in.c-py-test-tables')
+
+        self.tables.metadata.create(
+            table_id=table_id,
+            provider='test',
+            metadata=[{
+                'key' : 'test_table_with_metadata',
+                'value' : 'success'
+                }],
+            columns_metadata={
+                'col1' : [{
+                    'key' : 'test_column_with_metadata',
+                    'value' : 'success'
+                    }]
+                })
+
+        table_info = self.tables.detail(table_id)
+        with self.subTest("Test metadata key in response"):
+            self.assertIn('metadata', table_info)
+        with self.subTest("Test metadata structure"):
+            self.assertEqual(1, len(table_info['metadata']))
+            self.assertIn('id', table_info['metadata'][0])
+            self.assertEqual('test_table_with_metadata', table_info['metadata'][0]['key'])
+            self.assertEqual('test', table_info['metadata'][0]['provider'])
+            self.assertIn('timestamp', table_info['metadata'][0])
+            self.assertEqual('success', table_info['metadata'][0]['value'])
+        with self.subTest('Test columns metadata key in response'):
+            self.assertIn('columnMetadata', table_info)
+        with self.subTest('Test columns metadata structure'):
+            self.assertIn('col1', table_info['columnMetadata'])
+            self.assertEqual(1, len(table_info['columnMetadata']['col1']))
+            self.assertIn('id', table_info['columnMetadata']['col1'][0])
+            self.assertEqual('test_column_with_metadata', table_info['columnMetadata']['col1'][0]['key'])
+            self.assertEqual('test', table_info['columnMetadata']['col1'][0]['provider'])
+            self.assertIn('timestamp', table_info['columnMetadata']['col1'][0])
+            self.assertEqual('success', table_info['columnMetadata']['col1'][0]['value'])
