@@ -5,7 +5,6 @@ import warnings
 from requests import exceptions
 from kbcstorage.tables import Tables
 from kbcstorage.buckets import Buckets
-from kbcstorage.tables_metadata import TablesMetadata
 from tests.base_test_case import BaseTestCase
 
 
@@ -345,13 +344,13 @@ class TestEndpoint(BaseTestCase):
             table_id=table_id,
             provider='test',
             metadata=[{
-                'key' : 'test_table_with_metadata',
-                'value' : 'success'
+                'key': 'test_table_with_metadata',
+                'value': 'success'
                 }],
             columns_metadata={
-                'col1' : [{
-                    'key' : 'test_column_with_metadata',
-                    'value' : 'success'
+                'col1': [{
+                    'key': 'test_column_with_metadata',
+                    'value': 'success'
                     }]
                 })
 
@@ -376,7 +375,7 @@ class TestEndpoint(BaseTestCase):
             self.assertIn('timestamp', table_info['columnMetadata']['col1'][0])
             self.assertEqual('success', table_info['columnMetadata']['col1'][0]['value'])
 
-        listedMetadata = self.tables.metadata.list(table_id=table_id);
+        listedMetadata = self.tables.metadata.list(table_id=table_id)
 
         with self.subTest("Test metadata key in list response"):
             self.assertEqual(1, len(listedMetadata))
@@ -386,6 +385,6 @@ class TestEndpoint(BaseTestCase):
 
         self.tables.metadata.delete(table_id=table_id, metadata_id=listedMetadata[0]['id'])
 
-        listedMetadata = self.tables.metadata.list(table_id=table_id);
+        listedMetadata = self.tables.metadata.list(table_id=table_id)
         with self.subTest('Test metadata can was deleted'):
             self.assertEqual(0, len(listedMetadata))

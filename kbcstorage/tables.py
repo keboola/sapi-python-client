@@ -14,7 +14,6 @@ from kbcstorage.jobs import Jobs
 from kbcstorage.tables_metadata import TablesMetadata
 
 
-
 class Tables(Endpoint):
     """
     Tables Endpoint
