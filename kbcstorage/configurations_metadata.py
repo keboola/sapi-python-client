@@ -1,7 +1,7 @@
 """
-Manages calls to the Storage API relating to configurations
+Manages calls to the Storage API relating to configurations metadata
 
-Full documentation https://keboola.docs.apiary.io/#reference/components-and-configurations
+Full documentation https://keboola.docs.apiary.io/#reference/metadata/components-configurations-metadata/
 """
 import json
 from kbcstorage.base import Endpoint
@@ -9,12 +9,12 @@ from kbcstorage.base import Endpoint
 
 class ConfigurationsMetadata(Endpoint):
     """
-    Configurations Endpoint
+    Configurations metadata Endpoint
     """
 
     def __init__(self, root_url, token, branch_id):
         """
-        Create a Component endpoint.
+        Create a Component metadata endpoint.
 
         Args:
             root_url (:obj:`str`): The base url for the API.
@@ -23,37 +23,18 @@ class ConfigurationsMetadata(Endpoint):
         """
         super().__init__(root_url, f"branch/{branch_id}/components", token)
 
-    def detail(self, component_id, configuration_id):
-        """
-        Retrieves information about a given configuration.
-
-        Args:
-            component_id (str): The id of the component.
-            configuration_id (str): The id of the configuration.
-
-        Returns:
-            response_body: The parsed json from the HTTP response.
-
-        Raises:
-            requests.HTTPError: If the API request fails.
-        """
-        if not isinstance(component_id, str) or component_id == '':
-            raise ValueError("Invalid component_id '{}'.".format(component_id))
-        if not isinstance(configuration_id, str) or configuration_id == '':
-            raise ValueError("Invalid component_id '{}'.".format(configuration_id))
-        url = '{}/{}/configs/{}'.format(self.base_url, component_id, configuration_id)
-        return self._get(url)
-
     def delete(self, component_id, configuration_id, metadata_id):
         """
-        Deletes the configuration.
+        Deletes the configuration metadata identified by ``metadata_id``.
 
         Args:
             component_id (str): The id of the component.
             configuration_id (str): The id of the configuration.
+            metadata_id (str): The id of the metadata (not key!).
 
         Raises:
             requests.HTTPError: If the API request fails.
+            ValueError: If the component_id/configuration_id/metadata_id is not a string or is empty.
         """
         if not isinstance(component_id, str) or component_id == '':
             raise ValueError("Invalid component_id '{}'.".format(component_id))
@@ -66,34 +47,41 @@ class ConfigurationsMetadata(Endpoint):
 
     def list(self, component_id, configuration_id):
         """
-        Lists configurations of the given component.
+        Lists metadata for a given component configuration.
 
         Args:
             component_id (str): The id of the component.
+            configuration_id (str): The id of the configuration.
 
         Raises:
             requests.HTTPError: If the API request fails.
+            ValueError: If the component_id/configuration_id is not a string or is empty.
         """
         if not isinstance(component_id, str) or component_id == '':
             raise ValueError("Invalid component_id '{}'.".format(component_id))
+        if not isinstance(configuration_id, str) or configuration_id == '':
+            raise ValueError("Invalid configuration_id '{}'.".format(configuration_id))
         url = '{}/{}/configs/{}/metadata'.format(self.base_url, component_id, configuration_id)
         return self._get(url)
 
     def create(self, component_id, configuration_id, provider, metadata):
         """
-        Create a new configuration.
+        Writes metadata for a given component configuration.
 
         Args:
             component_id (str): The id of the component.
             configuration (str): The id of the configuration.
             provider (str): The provider of the configuration (currently ignored and "user" is sent).
-            key (str): The key of the configuration.
-            value (str): The value of the configuration.
+            metadata (list): A list of metadata items. Item is a dictionary with 'key' and 'value' keys.
+
         Returns:
             response_body: The parsed json from the HTTP response.
 
         Raises:
             requests.HTTPError: If the API request fails.
+            ValueError: If the component_id/configuration_id is not a string or is empty.
+            ValueError: If the metadata is not a list.
+            ValueError: If the metadata item is not a dictionary.
         """
         if not isinstance(component_id, str) or component_id == '':
             raise ValueError("Invalid component_id '{}'.".format(component_id))

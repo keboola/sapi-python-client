@@ -16,7 +16,7 @@ class TablesMetadata(Endpoint):
     """
     def __init__(self, root_url, token):
         """
-        Create a Tables endpoint.
+        Create a Tables metadata endpoint.
 
         Args:
             root_url (:obj:`str`): The base url for the API.
@@ -27,6 +27,9 @@ class TablesMetadata(Endpoint):
     def list(self, table_id):
         """
         List all metadata for table
+
+        Args:
+            table_id (str): Table id
 
         Returns:
             response_body: The parsed json from the HTTP response.
@@ -44,14 +47,15 @@ class TablesMetadata(Endpoint):
 
     def delete(self, table_id, metadata_id):
         """
-        Delete a table referenced by ``table_id``.
+        Delete a table metadata referenced by ``metadata_id``.
 
         Args:
-            table_id (str): The id of the table to be deleted.
+            table_id (str): The id of the table.
+            metadata_id (str): The id of the table metdata entry to be deleted.
 
         Raises:
             requests.HTTPError: If the API request fails.
-            ValueError: If the table_id is not a string or is empty.
+            ValueError: If the table_id/metadata_id is not a string or is empty.
         """
         if not isinstance(table_id, str) or table_id == '':
             raise ValueError("Invalid table_id '{}'.".format(table_id))
@@ -70,13 +74,17 @@ class TablesMetadata(Endpoint):
             table_id (str): Table id
             provider (str): Provider of the metadata
             metadata (list): List of metadata dictionaries with 'key' and 'value'
-            columns_metadata (dict): Dictionary with column metadata
+            columns_metadata (dict): Dictionary with lists of metadata dictionaries with 'key', 'value', 'columnName'.
 
         Returns:
             response_body: The parsed json from the HTTP response.
 
         Raises:
             requests.HTTPError: If the API request fails.
+            ValueError: If the table_id is not a string or is empty.
+            ValueError: If the provider is not a string or is empty.
+            ValueError: If the metadata is not a list.
+            ValueError: If the columns_metadata is not a list
         """
         if not isinstance(table_id, str) or table_id == '':
             raise ValueError("Invalid table_id '{}'.".format(table_id))
