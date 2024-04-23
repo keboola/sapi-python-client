@@ -3,6 +3,7 @@ Manages calls to the Storage API relating to configurations
 
 Full documentation https://keboola.docs.apiary.io/#reference/components-and-configurations
 """
+import json
 from kbcstorage.base import Endpoint
 
 
@@ -111,6 +112,6 @@ class Configurations(Endpoint):
             'isDisabled': is_disabled
         }
         if configuration_id:
-            body['id'] = configuration_id
+            body['configurationId'] = configuration_id
         url = '{}/{}/configs'.format(self.base_url, component_id)
-        return self._post(url, data=body)
+        return self._post(url, data=json.dumps(body), headers={'Content-Type': 'application/json'})
