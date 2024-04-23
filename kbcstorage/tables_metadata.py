@@ -84,7 +84,6 @@ class TablesMetadata(Endpoint):
         url = '{}/{}/metadata'.format(self.base_url, table_id)
         headers = {
             'Content-Type': 'application/json',
-            'X-StorageApi-Token': self.token
         }
         data = {
             "provider": provider,

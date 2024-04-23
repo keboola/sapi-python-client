@@ -106,7 +106,6 @@ class ConfigurationsMetadata(Endpoint):
 
         headers = {
               'Content-Type': 'application/json',
-              'X-StorageApi-Token': self.token
         }
         data = {
             # 'provider': provider, # not yet implemented
