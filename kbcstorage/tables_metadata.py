@@ -92,7 +92,7 @@ class TablesMetadata(Endpoint):
             raise ValueError("Invalid provider '{}'.".format(provider))
         if not isinstance(metadata, list):
             raise ValueError("Invalid metadata '{}'.".format(metadata))
-        if not isinstance(columns_metadata, dict):
+        if not isinstance(columns_metadata, list):
             raise ValueError("Invalid columns_metadata '{}'.".format(columns_metadata))
 
         url = '{}/{}/metadata'.format(self.base_url, table_id)

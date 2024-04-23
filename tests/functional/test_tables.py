@@ -348,9 +348,10 @@ class TestEndpoint(BaseTestCase):
                 'value': 'success'
                 }],
             columns_metadata={
-                'col1': [{
+                [{
                     'key': 'test_column_with_metadata',
-                    'value': 'success'
+                    'value': 'success',
+                    'columnName': 'col1'
                     }]
                 })
 
