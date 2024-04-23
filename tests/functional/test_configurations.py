@@ -50,3 +50,56 @@ class TestEndpoint(BaseTestCase):
         with self.subTest():
             with self.assertRaises(exceptions.HTTPError):
                 configurations = self.configurations.list('non-existent-component')
+
+    def testConfigurationMetadata(self):
+        self.configurations.create(
+            component_id=self.TEST_COMPONENT_NAME,
+            configuration_id='test_configuration_metadata',
+            name='test_configuration_metadata',
+        )
+        metadataPayload = [
+            {
+                'key': 'testConfigurationMetadata',
+                'value': 'success',
+            }
+        ]
+        metadataList = self.configurations.metadata.create(
+            component_id=self.TEST_COMPONENT_NAME,
+            configuration_id='test_configuration_metadata',
+            provider='test',
+            metadata=metadataPayload,
+        )
+
+        with (self.subTest('assert metadata create response')):
+            self.assertEqual(1, len(metadataList))
+            metadataItem = metadataList[0]
+            self.assertTrue('id' in metadataItem)
+            # self.assertTrue('provider' in metadata) not yet
+            self.assertTrue('key' in metadataItem)
+            self.assertTrue('value' in metadataItem)
+
+            metadataList = self.configurations.metadata.list(
+                component_id=self.TEST_COMPONENT_NAME,
+                configuration_id='test_configuration_metadata'
+            )
+
+        with (self.subTest('assert metadata list response')):
+            self.assertTrue(len(metadataList) > 0)
+            for metadataList in metadataList:
+                self.assertTrue('id' in metadataList)
+                # self.assertTrue('provider' in metadata) not yet
+                self.assertTrue('key' in metadataList)
+                self.assertTrue('value' in metadataList)
+
+        self.configurations.metadata.delete(
+            component_id=self.TEST_COMPONENT_NAME,
+            configuration_id='test_configuration_metadata',
+            metadata_id=metadataList['id']
+        )
+        metadataList = self.configurations.metadata.list(
+            component_id=self.TEST_COMPONENT_NAME,
+            configuration_id='test_configuration_metadata'
+        )
+
+        with (self.subTest('assert metadata delete means metadata no longer in list')):
+            self.assertTrue(len(metadataList) == 0)

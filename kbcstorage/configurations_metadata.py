@@ -5,10 +5,9 @@ Full documentation https://keboola.docs.apiary.io/#reference/components-and-conf
 """
 import json
 from kbcstorage.base import Endpoint
-from kbcstorage.configurations_metadata import ConfigurationsMetadata
 
 
-class Configurations(Endpoint):
+class ConfigurationsMetadata(Endpoint):
     """
     Configurations Endpoint
     """
@@ -23,7 +22,6 @@ class Configurations(Endpoint):
             branch_id (str): The ID of branch to use, use 'default' to work without branch (in main).
         """
         super().__init__(root_url, f"branch/{branch_id}/components", token)
-        self.metadata = ConfigurationsMetadata(root_url, token, branch_id)
 
     def detail(self, component_id, configuration_id):
         """
@@ -46,7 +44,7 @@ class Configurations(Endpoint):
         url = '{}/{}/configs/{}'.format(self.base_url, component_id, configuration_id)
         return self._get(url)
 
-    def delete(self, component_id, configuration_id):
+    def delete(self, component_id, configuration_id, metadata_id):
         """
         Deletes the configuration.
 
@@ -61,10 +59,10 @@ class Configurations(Endpoint):
             raise ValueError("Invalid component_id '{}'.".format(component_id))
         if not isinstance(configuration_id, str) or configuration_id == '':
             raise ValueError("Invalid component_id '{}'.".format(configuration_id))
-        url = '{}/{}/configs/{}'.format(self.base_url, component_id, configuration_id)
+        url = '{}/{}/configs/{}/metadata/{}'.format(self.base_url, component_id, configuration_id, metadata_id)
         self._delete(url)
 
-    def list(self, component_id):
+    def list(self, component_id, configuration_id):
         """
         Lists configurations of the given component.
 
@@ -76,23 +74,19 @@ class Configurations(Endpoint):
         """
         if not isinstance(component_id, str) or component_id == '':
             raise ValueError("Invalid component_id '{}'.".format(component_id))
-        url = '{}/{}/configs'.format(self.base_url, component_id)
+        url = '{}/{}/configs/{}/metadata'.format(self.base_url, component_id, configuration_id)
         return self._get(url)
 
-    def create(self, component_id, name, description='', configuration=None, state=None, change_description='',
-               is_disabled=False, configuration_id=None):
+    def create(self, component_id, configuration_id, provider, metadata):
         """
         Create a new configuration.
 
         Args:
-            component_id (str): ID of the component to create configuration for.
-            name (str): Name of the configuration visible to end-user.
-            description (str): Optional configuration description
-            configuration (dict): Actual configuration parameters
-            state (dict): Optional state parameters
-            changeDescription (str): Optional change description
-            is_disabled (bool): Optional flag to disable the configuration, default False
-            configuration_id (str): Optional configuration ID, if not specified, new ID is generated
+            component_id (str): The id of the component.
+            configuration (str): The id of the configuration.
+            provider (str): The provider of the configuration (currently ignored and "user" is sent).
+            key (str): The key of the configuration.
+            value (str): The value of the configuration.
         Returns:
             response_body: The parsed json from the HTTP response.
 
@@ -101,19 +95,21 @@ class Configurations(Endpoint):
         """
         if not isinstance(component_id, str) or component_id == '':
             raise ValueError("Invalid component_id '{}'.".format(component_id))
-        if state is None:
-            state = {}
-        if configuration is None:
-            configuration = {}
-        body = {
-            'name': name,
-            'description': description,
-            'configuration': configuration,
-            'state': state,
-            'changeDescription': change_description,
-            'isDisabled': is_disabled
+        if not isinstance(configuration_id, str) or configuration_id == '':
+            raise ValueError("Invalid component_id '{}'.".format(configuration_id))
+        url = '{}/{}/configs/{}/metadata'.format(self.base_url, component_id, configuration_id)
+        if not isinstance(metadata, list):
+            raise ValueError("Metadata must be a list '{}'.".format(metadata))
+        for metadataItem in metadata:
+            if not isinstance(metadataItem, dict):
+                raise ValueError("Metadata item must be a dictionary '{}'.".format(metadataItem))
+
+        headers = {
+              'Content-Type': 'application/json',
+              'X-StorageApi-Token': self.token
         }
-        if configuration_id:
-            body['configurationId'] = configuration_id
-        url = '{}/{}/configs'.format(self.base_url, component_id)
-        return self._post(url, data=json.dumps(body), headers={'Content-Type': 'application/json'})
+        data = {
+            # 'provider': provider, # not yet implemented
+            'metadata': metadata
+        }
+        return self._post(url, data=json.dumps(data), headers=headers)
