@@ -80,6 +80,12 @@ class TablesMetadata(Endpoint):
         """
         if not isinstance(table_id, str) or table_id == '':
             raise ValueError("Invalid table_id '{}'.".format(table_id))
+        if not isinstance(provider, str) or provider == '':
+            raise ValueError("Invalid provider '{}'.".format(provider))
+        if not isinstance(metadata, list):
+            raise ValueError("Invalid metadata '{}'.".format(metadata))
+        if not isinstance(columns_metadata, dict):
+            raise ValueError("Invalid columns_metadata '{}'.".format(columns_metadata))
 
         url = '{}/{}/metadata'.format(self.base_url, table_id)
         headers = {

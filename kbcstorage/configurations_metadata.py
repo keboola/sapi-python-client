@@ -58,7 +58,9 @@ class ConfigurationsMetadata(Endpoint):
         if not isinstance(component_id, str) or component_id == '':
             raise ValueError("Invalid component_id '{}'.".format(component_id))
         if not isinstance(configuration_id, str) or configuration_id == '':
-            raise ValueError("Invalid component_id '{}'.".format(configuration_id))
+            raise ValueError("Invalid configuration_id '{}'.".format(configuration_id))
+        if not isinstance(metadata_id, str) or metadata_id == '':
+            raise ValueError("Invalid metadata_id '{}'.".format(metadata_id))
         url = '{}/{}/configs/{}/metadata/{}'.format(self.base_url, component_id, configuration_id, metadata_id)
         self._delete(url)
 
