@@ -12,6 +12,6 @@ services:
     <<: *ci
     tty: true
     stdin_open: true
-    command: bash
+    entrypoint: bash
     volumes:
       - .:/code

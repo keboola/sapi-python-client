@@ -3,7 +3,9 @@ Manages calls to the Storage API relating to configurations
 
 Full documentation https://keboola.docs.apiary.io/#reference/components-and-configurations
 """
+import json
 from kbcstorage.base import Endpoint
+from kbcstorage.configurations_metadata import ConfigurationsMetadata
 
 
 class Configurations(Endpoint):
@@ -21,6 +23,7 @@ class Configurations(Endpoint):
             branch_id (str): The ID of branch to use, use 'default' to work without branch (in main).
         """
         super().__init__(root_url, f"branch/{branch_id}/components", token)
+        self.metadata = ConfigurationsMetadata(root_url, token, branch_id)
 
     def detail(self, component_id, configuration_id):
         """
@@ -111,6 +114,6 @@ class Configurations(Endpoint):
             'isDisabled': is_disabled
         }
         if configuration_id:
-            body['id'] = configuration_id
+            body['configurationId'] = configuration_id
         url = '{}/{}/configs'.format(self.base_url, component_id)
-        return self._post(url, data=body)
+        return self._post(url, data=json.dumps(body), headers={'Content-Type': 'application/json'})
