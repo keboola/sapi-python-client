@@ -347,13 +347,16 @@ class TestEndpoint(BaseTestCase):
                 'key': 'test_table_with_metadata',
                 'value': 'success'
                 }],
-            columns_metadata={
-                [{
-                    'key': 'test_column_with_metadata',
-                    'value': 'success',
-                    'columnName': 'col1'
-                    }]
-                })
+            columns_metadata=[
+                [
+                    {
+                        'key': 'test_column_with_metadata',
+                        'value': 'success',
+                        'columnName': 'col1'
+                    }
+                ]
+            ]
+        )
 
         table_info = self.tables.detail(table_id)
         with self.subTest("Test metadata key in response"):
