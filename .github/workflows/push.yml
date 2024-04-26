@@ -13,6 +13,8 @@ env:
   KBC_TEST_API_URL: https://connection.keboola.com
   KBC_AZ_TEST_TOKEN: ${{ secrets.KBC_AZ_TEST_TOKEN }}
   KBC_AZ_TEST_API_URL: https://connection.north-europe.azure.keboola.com
+  KBC_GCP_TEST_TOKEN: ${{ secrets.KBC_GCP_TEST_TOKEN }}
+  KBC_GCP_TEST_API_URL: https://connection.europe-west3.gcp.keboola.com
   APP_IMAGE: sapi-python-client
 
 jobs:
@@ -85,6 +87,23 @@ jobs:
       - name: Run Tests
         run: |
           docker-compose run --rm -e KBC_TEST_TOKEN=$KBC_AZ_TEST_TOKEN -e KBC_TEST_API_URL=$KBC_AZ_TEST_API_URL -e SKIP_ABS_TESTS=1 ci -m unittest --verbose
+
+  tests_gcp:
+    name: Run tests (GCP)
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out the repo
+        uses: actions/checkout@v3
+
+      - name: Download image
+        uses: ishworkh/docker-image-artifact-download@v1
+        with:
+          image: "sapi-python-client"
+
+      - name: Run Tests
+        run: |
+          docker-compose run --rm -e KBC_TEST_TOKEN=$KBC_GCP_TEST_TOKEN -e KBC_TEST_API_URL=$KBC_GCP_TEST_API_URL -e SKIP_ABS_TESTS=1 ci -m unittest --verbose
 
   deploy_to_pypi:
     needs:
