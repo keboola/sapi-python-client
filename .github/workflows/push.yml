@@ -13,7 +13,7 @@ env:
   KBC_TEST_API_URL: https://connection.keboola.com
   KBC_AZ_TEST_TOKEN: ${{ secrets.KBC_AZ_TEST_TOKEN }}
   KBC_AZ_TEST_API_URL: https://connection.north-europe.azure.keboola.com
-  KBC_GCP_TEST_TOKEN: ${{ secrets.KBC_GCP_TEST_TOKEN }}
+  KBC_GCP_TEST_TOKEN: ${{ secrets.KBC_GCP_SNOW_TEST_TOKEN }}
   KBC_GCP_TEST_API_URL: https://connection.europe-west3.gcp.keboola.com
   APP_IMAGE: sapi-python-client
 
