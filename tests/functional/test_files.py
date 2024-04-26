@@ -100,7 +100,7 @@ class TestEndpoint(BaseTestCase):
         with self.subTest():
             self.assertEqual(file_id, file_info['id'])
         with self.subTest():
-            self.assertTrue(file_info['provider'] in ['aws', 'azure'])
+            self.assertTrue(file_info['provider'] in ['aws', 'azure', 'gcp'])
         if file_info['provider'] == 'aws':
             with self.subTest():
                 self.assertTrue('credentials' in file_info)

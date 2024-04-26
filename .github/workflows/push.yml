@@ -109,6 +109,7 @@ jobs:
     needs:
       - tests_aws
       - tests_azure
+      - tests_gcp
     runs-on: ubuntu-latest
     if: startsWith(github.ref, 'refs/tags/') && needs.build.outputs.is_semantic_tag == 'true'
     steps:
