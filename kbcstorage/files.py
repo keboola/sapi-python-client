@@ -313,9 +313,6 @@ class Files(Endpoint):
         blob = bucket.blob(file_info['gcsPath']['key'])
         blob.download_to_filename(destination)
 
-        # with open(destination, "wb") as file:
-        #     file.write(blob.download_as_bytes())
-
     def __download_sliced_file_from_gcp(self, file_info, destination, storage_client):
         manifest = requests.get(url=file_info['url']).json()
         file_names = []
@@ -328,8 +325,10 @@ class Files(Endpoint):
             bucket = storage_client.bucket(file_info['gcsPath']['bucket'])
 
             blob = bucket.blob(file_key)
-            blob.download_to_filename(destination)
-            bucket.download_file(file_key, file_name)
+
+            with open(file_name, "wb") as file_slice:
+                file_slice.write(blob.download_as_bytes())
+
         self.__merge_split_files(file_names, destination)
 
     def __merge_split_files(self, file_names, destination):
