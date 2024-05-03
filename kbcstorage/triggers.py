@@ -111,4 +111,4 @@ class Triggers(Endpoint):
             }.items()
             if v is not None
         }
-        self._put(url, data=body)
+        return self._put(url, data=body)

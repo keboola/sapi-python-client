@@ -70,8 +70,8 @@ class TestTriggersWithMocks(unittest.TestCase):
             )
         )
         trigger_id = 1
-        deleted_detail = self.triggers.update(trigger_id, runWithTokenId=100)
-        assert deleted_detail is None
+        updated_detail = self.triggers.update(trigger_id, runWithTokenId=100)
+        assert updated_detail['id'] == '3'
 
     @responses.activate
     def test_create(self):
