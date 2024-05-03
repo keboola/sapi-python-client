@@ -13,6 +13,8 @@ import requests
 
 from azure.storage.blob import BlobServiceClient, ContentSettings
 from kbcstorage.base import Endpoint
+from google.oauth2 import credentials
+from google.cloud import storage as GCPStorage
 
 
 class Files(Endpoint):
@@ -86,6 +88,8 @@ class Files(Endpoint):
             self.__upload_to_azure(file_resource, file_path)
         elif file_resource['provider'] == 'aws':
             self.__upload_to_aws(file_resource, file_path, is_encrypted)
+        elif file_resource['provider'] == 'gcp':
+            self.__upload_to_gcp(file_resource, file_path)
 
         return file_resource['id']
 
@@ -196,6 +200,16 @@ class Files(Endpoint):
                 self.__download_sliced_file_from_aws(file_info, local_file, s3)
             else:
                 self.__download_file_from_aws(file_info, local_file, s3)
+        elif file_info['provider'] == 'gcp':
+            storage_client = self.__get_gcp_client(
+                file_info['gcsCredentials']['access_token'],
+                file_info['gcsCredentials']['projectId'],
+            )
+
+            if file_info['isSliced']:
+                self.__download_sliced_file_from_gcp(file_info, local_file, storage_client)
+            else:
+                self.__download_file_from_gcp(file_info, local_file, storage_client)
         return local_file
 
     def __upload_to_azure(self, preparation_result, file_path):
@@ -232,6 +246,18 @@ class Files(Endpoint):
             else:
                 s3_object.put(ACL=upload_params['acl'], Body=file,
                               ContentDisposition=disposition)
+
+    def __upload_to_gcp(self, preparation_result, file_path):
+        storage_client = self.__get_gcp_client(
+            preparation_result['gcsUploadParams']['access_token'],
+            preparation_result['gcsUploadParams']['projectId']
+        )
+
+        bucket = storage_client.bucket(preparation_result['gcsUploadParams']['bucket'])
+        blob = bucket.blob(preparation_result['gcsUploadParams']['key'])
+
+        with open(file_path, "rb") as blob_data:
+            blob.upload_from_file(blob_data)
 
     def __download_file_from_aws(self, file_info, destination, s3):
         bucket = s3.Bucket(file_info["s3Path"]["bucket"])
@@ -281,6 +307,30 @@ class Files(Endpoint):
                 file_slice.write(container_client.download_blob(blob_path).readall())
         self.__merge_split_files(file_names, destination)
 
+    def __download_file_from_gcp(self, file_info, destination, storage_client):
+
+        bucket = storage_client.bucket(file_info['gcsPath']['bucket'])
+        blob = bucket.blob(file_info['gcsPath']['key'])
+        blob.download_to_filename(destination)
+
+    def __download_sliced_file_from_gcp(self, file_info, destination, storage_client):
+        manifest = requests.get(url=file_info['url']).json()
+        file_names = []
+        for entry in manifest["entries"]:
+            full_path = entry["url"]
+            file_name = full_path.rsplit("/", 1)[1]
+            file_names.append(file_name)
+            splitted_path = full_path.split("/")
+            file_key = "/".join(splitted_path[3:])
+            bucket = storage_client.bucket(file_info['gcsPath']['bucket'])
+
+            blob = bucket.blob(file_key)
+
+            with open(file_name, "wb") as file_slice:
+                file_slice.write(blob.download_as_bytes())
+
+        self.__merge_split_files(file_names, destination)
+
     def __merge_split_files(self, file_names, destination):
         with open(destination, mode='wb') as out_file:
             for file_name in file_names:
@@ -292,3 +342,8 @@ class Files(Endpoint):
     def __get_blob_client(self, connection_string, container, blob_name):
         blob_service_client = BlobServiceClient.from_connection_string(connection_string)
         return blob_service_client.get_blob_client(container=container, blob=blob_name)
+
+    def __get_gcp_client(self, token, project):
+        creds = credentials.Credentials(token=token)
+        gcp_storage_client = GCPStorage.Client(credentials=creds, project=project)
+        return gcp_storage_client
