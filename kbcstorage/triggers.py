@@ -78,7 +78,7 @@ class Triggers(Endpoint):
             "tableIds": tableIds
         }
 
-        return self._post(self.base_url, data=body)
+        return self._post(self.base_url, json=body)
 
     def delete(self, trigger_id):
         """
@@ -94,11 +94,20 @@ class Triggers(Endpoint):
     def update(self, trigger_id, runWithTokenId=None, component=None, configurationId=None,
                coolDownPeriodMinutes=None, tableIds=None):
         """
-        Delete a trigger referenced by ``trigger_id``.
+        Update a trigger referenced by ``trigger_id``.
 
         Args:
-            trigger_id (int): The id of the trigger to be deleted.
+            runWithTokenId (int): ID of token used for running configured component.
+            component (str): For now we support only 'orchestration'.
+            configurationId (int): Id of component configuration.
+            coolDownPeriodMinutes (int): Minimal cool down period before
+                firing action again in minutes (min is 1 minute).
+            tableIds (list[str]) IDs of tables.
+        Returns:
+            response_body: The parsed json from the HTTP response.
 
+        Raises:
+            requests.HTTPError: If the API request fails.
         """
         url = '{}/{}'.format(self.base_url, trigger_id)
         body = {
