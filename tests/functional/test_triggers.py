@@ -4,9 +4,9 @@ import warnings
 
 from requests import exceptions
 
-from base import Endpoint
-from configurations import Configurations
-from jobs import Jobs
+from kbcstorage.base import Endpoint
+from kbcstorage.configurations import Configurations
+from kbcstorage.jobs import Jobs
 from kbcstorage.triggers import Triggers
 from kbcstorage.tables import Tables
 from kbcstorage.buckets import Buckets
