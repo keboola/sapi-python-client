@@ -87,6 +87,11 @@ class TestEndpoint(BaseTestCase):
         self.assertTrue(len(self.created_trigger_ids) > 0)
         first_id = self.created_trigger_ids[0]
         detail = self.triggers.detail(first_id)
+        self.assertTrue(detail["runWithTokenId"] == int(self.token_id))
+        self.assertTrue(detail["component"] == self.component)
+        self.assertTrue(detail["configurationId"] == self.configuration_id)
+        self.assertTrue(detail["coolDownPeriodMinutes"] == 10)
+        self.assertTrue([t['tableId'] for t in detail["tables"]] == [self.table_id])
         self.assertTrue(detail["id"] == first_id)
 
     def list_triggers(self):
