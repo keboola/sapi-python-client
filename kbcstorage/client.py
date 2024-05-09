@@ -5,11 +5,12 @@ from kbcstorage.branches import Branches
 from kbcstorage.buckets import Buckets
 from kbcstorage.components import Components
 from kbcstorage.configurations import Configurations
-from kbcstorage.tokens import Tokens
-from kbcstorage.workspaces import Workspaces
+from kbcstorage.files import Files
 from kbcstorage.jobs import Jobs
 from kbcstorage.tables import Tables
-from kbcstorage.files import Files
+from kbcstorage.tokens import Tokens
+from kbcstorage.triggers import Triggers
+from kbcstorage.workspaces import Workspaces
 
 
 class Client:
@@ -40,6 +41,7 @@ class Client:
         self.configurations = Configurations(self.root_url, self.token, self.branch_id)
         self.tokens = Tokens(self.root_url, self.token)
         self.branches = Branches(self.root_url, self.token)
+        self.triggers = Triggers(self.root_url, self.token)
 
     @property
     def token(self):
