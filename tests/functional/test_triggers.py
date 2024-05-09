@@ -27,9 +27,8 @@ class Tokens(Endpoint):
 
 
 class TestEndpoint(BaseTestCase):
-    TEST_BUCKET_NAME = "kbc_trigger_test_bucket"
-    TEST_BUCKET_ID = f"in.c-{TEST_BUCKET_NAME}"
-    TEST_TABLE_NAME = "kbc_trigger_test_table"
+    TEST_BUCKET_NAME = "trigger_test_bucket"
+    TEST_TABLE_NAME = "trigger_test_table"
 
     def setUp(self):
         self.root_url = os.getenv('KBC_TEST_API_URL')
@@ -48,16 +47,17 @@ class TestEndpoint(BaseTestCase):
 
         self.clean()
         self.token_id = self.tokens.verify()["id"]
-        self.buckets.create(self.TEST_BUCKET_NAME)
+        self.test_bucket_id = self.buckets.create(self.TEST_BUCKET_NAME)['id']
         with tempfile.NamedTemporaryFile(delete=False) as tmp_file:
             tmp_file.write(b"a,b,c\n1,2,3\n")
-        self.table_id = self.tables.create(self.TEST_BUCKET_ID, self.TEST_TABLE_NAME, tmp_file.name)
+        self.table_id = self.tables.create(self.test_bucket_id, self.TEST_TABLE_NAME, tmp_file.name)
         self.component = self.TEST_COMPONENT_NAME
         self.configuration_id = self.configurations.create(self.TEST_COMPONENT_NAME, 'trigger_test_config')["id"]
 
     def clean(self):
         try:
-            self.buckets.delete(self.TEST_BUCKET_ID, True)
+            if hasattr(self, "test_bucket_id"):
+                self.buckets.delete(self.test_bucket_id, True)
         except exceptions.HTTPError as e:
             if e.response.status_code != 404:
                 raise
@@ -84,29 +84,29 @@ class TestEndpoint(BaseTestCase):
         self.assertEqual(trigger_id, self.triggers.detail(trigger_id)['id'])
 
     def trigger_detail(self):
-        self.assertTrue(len(self.created_trigger_ids) > 0)
+        self.assertEqual(len(self.created_trigger_ids), 0)
         first_id = self.created_trigger_ids[0]
         detail = self.triggers.detail(first_id)
-        self.assertTrue(detail["runWithTokenId"] == int(self.token_id))
-        self.assertTrue(detail["component"] == self.component)
-        self.assertTrue(detail["configurationId"] == self.configuration_id)
-        self.assertTrue(detail["coolDownPeriodMinutes"] == 10)
-        self.assertTrue([t['tableId'] for t in detail["tables"]] == [self.table_id])
-        self.assertTrue(detail["id"] == first_id)
+        self.assertEqual(detail["runWithTokenId"], int(self.token_id))
+        self.assertEqual(detail["component"], self.component)
+        self.assertEqual(detail["configurationId"], self.configuration_id)
+        self.assertEqual(detail["coolDownPeriodMinutes"], 10)
+        self.assertEqual([t['tableId'] for t in detail["tables"]], [self.table_id])
+        self.assertEqual(detail["id"], first_id)
 
     def list_triggers(self):
-        self.assertTrue(len(self.created_trigger_ids) > 0)
+        self.assertGreater(len(self.created_trigger_ids), 0)
         all_triggers = self.triggers.list()
         api_trigger_ids = {x["id"] for x in all_triggers}
         created_trigger_ids = {x for x in self.created_trigger_ids}
         self.assertTrue(created_trigger_ids.issubset(api_trigger_ids))
 
     def update_trigger(self):
-        self.assertTrue(len(self.created_trigger_ids) > 0)
+        self.assertGreater(len(self.created_trigger_ids), 0)
         first_id = self.created_trigger_ids[0]
         self.triggers.update(first_id, coolDownPeriodMinutes=100)
         detail = self.triggers.detail(first_id)
-        self.assertTrue(detail["coolDownPeriodMinutes"] == 100)
+        self.assertEqual(detail["coolDownPeriodMinutes"], 100)
 
     def delete_triggers(self):
         for t_id in self.created_trigger_ids:
