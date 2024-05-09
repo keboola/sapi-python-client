@@ -84,7 +84,7 @@ class TestEndpoint(BaseTestCase):
         self.assertEqual(trigger_id, self.triggers.detail(trigger_id)['id'])
 
     def trigger_detail(self):
-        self.assertEqual(len(self.created_trigger_ids), 0)
+        self.assertGreater(len(self.created_trigger_ids), 0)
         first_id = self.created_trigger_ids[0]
         detail = self.triggers.detail(first_id)
         self.assertEqual(detail["runWithTokenId"], int(self.token_id))
