@@ -4,26 +4,13 @@ import warnings
 
 from requests import exceptions
 
-from kbcstorage.base import Endpoint
+from kbcstorage.buckets import Buckets
 from kbcstorage.configurations import Configurations
 from kbcstorage.jobs import Jobs
-from kbcstorage.triggers import Triggers
 from kbcstorage.tables import Tables
-from kbcstorage.buckets import Buckets
+from kbcstorage.tokens import Tokens
+from kbcstorage.triggers import Triggers
 from tests.base_test_case import BaseTestCase
-
-
-class Tokens(Endpoint):
-    """
-    Testing class for obtaining token ID from token.
-    """
-
-    def __init__(self, root_url, token):
-        super().__init__(root_url, 'tokens', token)
-
-    def verify(self):
-        url = '{}/verify'.format(self.base_url)
-        return self._get(url)
 
 
 class TestEndpoint(BaseTestCase):
