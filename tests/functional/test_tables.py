@@ -358,6 +358,18 @@ class TestEndpoint(BaseTestCase):
             ]
         )
 
+        with self.subTest("Test empty columns metadata"):
+            # test that empty [] is not actually put in the request
+            self.tables.metadata.create(
+                table_id=table_id,
+                provider='test',
+                metadata=[{
+                    'key': 'test_table_with_metadata',
+                    'value': 'success'
+                }],
+                columns_metadata=[]
+            )
+
         table_info = self.tables.detail(table_id)
         with self.subTest("Test metadata key in response"):
             self.assertIn('metadata', table_info)

@@ -66,7 +66,7 @@ class TablesMetadata(Endpoint):
 
         self._delete(url)
 
-    def create(self, table_id, provider, metadata, columns_metadata):
+    def create(self, table_id, provider, metadata, columns_metadata=None):
         """
         Post metadata to a table.
 
@@ -86,13 +86,15 @@ class TablesMetadata(Endpoint):
             ValueError: If the metadata is not a list.
             ValueError: If the columns_metadata is not a list
         """
+        if columns_metadata is None:
+            columns_metadata = []
         if not isinstance(table_id, str) or table_id == '':
             raise ValueError("Invalid table_id '{}'.".format(table_id))
         if not isinstance(provider, str) or provider == '':
             raise ValueError("Invalid provider '{}'.".format(provider))
         if not isinstance(metadata, list):
             raise ValueError("Invalid metadata '{}'.".format(metadata))
-        if not isinstance(columns_metadata, list):
+        if columns_metadata is not None and not isinstance(columns_metadata, list):
             raise ValueError("Invalid columns_metadata '{}'.".format(columns_metadata))
 
         url = '{}/{}/metadata'.format(self.base_url, table_id)
@@ -101,7 +103,8 @@ class TablesMetadata(Endpoint):
         }
         data = {
             "provider": provider,
-            "metadata": metadata,
-            "columnsMetadata": columns_metadata
+            "metadata": metadata
         }
+        if columns_metadata:
+            data["columnsMetadata"] = columns_metadata
         return self._post(url, data=json.dumps(data), headers=headers)
