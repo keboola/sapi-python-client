@@ -9,6 +9,7 @@ various endpoints, such as tables, workspaces, jobs, etc. as described in the
 .. _Storage API documentation:
     http://docs.keboola.apiary.io/
 """
+from . import retry_requests
 import requests
 
 
@@ -66,7 +67,7 @@ class Endpoint:
         headers = kwargs.pop('headers', {})
         headers.update(self._auth_header)
 
-        r = requests.get(url, params, headers=headers, **kwargs)
+        r = retry_requests.get(url, params=params, headers=headers, **kwargs)
         try:
             r.raise_for_status()
         except requests.HTTPError:
@@ -111,7 +112,7 @@ class Endpoint:
         """
         headers = kwargs.pop('headers', {})
         headers.update(self._auth_header)
-        r = requests.post(headers=headers, *args, **kwargs)
+        r = retry_requests.post(headers=headers, *args, **kwargs)
         try:
             r.raise_for_status()
         except requests.HTTPError:
@@ -137,7 +138,7 @@ class Endpoint:
         """
         headers = kwargs.pop('headers', {})
         headers.update(self._auth_header)
-        r = requests.put(headers=headers, *args, **kwargs)
+        r = retry_requests.put(headers=headers, *args, **kwargs)
         try:
             r.raise_for_status()
         except requests.HTTPError:
@@ -163,7 +164,7 @@ class Endpoint:
         """
         headers = kwargs.pop('headers', {})
         headers.update(self._auth_header)
-        r = requests.delete(headers=headers, *args, **kwargs)
+        r = retry_requests.delete(headers=headers, *args, **kwargs)
         try:
             r.raise_for_status()
         except requests.HTTPError:
