@@ -1,7 +1,7 @@
 import time
 import requests
 
-MAX_RETRIES = 5
+MAX_RETRIES = 11
 BACKOFF_FACTOR = 1.0
 
 def _get_backoff_time(retry_count):
