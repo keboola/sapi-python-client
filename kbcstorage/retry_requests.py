@@ -3,16 +3,14 @@ import requests
 
 MAX_RETRIES = 5
 BACKOFF_FACTOR = 1.0
-RETRY_STATUS_CODES = {500, 502, 503, 504}
-
 
 def _get_backoff_time(retry_count):
     return BACKOFF_FACTOR * (2 ** retry_count)
 
 def _retry_request(request_func, url, *args, **kwargs):
     response = request_func(url, *args, **kwargs)
-    for retry_count in range(1, MAX_RETRIES):
-        if response.status_code not in RETRY_STATUS_CODES:
+    for retry_count in range(MAX_RETRIES - 1):
+        if response.status_code == 501 or response.status_code < 500:
             return response
         time.sleep(_get_backoff_time(retry_count))
         response = request_func(url, **kwargs)
