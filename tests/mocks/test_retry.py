@@ -1,10 +1,8 @@
 """
 Test basic functionality of the Tables endpoint
 """
-import time
 import unittest
 from unittest.mock import patch
-from urllib.error import HTTPError
 
 import requests
 import responses
