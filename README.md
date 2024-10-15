@@ -68,7 +68,7 @@ tables.detail('in.c-demo.some-table')
 Create `.env` file according to the `.env.template` file and run the tests with:
 
 ```bash
-$ docker-compose run --rm -e KBC_TEST_TOKEN -e KBC_TEST_API_URL sapi-python-client -m unittest discover
+$ docker compose run --rm -e KBC_TEST_TOKEN -e KBC_TEST_API_URL sapi-python-client -m unittest discover
 ```
 
 ## Contribution Guide
