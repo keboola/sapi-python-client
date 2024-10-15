@@ -1,5 +1,5 @@
 """
-Test basic functionality of the Tables endpoint
+Test that requests are retried if the server is not available.
 """
 import unittest
 from unittest.mock import patch
