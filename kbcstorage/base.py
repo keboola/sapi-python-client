@@ -9,6 +9,7 @@ various endpoints, such as tables, workspaces, jobs, etc. as described in the
 .. _Storage API documentation:
     http://docs.keboola.apiary.io/
 """
+from kbcstorage.retry_requests import MAX_RETRIES_DEFAULT, RetryRequests
 import requests
 
 
@@ -21,7 +22,7 @@ class Endpoint:
         base_url (str): The base URL for this endpoint.
         token (str): A key for the Storage API.
     """
-    def __init__(self, root_url, path_component, token):
+    def __init__(self, root_url, path_component, token, max_requests_retries=MAX_RETRIES_DEFAULT):
         """
         Create an endpoint.
 
@@ -44,6 +45,7 @@ class Endpoint:
         self._auth_header = {'X-StorageApi-Token': self.token,
                              'Accept-Encoding': 'gzip',
                              'User-Agent': 'Keboola Storage API Python Client'}
+        self.requests = RetryRequests(max_requests_retries)
 
     def _get_raw(self, url, params=None, **kwargs):
         """
@@ -66,7 +68,7 @@ class Endpoint:
         headers = kwargs.pop('headers', {})
         headers.update(self._auth_header)
 
-        r = requests.get(url, params, headers=headers, **kwargs)
+        r = self.requests.get(url, params=params, headers=headers, **kwargs)
         try:
             r.raise_for_status()
         except requests.HTTPError:
@@ -111,7 +113,7 @@ class Endpoint:
         """
         headers = kwargs.pop('headers', {})
         headers.update(self._auth_header)
-        r = requests.post(headers=headers, *args, **kwargs)
+        r = self.requests.post(headers=headers, *args, **kwargs)
         try:
             r.raise_for_status()
         except requests.HTTPError:
@@ -137,7 +139,7 @@ class Endpoint:
         """
         headers = kwargs.pop('headers', {})
         headers.update(self._auth_header)
-        r = requests.put(headers=headers, *args, **kwargs)
+        r = self.requests.put(headers=headers, *args, **kwargs)
         try:
             r.raise_for_status()
         except requests.HTTPError:
@@ -163,7 +165,7 @@ class Endpoint:
         """
         headers = kwargs.pop('headers', {})
         headers.update(self._auth_header)
-        r = requests.delete(headers=headers, *args, **kwargs)
+        r = self.requests.delete(headers=headers, *args, **kwargs)
         try:
             r.raise_for_status()
         except requests.HTTPError:
