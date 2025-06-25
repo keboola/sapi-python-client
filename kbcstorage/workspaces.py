@@ -9,7 +9,7 @@ Full documentation `here`.
 from kbcstorage.base import Endpoint
 from kbcstorage.files import Files
 from kbcstorage.jobs import Jobs
-
+from typing import List  # the legacy Workspaces class below unfortunately defines its own method called list
 
 def _make_body(mapping, source_key='source'):
     """
@@ -135,17 +135,18 @@ class Workspaces(Endpoint):
         url = '{}/{}/public-key'.format(self.base_url, workspace_id)
         return self._post(url, json=data)
 
-    def load_tables(self, workspace_id: int | str, table_mapping: dict | list[dict], preserve=True, load_type='load'):
+    def load_tables(self, workspace_id: int | str, table_mapping: dict | List[dict], preserve=True, load_type='load'):
         """
         Load tabes from storage into a workspace.
 
         Args:
             workspace_id (int or str): The id of the workspace to which to load
                 the tables.
-            table_mapping (:obj:`dict`): Source table names mapped to
-                destination table names.
+            table_mapping (:obj:`dict` or :obj:`list`): Source table names mapped to
+                destination table names. or a list of dicts with detailed tables specification.
             preserve (bool): If False, drop tables, else keep tables in
                 workspace.
+            load_type (str): Type of load, either 'load' or 'load-clone'. Defaults to 'load'.
 
         Raises:
             requests.HTTPError: If the API request fails.
