@@ -72,7 +72,7 @@ class Workspaces(Endpoint):
         url = '{}/{}'.format(self.base_url, workspace_id)
         return self._get(url)
 
-    def create(self, backend=None, timeout=None):
+    def create(self, backend=None, timeout=None, login_type=None, public_key=None, read_all_objects=False):
         """
         Create a new Workspace and return the credentials.
 
@@ -87,7 +87,10 @@ class Workspaces(Endpoint):
         """
         body = {
             'backend': backend,
-            'statementTimeoutSeconds': timeout
+            'statementTimeoutSeconds': timeout,
+            'loginType': login_type,
+            'publicKey': public_key,
+            'readOnlyStorageAccess': str(read_all_objects).lower()
         }
 
         return self._post(self.base_url, data=body)
@@ -122,7 +125,17 @@ class Workspaces(Endpoint):
         url = '{}/{}/password'.format(self.base_url, workspace_id)
         return self._post(url)
 
-    def load_tables(self, workspace_id, table_mapping, preserve=None):
+    def set_public_key(self, workspace_id, public_key):
+        """
+        Set the public key for the workspace.
+        """
+        data = {
+            'publicKey': public_key
+        }
+        url = '{}/{}/public-key'.format(self.base_url, workspace_id)
+        return self._post(url, json=data)
+
+    def load_tables(self, workspace_id: int | str, table_mapping: dict | list[dict], preserve=True, load_type='load'):
         """
         Load tabes from storage into a workspace.
 
@@ -140,11 +153,23 @@ class Workspaces(Endpoint):
         Todo:
             * Column data types.
         """
-        body = _make_body(table_mapping)
-        body['preserve'] = preserve
-        url = '{}/{}/load'.format(self.base_url, workspace_id)
+        load_type = load_type.lower()
+        if load_type not in ['load', 'load-clone']:
+            raise ValueError("Invalid load_type: {}, supports only load and load-clone".format(load_type))
 
-        return self._post(url, data=body)
+        url = '{}/{}/{}'.format(self.base_url, workspace_id, load_type)
+
+        req = None
+        if isinstance(table_mapping, dict):
+            body = _make_body(table_mapping)
+            body['preserve'] = str(preserve).lower()
+            req = self._post(url, data=body)
+        elif isinstance(table_mapping, list):
+            body = {'input': table_mapping}
+            body['preserve'] = str(preserve).lower()
+            req = self._post(url, json=body)
+
+        return req
 
     def load_files(self, workspace_id, file_mapping):
         """

@@ -41,3 +41,10 @@ class Branches(Endpoint):
 
         url = f"{self.base_url}branch/{branch_id}/metadata"
         return self._get(url)
+
+    def branch_detail(self, branch_id="default"):
+        """
+        Get branch details
+        """
+        url = f"{self.base_url}dev-branches/{branch_id}"
+        return self._get(url)
