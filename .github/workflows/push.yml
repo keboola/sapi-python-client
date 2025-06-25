@@ -49,9 +49,9 @@ jobs:
           echo "is_semantic_tag=$IS_SEMANTIC_TAG" >> $GITHUB_OUTPUT
 
       - name: Upload image
-        uses: ishworkh/docker-image-artifact-upload@v1
+        uses: ishworkh/container-image-artifact-upload@v2.0.0
         with:
-          image: "sapi-python-client"
+          image: ${{ env.APP_IMAGE }}
           retention_days: "1"
 
   tests_aws:
@@ -63,9 +63,9 @@ jobs:
         uses: actions/checkout@v3
 
       - name: Download image
-        uses: ishworkh/docker-image-artifact-download@v1
+        uses: ishworkh/container-image-artifact-download@v2.0.0
         with:
-          image: "sapi-python-client"
+          image: ${{ env.APP_IMAGE }}
 
       - name: Run Tests
         run: |
@@ -80,9 +80,9 @@ jobs:
         uses: actions/checkout@v3
 
       - name: Download image
-        uses: ishworkh/docker-image-artifact-download@v1
+        uses: ishworkh/container-image-artifact-download@v2.0.0
         with:
-          image: "sapi-python-client"
+          image: ${{ env.APP_IMAGE }}
 
       - name: Run Tests
         run: |
@@ -97,9 +97,9 @@ jobs:
         uses: actions/checkout@v3
 
       - name: Download image
-        uses: ishworkh/docker-image-artifact-download@v1
+        uses: ishworkh/container-image-artifact-download@v2.0.0
         with:
-          image: "sapi-python-client"
+          image: ${{ env.APP_IMAGE }}
 
       - name: Run Tests
         run: |
