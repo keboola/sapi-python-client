@@ -11,6 +11,7 @@ from kbcstorage.files import Files
 from kbcstorage.jobs import Jobs
 from typing import List  # the legacy Workspaces class below unfortunately defines its own method called list
 
+
 def _make_body(mapping, source_key='source'):
     """
     Given a dict mapping Keboola tables to aliases, construct the body of
