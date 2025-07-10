@@ -46,5 +46,9 @@ class Branches(Endpoint):
         """
         Get branch details
         """
+
+        if not isinstance(branch_id, str) or branch_id == "":
+            raise ValueError(f"Invalid branch_id '{branch_id}'")
+
         url = f"{self.base_url}dev-branches/{branch_id}"
         return self._get(url)
