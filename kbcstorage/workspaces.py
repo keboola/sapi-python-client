@@ -159,7 +159,7 @@ class Workspaces(Endpoint):
         if load_type not in ['load', 'load-clone']:
             raise ValueError("Invalid load_type: {}, supports only load and load-clone".format(load_type))
 
-        url = "/".join([self.base_url, workspace_id, load_type])
+        url = "/".join([self.base_url, str(workspace_id), load_type])
 
         req = None
         if isinstance(table_mapping, dict):
