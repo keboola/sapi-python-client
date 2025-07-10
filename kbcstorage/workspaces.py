@@ -12,7 +12,7 @@ from kbcstorage.jobs import Jobs
 from typing import List  # the legacy Workspaces class below unfortunately defines its own method called list
 
 
-def _make_body(mapping, source_key='source'):
+def _make_body(mapping, source_key='source', preserve: bool = True):
     """
     Given a dict mapping Keboola tables to aliases, construct the body of
     the HTTP request to load said tables.
@@ -22,7 +22,7 @@ def _make_body(mapping, source_key='source'):
             be loaded (ie. 'in.c-bucker.table_name') and values contain the
             aliases to which they will be loaded (ie. 'table_name').
     """
-    body = {}
+    body = {'preserve': str(preserve).lower()}
     template = 'input[{0}][{1}]'
     for i, (k, v) in enumerate(mapping.items()):
         body[template.format(i, source_key)] = k
@@ -91,7 +91,7 @@ class Workspaces(Endpoint):
             'statementTimeoutSeconds': timeout,
             'loginType': login_type,
             'publicKey': public_key,
-            'readOnlyStorageAccess': str(read_all_objects).lower()
+            'readOnlyStorageAccess': str(read_all_objects).lower()  # convert bool to lowercase true or false
         }
 
         return self._post(self.base_url, data=body)
@@ -159,16 +159,14 @@ class Workspaces(Endpoint):
         if load_type not in ['load', 'load-clone']:
             raise ValueError("Invalid load_type: {}, supports only load and load-clone".format(load_type))
 
-        url = '{}/{}/{}'.format(self.base_url, workspace_id, load_type)
+        url = "/".join([self.base_url, workspace_id, load_type])
 
         req = None
         if isinstance(table_mapping, dict):
-            body = _make_body(table_mapping)
-            body['preserve'] = str(preserve).lower()
+            body = _make_body(table_mapping, preserve=preserve)
             req = self._post(url, data=body)
         elif isinstance(table_mapping, list):
-            body = {'input': table_mapping}
-            body['preserve'] = str(preserve).lower()
+            body = {'input': table_mapping, 'preserve': str(preserve).lower()}
             req = self._post(url, json=body)
 
         return req
