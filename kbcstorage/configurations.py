@@ -92,7 +92,7 @@ class Configurations(Endpoint):
         """
         if not isinstance(component_id, str) or component_id == '':
             raise ValueError("Invalid component_id '{}'.".format(component_id))
-        url = '{}/{}/configs/{}/workspaces'.format(self.base_url, component_id, config_id)
+        url = f'{self.base_url}/{component_id}/configs/{config_id}/workspaces'
         return self._get(url)
 
     def create(self, component_id, name, description='', configuration=None, state=None, change_description='',
