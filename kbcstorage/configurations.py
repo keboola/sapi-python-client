@@ -79,6 +79,22 @@ class Configurations(Endpoint):
         url = '{}/{}/configs'.format(self.base_url, component_id)
         return self._get(url)
 
+    def list_config_workspaces(self, component_id, config_id):
+        """
+        Lists workspaces for component configuration.
+
+        Args:
+            component_id (str): The id of the component.
+            config_id (str): The id of the configuration.
+
+        Raises:
+            requests.HTTPError: If the API request fails.
+        """
+        if not isinstance(component_id, str) or component_id == '':
+            raise ValueError("Invalid component_id '{}'.".format(component_id))
+        url = f'{self.base_url}/{component_id}/configs/{config_id}/workspaces'
+        return self._get(url)
+
     def create(self, component_id, name, description='', configuration=None, state=None, change_description='',
                is_disabled=False, configuration_id=None):
         """
