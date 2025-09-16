@@ -17,7 +17,7 @@ class Client:
     Storage API Client.
     """
 
-    def __init__(self, api_domain, token, branch_id='default', without_files=False):
+    def __init__(self, api_domain, token, branch_id='default', file_storage_support=True):
         """
         Initialise a client.
 
@@ -26,7 +26,7 @@ class Client:
                 "https://connection.keboola.com".
             token (str): A storage API key.
             branch_id (str): The ID of branch to use, use 'default' to work without branch (in main).
-            without_files (bool): If True saves memory by not importing files and libraries for all backends.
+            file_storage_support (bool): If False, it saves memory by not importing libraries for all storage backends.
         """
         self.root_url = api_domain.rstrip("/")
         self._token = token
@@ -34,7 +34,7 @@ class Client:
 
         self.buckets = Buckets(self.root_url, self.token)
 
-        if not without_files:
+        if file_storage_support:
             from kbcstorage.files import Files
             self.files = Files(self.root_url, self.token)
 
