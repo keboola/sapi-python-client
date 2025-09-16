@@ -26,7 +26,7 @@ class Client:
                 "https://connection.keboola.com".
             token (str): A storage API key.
             branch_id (str): The ID of branch to use, use 'default' to work without branch (in main).
-            without_files (bool): If True, do not init the Files endpoint and saves memory by not importing libraries for all backends.
+            without_files (bool): If True saves memory by not importing files and libraries for all backends.
         """
         self.root_url = api_domain.rstrip("/")
         self._token = token
