@@ -9,6 +9,8 @@ various endpoints, such as tables, workspaces, jobs, etc. as described in the
 .. _Storage API documentation:
     http://docs.keboola.apiary.io/
 """
+import os
+
 from kbcstorage.retry_requests import MAX_RETRIES_DEFAULT, RetryRequests
 import requests
 
@@ -43,6 +45,7 @@ class Endpoint:
                                                   path_component.strip('/'))
         self.token = token
         self._auth_header = {'X-StorageApi-Token': self.token,
+                             'X-KBC-RunId': os.environ.get('KBC_RUNID'),
                              'Accept-Encoding': 'gzip',
                              'User-Agent': 'Keboola Storage API Python Client'}
         self.requests = RetryRequests(max_requests_retries)
