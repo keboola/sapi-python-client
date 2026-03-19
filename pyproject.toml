@@ -21,7 +21,6 @@ classifiers = [
 dependencies = [
     "boto3",
     "azure-storage-blob",
-    "urllib3<2.0.0",  # Frozen until fixed: https://github.com/boto/botocore/issues/2926
     # Dev dependencies
     "requests",
     "responses",
