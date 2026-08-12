@@ -2,13 +2,17 @@
 Asses basic functionality of the Workspace endpoint.
 """
 import unittest
+from urllib.parse import parse_qs
+
 import responses
 from requests import HTTPError
 
 from kbcstorage.workspaces import Workspaces
 
+from .token_responses import verify_token_response
 from .workspace_responses import (list_response, detail_response,
                                   load_tables_response, create_response,
+                                  keypair_create_response,
                                   reset_password_response)
 
 
@@ -91,7 +95,76 @@ class TestWorkspacesEndpointWithMocks(unittest.TestCase):
     @responses.activate
     def test_create(self):
         """
-        Workspace endpoint mock creates new workspace
+        Workspace endpoint mock creates new workspace. With no backend given,
+        the project default backend (snowflake) is resolved from the token and
+        a key-pair workspace is created instead of a password one.
+        """
+        responses.add(
+            responses.Response(
+                method='GET',
+                url='https://connection.keboola.com/v2/storage/tokens/verify',
+                json=verify_token_response
+            )
+        )
+        responses.add(
+            responses.Response(
+                method='POST',
+                url='https://connection.keboola.com/v2/storage/workspaces',
+                json=keypair_create_response
+            )
+        )
+        created_detail = self.ws.create()
+        request_body = parse_qs(responses.calls[1].request.body)
+        assert request_body['backend'] == ['snowflake']
+        assert request_body['loginType'] == ['snowflake-service-keypair']
+        assert 'BEGIN PUBLIC KEY' in request_body['publicKey'][0]
+        assert 'BEGIN PRIVATE KEY' in created_detail['connection']['privateKey']
+
+    @responses.activate
+    def test_create_snowflake_defaults_to_keypair(self):
+        """
+        With an explicit snowflake backend no token verify is needed and the
+        login type defaults to snowflake-service-keypair with a locally
+        generated key pair.
+        """
+        responses.add(
+            responses.Response(
+                method='POST',
+                url='https://connection.keboola.com/v2/storage/workspaces',
+                json=keypair_create_response
+            )
+        )
+        created_detail = self.ws.create(backend='snowflake')
+        assert len(responses.calls) == 1
+        request_body = parse_qs(responses.calls[0].request.body)
+        assert request_body['loginType'] == ['snowflake-service-keypair']
+        assert 'BEGIN PUBLIC KEY' in request_body['publicKey'][0]
+        assert 'BEGIN PRIVATE KEY' in created_detail['connection']['privateKey']
+
+    @responses.activate
+    def test_create_snowflake_with_own_public_key(self):
+        """
+        A caller-supplied public key is passed through and no private key is
+        injected into the response.
+        """
+        responses.add(
+            responses.Response(
+                method='POST',
+                url='https://connection.keboola.com/v2/storage/workspaces',
+                json=keypair_create_response
+            )
+        )
+        created_detail = self.ws.create(backend='snowflake', public_key='my-public-key')
+        request_body = parse_qs(responses.calls[0].request.body)
+        assert request_body['loginType'] == ['snowflake-service-keypair']
+        assert request_body['publicKey'] == ['my-public-key']
+        assert 'privateKey' not in created_detail['connection']
+
+    @responses.activate
+    def test_create_snowflake_explicit_legacy_login_type(self):
+        """
+        An explicitly requested password login type is passed through
+        unchanged and no key pair is generated.
         """
         responses.add(
             responses.Response(
@@ -100,8 +173,30 @@ class TestWorkspacesEndpointWithMocks(unittest.TestCase):
                 json=create_response
             )
         )
-        created_detail = self.ws.create()
+        created_detail = self.ws.create(backend='snowflake', login_type='snowflake-legacy-service')
+        request_body = parse_qs(responses.calls[0].request.body)
+        assert request_body['loginType'] == ['snowflake-legacy-service']
+        assert 'publicKey' not in request_body
         assert created_detail['connection']['password'] == 'abc'
+
+    @responses.activate
+    def test_create_non_snowflake_backend_unchanged(self):
+        """
+        Non-snowflake backends keep the original behavior - no login type or
+        public key is sent.
+        """
+        responses.add(
+            responses.Response(
+                method='POST',
+                url='https://connection.keboola.com/v2/storage/workspaces',
+                json=create_response
+            )
+        )
+        self.ws.create(backend='bigquery')
+        request_body = parse_qs(responses.calls[0].request.body)
+        assert request_body['backend'] == ['bigquery']
+        assert 'loginType' not in request_body
+        assert 'publicKey' not in request_body
 
     @responses.activate
     def test_delete(self):

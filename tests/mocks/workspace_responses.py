@@ -75,6 +75,32 @@ create_response = {
     }
 }
 
+keypair_create_response = {
+    "id": 235,
+    "name": "boring_wozniak",
+    "type": "table",
+    "component": "wr-db",
+    "configurationId": "aws-1",
+    "created": "2016-05-17T11:11:20+0200",
+    "connection": {
+        "backend": "snowflake",
+        "host": "keboola.snowflakecomputing.com",
+        "database": "keboola_123",
+        "schema": "boring_wozniak",
+        "warehouse": "SAPI_PROD",
+        "user": "xzy",
+        "loginType": "snowflake-service-keypair"
+    },
+    "creatorToken": {
+        "id": 234,
+        "description": "martin@keboola.com"
+    },
+    "creatorUser": {
+        "id": 234,
+        "name": "Martin"
+    }
+}
+
 load_tables_response = {
     "id": 22077337,
     "status": "waiting",
