@@ -1,6 +1,7 @@
 """
 Asses basic functionality of the Workspace endpoint.
 """
+import copy
 import unittest
 from urllib.parse import parse_qs
 
@@ -178,6 +179,84 @@ class TestWorkspacesEndpointWithMocks(unittest.TestCase):
         assert request_body['loginType'] == ['snowflake-legacy-service']
         assert 'publicKey' not in request_body
         assert created_detail['connection']['password'] == 'abc'
+
+    @responses.activate
+    def test_create_non_snowflake_default_backend_unchanged(self):
+        """
+        When the project default backend resolved from the token is not
+        snowflake, no login type, public key or backend is sent.
+        """
+        bigquery_verify_response = copy.deepcopy(verify_token_response)
+        bigquery_verify_response['owner']['defaultBackend'] = 'bigquery'
+        responses.add(
+            responses.Response(
+                method='GET',
+                url='https://connection.keboola.com/v2/storage/tokens/verify',
+                json=bigquery_verify_response
+            )
+        )
+        responses.add(
+            responses.Response(
+                method='POST',
+                url='https://connection.keboola.com/v2/storage/workspaces',
+                json=create_response
+            )
+        )
+        self.ws.create()
+        request_body = parse_qs(responses.calls[1].request.body)
+        assert 'backend' not in request_body
+        assert 'loginType' not in request_body
+        assert 'publicKey' not in request_body
+
+    @responses.activate
+    def test_create_caches_default_backend(self):
+        """
+        The default backend is resolved via the token verify call only once
+        per endpoint instance.
+        """
+        responses.add(
+            responses.Response(
+                method='GET',
+                url='https://connection.keboola.com/v2/storage/tokens/verify',
+                json=verify_token_response
+            )
+        )
+        responses.add(
+            responses.Response(
+                method='POST',
+                url='https://connection.keboola.com/v2/storage/workspaces',
+                json=keypair_create_response
+            )
+        )
+        responses.add(
+            responses.Response(
+                method='POST',
+                url='https://connection.keboola.com/v2/storage/workspaces',
+                json=keypair_create_response
+            )
+        )
+        self.ws.create()
+        self.ws.create()
+        verify_calls = [c for c in responses.calls if c.request.method == 'GET']
+        assert len(verify_calls) == 1
+
+    @responses.activate
+    def test_create_login_type_without_resolvable_backend_raises(self):
+        """
+        The API rejects loginType without an explicit backend, so the client
+        raises a clear error when the default backend cannot be resolved.
+        """
+        no_backend_verify_response = copy.deepcopy(verify_token_response)
+        del no_backend_verify_response['owner']['defaultBackend']
+        responses.add(
+            responses.Response(
+                method='GET',
+                url='https://connection.keboola.com/v2/storage/tokens/verify',
+                json=no_backend_verify_response
+            )
+        )
+        with self.assertRaises(ValueError):
+            self.ws.create(login_type='none')
 
     @responses.activate
     def test_create_non_snowflake_backend_unchanged(self):

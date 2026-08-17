@@ -74,6 +74,7 @@ class Workspaces(Endpoint):
             token (:obj:`str`): A storage API key.
         """
         super().__init__(root_url, 'workspaces', token)
+        self._default_backend = None
 
     def list(self):
         """
@@ -91,8 +92,9 @@ class Workspaces(Endpoint):
         """
         Retrieves information about a given workspace.
 
-        Note that the password to the workspace can only be retrieved when the
-        workspace is created.
+        Note that the workspace credentials (password or private key,
+        depending on the login type) are only available when the workspace
+        is created and cannot be retrieved later.
 
         Args:
             workspace_id (int or str): The id of the workspace.
@@ -138,6 +140,11 @@ class Workspaces(Endpoint):
         """
         private_key = None
         effective_backend = backend or self._get_default_backend()
+        if effective_backend is None and login_type is not None:
+            raise ValueError(
+                "Cannot resolve the project's default backend from the token; "
+                "pass backend explicitly when using login_type."
+            )
         if effective_backend == BACKEND_SNOWFLAKE:
             if login_type in (None, LOGIN_TYPE_DEFAULT):
                 login_type = LOGIN_TYPE_SNOWFLAKE_SERVICE_KEYPAIR
@@ -163,9 +170,14 @@ class Workspaces(Endpoint):
     def _get_default_backend(self):
         """
         Resolve the project's default backend from the token detail.
+
+        The value is cached on the instance - a project's default backend is
+        effectively immutable for the client's lifetime.
         """
-        token_info = Tokens(self.root_url, self.token).verify()
-        return (token_info.get('owner') or {}).get('defaultBackend')
+        if self._default_backend is None:
+            token_info = Tokens(self.root_url, self.token).verify()
+            self._default_backend = (token_info.get('owner') or {}).get('defaultBackend')
+        return self._default_backend
 
     def delete(self, workspace_id):
         """
@@ -186,6 +198,11 @@ class Workspaces(Endpoint):
     def reset_password(self, workspace_id):
         """
         Generate a new password for the workspace.
+
+        Only supported for password-based login types (e.g. the deprecated
+        'snowflake-legacy-service'). For key-pair workspaces rotate the
+        credentials with set_public_key() using a freshly generated key pair
+        instead.
 
         Args:
             workspace_id (int or str): The id of the workspace for which the
