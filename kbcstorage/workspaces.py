@@ -20,6 +20,9 @@ BACKEND_SNOWFLAKE = 'snowflake'
 LOGIN_TYPE_DEFAULT = 'default'
 LOGIN_TYPE_SNOWFLAKE_SERVICE_KEYPAIR = 'snowflake-service-keypair'
 
+# sentinel distinguishing "not resolved yet" from "project has no default backend"
+_DEFAULT_BACKEND_UNRESOLVED = object()
+
 
 def _generate_rsa_key_pair():
     """
@@ -74,7 +77,7 @@ class Workspaces(Endpoint):
             token (:obj:`str`): A storage API key.
         """
         super().__init__(root_url, 'workspaces', token)
-        self._default_backend = None
+        self._default_backend = _DEFAULT_BACKEND_UNRESOLVED
 
     def list(self):
         """
@@ -155,11 +158,14 @@ class Workspaces(Endpoint):
             backend = effective_backend
 
         body = {
-            'backend': backend,
-            'statementTimeoutSeconds': timeout,
-            'loginType': login_type,
-            'publicKey': public_key,
-            'readOnlyStorageAccess': str(read_all_objects).lower()  # convert bool to lowercase true or false
+            k: v for k, v in {
+                'backend': backend,
+                'statementTimeoutSeconds': timeout,
+                'loginType': login_type,
+                'publicKey': public_key,
+                'readOnlyStorageAccess': str(read_all_objects).lower()  # convert bool to lowercase true or false
+            }.items()
+            if v is not None
         }
 
         response = self._post(self.base_url, data=body)
@@ -174,7 +180,7 @@ class Workspaces(Endpoint):
         The value is cached on the instance - a project's default backend is
         effectively immutable for the client's lifetime.
         """
-        if self._default_backend is None:
+        if self._default_backend is _DEFAULT_BACKEND_UNRESOLVED:
             token_info = Tokens(self.root_url, self.token).verify()
             self._default_backend = (token_info.get('owner') or {}).get('defaultBackend')
         return self._default_backend

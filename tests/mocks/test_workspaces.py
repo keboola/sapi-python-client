@@ -1,5 +1,5 @@
 """
-Asses basic functionality of the Workspace endpoint.
+Assess basic functionality of the Workspace endpoint.
 """
 import copy
 import unittest
@@ -115,7 +115,7 @@ class TestWorkspacesEndpointWithMocks(unittest.TestCase):
             )
         )
         created_detail = self.ws.create()
-        request_body = parse_qs(responses.calls[1].request.body)
+        request_body = parse_qs(responses.calls[1].request.body, keep_blank_values=True)
         assert request_body['backend'] == ['snowflake']
         assert request_body['loginType'] == ['snowflake-service-keypair']
         assert 'BEGIN PUBLIC KEY' in request_body['publicKey'][0]
@@ -137,7 +137,7 @@ class TestWorkspacesEndpointWithMocks(unittest.TestCase):
         )
         created_detail = self.ws.create(backend='snowflake')
         assert len(responses.calls) == 1
-        request_body = parse_qs(responses.calls[0].request.body)
+        request_body = parse_qs(responses.calls[0].request.body, keep_blank_values=True)
         assert request_body['loginType'] == ['snowflake-service-keypair']
         assert 'BEGIN PUBLIC KEY' in request_body['publicKey'][0]
         assert 'BEGIN PRIVATE KEY' in created_detail['connection']['privateKey']
@@ -156,7 +156,7 @@ class TestWorkspacesEndpointWithMocks(unittest.TestCase):
             )
         )
         created_detail = self.ws.create(backend='snowflake', public_key='my-public-key')
-        request_body = parse_qs(responses.calls[0].request.body)
+        request_body = parse_qs(responses.calls[0].request.body, keep_blank_values=True)
         assert request_body['loginType'] == ['snowflake-service-keypair']
         assert request_body['publicKey'] == ['my-public-key']
         assert 'privateKey' not in created_detail['connection']
@@ -175,7 +175,7 @@ class TestWorkspacesEndpointWithMocks(unittest.TestCase):
             )
         )
         created_detail = self.ws.create(backend='snowflake', login_type='snowflake-legacy-service')
-        request_body = parse_qs(responses.calls[0].request.body)
+        request_body = parse_qs(responses.calls[0].request.body, keep_blank_values=True)
         assert request_body['loginType'] == ['snowflake-legacy-service']
         assert 'publicKey' not in request_body
         assert created_detail['connection']['password'] == 'abc'
@@ -203,7 +203,7 @@ class TestWorkspacesEndpointWithMocks(unittest.TestCase):
             )
         )
         self.ws.create()
-        request_body = parse_qs(responses.calls[1].request.body)
+        request_body = parse_qs(responses.calls[1].request.body, keep_blank_values=True)
         assert 'backend' not in request_body
         assert 'loginType' not in request_body
         assert 'publicKey' not in request_body
@@ -244,7 +244,8 @@ class TestWorkspacesEndpointWithMocks(unittest.TestCase):
     def test_create_login_type_without_resolvable_backend_raises(self):
         """
         The API rejects loginType without an explicit backend, so the client
-        raises a clear error when the default backend cannot be resolved.
+        raises a clear error when the default backend cannot be resolved. The
+        missing value is cached too - verify is not re-queried on retry.
         """
         no_backend_verify_response = copy.deepcopy(verify_token_response)
         del no_backend_verify_response['owner']['defaultBackend']
@@ -257,6 +258,9 @@ class TestWorkspacesEndpointWithMocks(unittest.TestCase):
         )
         with self.assertRaises(ValueError):
             self.ws.create(login_type='none')
+        with self.assertRaises(ValueError):
+            self.ws.create(login_type='none')
+        assert len(responses.calls) == 1
 
     @responses.activate
     def test_create_non_snowflake_backend_unchanged(self):
@@ -272,7 +276,7 @@ class TestWorkspacesEndpointWithMocks(unittest.TestCase):
             )
         )
         self.ws.create(backend='bigquery')
-        request_body = parse_qs(responses.calls[0].request.body)
+        request_body = parse_qs(responses.calls[0].request.body, keep_blank_values=True)
         assert request_body['backend'] == ['bigquery']
         assert 'loginType' not in request_body
         assert 'publicKey' not in request_body
