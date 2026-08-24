@@ -6,10 +6,43 @@ Full documentation `here`.
 .. _here:
     http://docs.keboola.apiary.io/#reference/workspaces/
 """
+from cryptography.hazmat.primitives import serialization
+from cryptography.hazmat.primitives.asymmetric import rsa
+
 from kbcstorage.base import Endpoint
 from kbcstorage.files import Files
 from kbcstorage.jobs import Jobs
+from kbcstorage.tokens import Tokens
 from typing import List  # the legacy Workspaces class below unfortunately defines its own method called list
+
+
+BACKEND_SNOWFLAKE = 'snowflake'
+LOGIN_TYPE_DEFAULT = 'default'
+LOGIN_TYPE_SNOWFLAKE_SERVICE_KEYPAIR = 'snowflake-service-keypair'
+
+# sentinel distinguishing "not resolved yet" from "project has no default backend"
+_DEFAULT_BACKEND_UNRESOLVED = object()
+
+
+def _generate_rsa_key_pair():
+    """
+    Generate an RSA-2048 key pair for Snowflake key-pair authentication.
+
+    Returns:
+        (private_key_pem, public_key_pem): Both keys PEM-encoded, the private
+            key in PKCS#8 format as expected by Snowflake drivers.
+    """
+    private_key = rsa.generate_private_key(public_exponent=65537, key_size=2048)
+    private_key_pem = private_key.private_bytes(
+        encoding=serialization.Encoding.PEM,
+        format=serialization.PrivateFormat.PKCS8,
+        encryption_algorithm=serialization.NoEncryption(),
+    ).decode('ascii')
+    public_key_pem = private_key.public_key().public_bytes(
+        encoding=serialization.Encoding.PEM,
+        format=serialization.PublicFormat.SubjectPublicKeyInfo,
+    ).decode('ascii')
+    return private_key_pem, public_key_pem
 
 
 def _make_body(mapping, source_key='source', preserve: bool = True):
@@ -44,6 +77,7 @@ class Workspaces(Endpoint):
             token (:obj:`str`): A storage API key.
         """
         super().__init__(root_url, 'workspaces', token)
+        self._default_backend = _DEFAULT_BACKEND_UNRESOLVED
 
     def list(self):
         """
@@ -61,8 +95,9 @@ class Workspaces(Endpoint):
         """
         Retrieves information about a given workspace.
 
-        Note that the password to the workspace can only be retrieved when the
-        workspace is created.
+        Note that the workspace credentials (password or private key,
+        depending on the login type) are only available when the workspace
+        is created and cannot be retrieved later.
 
         Args:
             workspace_id (int or str): The id of the workspace.
@@ -77,24 +112,78 @@ class Workspaces(Endpoint):
         """
         Create a new Workspace and return the credentials.
 
+        On the snowflake backend, an omitted (or 'default') login_type would
+        create a deprecated password-based workspace. The client therefore
+        defaults to the 'snowflake-service-keypair' login type: when no
+        public_key is supplied, an RSA key pair is generated locally, the
+        public key is sent to the API and the private key is returned in
+        response['connection']['privateKey'] (it never leaves the client
+        otherwise and cannot be retrieved later). To get the deprecated
+        password-based workspace, pass login_type='snowflake-legacy-service'
+        explicitly.
+
         Args:
             backend (:obj:`str`): The type of engine for the workspace.
                 'redshift', 'snowflake' or 'synapse'. Defaults to the project's default backend.
             timeout (int): The timeout, in seconds, for SQL statements.
                 Only supported by snowflake backends.
+            login_type (:obj:`str`): The login type of the workspace, e.g.
+                'snowflake-service-keypair', 'snowflake-person-keypair',
+                'snowflake-legacy-service' or 'none'. Defaults to
+                'snowflake-service-keypair' on snowflake, otherwise to the
+                backend's default.
+            public_key (:obj:`str`): PEM-encoded RSA public key to use with
+                key-pair login types. When omitted for the default snowflake
+                key-pair login, a key pair is generated locally.
+            read_all_objects (bool): Grant the workspace read-only access to
+                all project data.
 
         Raises:
             requests.HTTPError: If the API request fails.
         """
+        private_key = None
+        effective_backend = backend or self._get_default_backend()
+        if effective_backend is None and login_type is not None:
+            raise ValueError(
+                "Cannot resolve the project's default backend from the token; "
+                "pass backend explicitly when using login_type."
+            )
+        if effective_backend == BACKEND_SNOWFLAKE:
+            if login_type in (None, LOGIN_TYPE_DEFAULT):
+                login_type = LOGIN_TYPE_SNOWFLAKE_SERVICE_KEYPAIR
+            if login_type == LOGIN_TYPE_SNOWFLAKE_SERVICE_KEYPAIR and public_key is None:
+                private_key, public_key = _generate_rsa_key_pair()
+        if login_type is not None:
+            # the API rejects loginType without an explicit backend
+            backend = effective_backend
+
         body = {
-            'backend': backend,
-            'statementTimeoutSeconds': timeout,
-            'loginType': login_type,
-            'publicKey': public_key,
-            'readOnlyStorageAccess': str(read_all_objects).lower()  # convert bool to lowercase true or false
+            k: v for k, v in {
+                'backend': backend,
+                'statementTimeoutSeconds': timeout,
+                'loginType': login_type,
+                'publicKey': public_key,
+                'readOnlyStorageAccess': str(read_all_objects).lower()  # convert bool to lowercase true or false
+            }.items()
+            if v is not None
         }
 
-        return self._post(self.base_url, data=body)
+        response = self._post(self.base_url, data=body)
+        if private_key is not None:
+            response.setdefault('connection', {})['privateKey'] = private_key
+        return response
+
+    def _get_default_backend(self):
+        """
+        Resolve the project's default backend from the token detail.
+
+        The value is cached on the instance - a project's default backend is
+        effectively immutable for the client's lifetime.
+        """
+        if self._default_backend is _DEFAULT_BACKEND_UNRESOLVED:
+            token_info = Tokens(self.root_url, self.token).verify()
+            self._default_backend = (token_info.get('owner') or {}).get('defaultBackend')
+        return self._default_backend
 
     def delete(self, workspace_id):
         """
@@ -115,6 +204,11 @@ class Workspaces(Endpoint):
     def reset_password(self, workspace_id):
         """
         Generate a new password for the workspace.
+
+        Only supported for password-based login types (e.g. the deprecated
+        'snowflake-legacy-service'). For key-pair workspaces rotate the
+        credentials with set_public_key() using a freshly generated key pair
+        instead.
 
         Args:
             workspace_id (int or str): The id of the workspace for which the

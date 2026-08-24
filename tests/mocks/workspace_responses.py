@@ -75,6 +75,14 @@ create_response = {
     }
 }
 
+keypair_create_response = {
+    **create_response,
+    "connection": {
+        **{k: v for k, v in create_response["connection"].items() if k != "password"},
+        "loginType": "snowflake-service-keypair",
+    },
+}
+
 load_tables_response = {
     "id": 22077337,
     "status": "waiting",
