@@ -64,11 +64,73 @@ tables.detail('in.c-demo.some-table')
 
 ```
 
+## Development
+
+### Local environment
+
+The package requires Python 3.7 or newer; CI builds and tests on 3.11.
+
+Create a virtual environment and install the package into it in editable mode:
+
+```bash
+python3 -m venv .venv
+.venv/bin/pip install -e ".[dev]"
+```
+
+`pyproject.toml` declares the test dependencies alongside the runtime ones, and the `dev` extra adds
+the linter, so this single command covers everything. The `-e` flag keeps `kbcstorage` resolving to
+the working tree, so edits take effect without reinstalling.
+
+Prefixing commands with `.venv/bin/` always uses the environment. Activating it instead makes the
+plain `python` and `pip` commands resolve there for the rest of the shell session:
+
+```bash
+source .venv/bin/activate
+```
+
+On Windows the paths are `.venv\Scripts\python` and `.venv\Scripts\activate`.
+
+### Editor setup
+
+Editors and IDEs resolve imports through a configured interpreter. Until yours is pointed at the
+virtual environment, every third-party import is reported as unresolved. The interpreter path is:
+
+```
+.venv/bin/python
+```
+
+| Editor | Where to set it |
+| --- | --- |
+| VS Code | `Python: Select Interpreter` |
+| PyCharm | Settings → Project → Python Interpreter → Add → Existing environment |
+| Zed | `toolchain: select` |
+| Vim, Neovim, Emacs | the interpreter or `venv` option of your LSP client |
+
+Most editors scan for a directory named `.venv` or `venv` in the project root, so keeping the default
+name avoids manual configuration in the common case. A restart of the language server is often
+needed before existing errors clear.
+
+### Checks
+
+Lint. CI runs this before the tests, so a failure stops the build before anything is executed:
+
+```bash
+.venv/bin/python -m flake8
+```
+
+Unit tests, which mock all API responses and need no credentials:
+
+```bash
+.venv/bin/python -m unittest discover -s tests/mocks -t .
+```
+
+The functional tests run against a real project and are covered below.
+
 ## Tests
 Create `.env` file according to the `.env.template` file and run the tests with:
 
 ```bash
-$ docker compose run --rm -e KBC_TEST_TOKEN -e KBC_TEST_API_URL sapi-python-client -m unittest discover
+$ docker compose run --rm -e KBC_TEST_TOKEN -e KBC_TEST_API_URL ci -m unittest discover
 ```
 
 ## Contribution Guide

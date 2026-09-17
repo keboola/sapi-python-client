@@ -32,5 +32,10 @@ dependencies = [
 ]
 dynamic = ["version"]
 
+[project.optional-dependencies]
+dev = [
+    "flake8>=7,<8",
+]
+
 [tool.setuptools-git-versioning]
 enabled = true
