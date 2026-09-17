@@ -8,6 +8,7 @@ from urllib.parse import parse_qs
 import responses
 from requests import HTTPError
 
+from kbcstorage.auth import BearerToken
 from kbcstorage.workspaces import Workspaces
 
 from .token_responses import verify_token_response
@@ -92,6 +93,34 @@ class TestWorkspacesEndpointWithMocks(unittest.TestCase):
         with self.assertRaises(HTTPError) as error_context:
             self.ws.detail(workspace_id)
         assert error_context.exception.args[0] == msg
+
+    @responses.activate
+    def test_create_propagates_bearer_token_to_the_tokens_endpoint(self):
+        """
+        The Tokens endpoint that create() builds internally to resolve the
+        default backend authenticates the same way the Workspaces endpoint does.
+        """
+        responses.add(
+            responses.Response(
+                method='GET',
+                url='https://connection.keboola.com/v2/storage/tokens/verify',
+                json=verify_token_response
+            )
+        )
+        responses.add(
+            responses.Response(
+                method='POST',
+                url='https://connection.keboola.com/v2/storage/workspaces',
+                json=keypair_create_response
+            )
+        )
+        ws = Workspaces('https://connection.keboola.com/', BearerToken('kbc_at_dummy', 1234))
+        ws.create()
+
+        for call in responses.calls:
+            self.assertEqual('Bearer kbc_at_dummy', call.request.headers['Authorization'])
+            self.assertEqual('1234', call.request.headers['X-KBC-ProjectId'])
+            self.assertNotIn('X-StorageApi-Token', call.request.headers)
 
     @responses.activate
     def test_create(self):

@@ -91,14 +91,14 @@ class Tables(Endpoint):
         Raises:
             requests.HTTPError: If the API request fails.
         """
-        files = Files(self.root_url, self.token)
+        files = Files(self.root_url, self.auth)
         file_id = files.upload_file(file_path=file_path, tags=['file-import'],
                                     do_notify=False, is_public=False)
         job = self.create_raw(bucket_id=bucket_id, name=name,
                               data_file_id=file_id, delimiter=delimiter,
                               enclosure=enclosure, escaped_by=escaped_by,
                               primary_key=primary_key)
-        jobs = Jobs(self.root_url, self.token)
+        jobs = Jobs(self.root_url, self.auth)
         job = jobs.block_until_completed(job['id'])
         if job['status'] == 'error':
             raise RuntimeError(job['error']['message'])
@@ -229,7 +229,7 @@ class Tables(Endpoint):
         Raises:
             requests.HTTPError: If the API request fails.
         """
-        files = Files(self.root_url, self.token)
+        files = Files(self.root_url, self.auth)
         file_id = files.upload_file(file_path=file_path, tags=['file-import'],
                                     do_notify=False, is_public=False)
         job = self.load_raw(table_id=table_id, data_file_id=file_id,
@@ -237,7 +237,7 @@ class Tables(Endpoint):
                             escaped_by=escaped_by,
                             is_incremental=is_incremental, columns=columns,
                             without_headers=without_headers)
-        jobs = Jobs(self.root_url, self.token)
+        jobs = Jobs(self.root_url, self.auth)
         job = jobs.block_until_completed(job['id'])
         if job['status'] == 'error':
             raise RuntimeError(job['error']['message'])
@@ -399,11 +399,11 @@ class Tables(Endpoint):
                               where_column=where_column,
                               where_values=where_values,
                               where_operator=where_operator, is_gzip=is_gzip)
-        jobs = Jobs(self.root_url, self.token)
+        jobs = Jobs(self.root_url, self.auth)
         job = jobs.block_until_completed(job['id'])
         if job['status'] == 'error':
             raise RuntimeError(job['error']['message'])
-        files = Files(self.root_url, self.token)
+        files = Files(self.root_url, self.auth)
         temp_path = tempfile.TemporaryDirectory()
         local_file = files.download(file_id=job['results']['file']['id'],
                                     local_path=temp_path.name)
@@ -467,7 +467,7 @@ class Tables(Endpoint):
                               where_column=where_column,
                               where_values=where_values,
                               where_operator=where_operator, is_gzip=is_gzip)
-        jobs = Jobs(self.root_url, self.token)
+        jobs = Jobs(self.root_url, self.auth)
         job = jobs.block_until_completed(job['id'])
         if job['status'] == 'error':
             raise RuntimeError(job['error']['message'])

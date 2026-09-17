@@ -39,6 +39,21 @@ client.tables.detail('in.c-demo.some-table')
 
 ```
 
+## Authentication
+
+By default the token is a Storage API token, sent as `X-StorageApi-Token`. Programmatic tokens
+(`kbc_at_*` session tokens, `kbc_pat_*` personal access tokens) are not bound to a project, so they
+are sent as `Authorization: Bearer` together with the project id in `X-KBC-ProjectId`:
+
+```python
+from kbcstorage.client import Client, BearerToken
+
+client = Client('https://connection.keboola.com', BearerToken('kbc_at_...', project_id=1234))
+```
+
+Both forms work for directly constructed endpoints too, and the token is used as given — the client
+never refreshes or decodes it, so an expired token surfaces as a `requests.HTTPError` with a 401.
+
 ## Endpoint Classes Usage 
 ```python
 from kbcstorage.tables import Tables
