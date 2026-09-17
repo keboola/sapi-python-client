@@ -49,12 +49,22 @@ class Endpoint:
         self.base_url = '{}/v2/storage/{}'.format(root_url.strip('/'),
                                                   path_component.strip('/'))
         self.auth = coerce(token)
-        self.token = self.auth.token
         self._auth_header = {**self.auth.headers(),
                              'X-KBC-RunId': os.environ.get('KBC_RUNID'),
                              'Accept-Encoding': 'gzip',
                              'User-Agent': 'Keboola Storage API Python Client'}
         self.requests = RetryRequests(max_requests_retries)
+
+    @property
+    def token(self):
+        """
+        The raw token string, whichever scheme is in use.
+
+        Under a bearer token this is the programmatic token, not a Storage API
+        token, so sending it as `X-StorageApi-Token` fails. Pass `auth` when
+        building further endpoints.
+        """
+        return self.auth.token
 
     def _get_raw(self, url, params=None, **kwargs):
         """

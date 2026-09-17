@@ -52,6 +52,13 @@ class Client:
 
     @property
     def token(self):
+        """
+        The raw token string, whichever scheme is in use.
+
+        Under a bearer token this is the programmatic token, not a Storage API
+        token, so sending it as `X-StorageApi-Token` fails. Pass `auth` when
+        building further endpoints.
+        """
         return self._token
 
     @property

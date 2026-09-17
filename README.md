@@ -18,9 +18,9 @@ pip install git+https://github.com/keboola/sapi-python-client.git
 
 ## Client Class Usage
 ```python
-from kbcstorage.client import Client
+from kbcstorage.client import Client, StorageApiToken
 
-client = Client('https://connection.keboola.com', 'your-token')
+client = Client('https://connection.keboola.com', StorageApiToken('your-token'))
 
 # get table data into local file
 client.tables.export_to_file(table_id='in.c-demo.some-table', path_name='/data/')
@@ -41,25 +41,41 @@ client.tables.detail('in.c-demo.some-table')
 
 ## Authentication
 
-By default the token is a Storage API token, sent as `X-StorageApi-Token`. Programmatic tokens
-(`kbc_at_*` session tokens, `kbc_pat_*` personal access tokens) are not bound to a project, so they
-are sent as `Authorization: Bearer` together with the project id in `X-KBC-ProjectId`:
+The `token` argument takes an authentication strategy, either `StorageApiToken` or `BearerToken`:
 
 ```python
-from kbcstorage.client import Client, BearerToken
+from kbcstorage.client import Client, BearerToken, StorageApiToken
 
+# Storage API token, sent as `X-StorageApi-Token`
+client = Client('https://connection.keboola.com', StorageApiToken('your-token'))
+
+# Programmatic token, sent as `Authorization: Bearer` with the project id in `X-KBC-ProjectId`
 client = Client('https://connection.keboola.com', BearerToken('kbc_at_...', project_id=1234))
 ```
 
-Both forms work for directly constructed endpoints too, and the token is used as given — the client
-never refreshes or decodes it, so an expired token surfaces as a `requests.HTTPError` with a 401.
+A bare string is also accepted and is equivalent to `StorageApiToken('your-token')`. It is kept for
+backward compatibility:
+
+```python
+client = Client('https://connection.keboola.com', 'your-token')
+```
+
+Storage API tokens are bound to a project. Programmatic tokens (`kbc_at_*` session tokens,
+`kbc_pat_*` personal access tokens) are not, which is why `BearerToken` requires the project id.
+
+All three forms work for directly constructed endpoints too, and the token is used as given — the
+client never refreshes or decodes it, so an expired token surfaces as a `requests.HTTPError` with a
+401.
 
 ## Endpoint Classes Usage 
 ```python
+from kbcstorage.auth import StorageApiToken
 from kbcstorage.tables import Tables
 from kbcstorage.buckets import Buckets
 
-tables = Tables('https://connection.keboola.com', 'your-token')
+token = StorageApiToken('your-token')
+
+tables = Tables('https://connection.keboola.com', token)
 
 # get table data into local file
 tables.export_to_file(table_id='in.c-demo.some-table', path_name='/data/')
@@ -68,7 +84,7 @@ tables.export_to_file(table_id='in.c-demo.some-table', path_name='/data/')
 tables.create(name='some-table-2', bucket_id='in.c-demo', file_path='/data/some-table')
 
 # list buckets
-buckets = Buckets('https://connection.keboola.com', 'your-token')
+buckets = Buckets('https://connection.keboola.com', token)
 buckets.list()
 
 # list bucket tables

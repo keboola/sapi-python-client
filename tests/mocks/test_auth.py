@@ -12,6 +12,17 @@ class TestStorageApiToken(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, 'Token is required.'):
             StorageApiToken('')
 
+    def test_programmatic_token_is_rejected(self):
+        for token in ('kbc_at_dummy', 'kbc_pat_dummy'):
+            with self.subTest(token=token):
+                with self.assertRaisesRegex(ValueError, 'programmatic'):
+                    StorageApiToken(token)
+
+    def test_error_does_not_leak_the_token(self):
+        with self.assertRaises(ValueError) as ctx:
+            StorageApiToken('kbc_at_secret_value')
+        self.assertNotIn('secret_value', str(ctx.exception))
+
 
 class TestBearerToken(unittest.TestCase):
     def test_headers(self):
@@ -40,8 +51,13 @@ class TestCoerce(unittest.TestCase):
         self.assertEqual('dummy_token', auth.token)
 
     def test_strategy_passes_through(self):
-        auth = BearerToken('kbc_at_dummy', 1234)
-        self.assertIs(auth, coerce(auth))
+        for auth in (BearerToken('kbc_at_dummy', 1234), StorageApiToken('dummy_token')):
+            with self.subTest(auth=type(auth).__name__):
+                self.assertIs(auth, coerce(auth))
+
+    def test_programmatic_token_string_is_rejected(self):
+        with self.assertRaisesRegex(ValueError, 'programmatic'):
+            coerce('kbc_at_dummy')
 
 
 if __name__ == '__main__':

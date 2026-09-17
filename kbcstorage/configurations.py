@@ -23,7 +23,7 @@ class Configurations(Endpoint):
             branch_id (str): The ID of branch to use, use 'default' to work without branch (in main).
         """
         super().__init__(root_url, f"branch/{branch_id}/components", token)
-        self.metadata = ConfigurationsMetadata(root_url, token, branch_id)
+        self.metadata = ConfigurationsMetadata(root_url, self.auth, branch_id)
 
     def detail(self, component_id, configuration_id):
         """

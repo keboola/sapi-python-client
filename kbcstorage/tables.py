@@ -27,7 +27,7 @@ class Tables(Endpoint):
             token (:obj:`str`): A storage API key.
         """
         super().__init__(root_url, 'tables', token)
-        self.metadata = TablesMetadata(root_url, token)
+        self.metadata = TablesMetadata(root_url, self.auth)
 
     def list(self, include=None):
         """
