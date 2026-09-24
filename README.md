@@ -53,8 +53,8 @@ client = Client('https://connection.keboola.com', StorageApiToken('your-token'))
 client = Client('https://connection.keboola.com', BearerToken('kbc_at_...', project_id=1234))
 ```
 
-A bare string is also accepted and is equivalent to `StorageApiToken('your-token')`. It is kept for
-backward compatibility:
+A bare string is also accepted and is equivalent to `StorageApiToken('your-token')`. It is fully
+supported and not deprecated:
 
 ```python
 client = Client('https://connection.keboola.com', 'your-token')
@@ -66,6 +66,13 @@ Storage API tokens are bound to a project. Programmatic tokens (`kbc_at_*` sessi
 All three forms work for directly constructed endpoints too, and the token is used as given — the
 client never refreshes or decodes it, so an expired token surfaces as a `requests.HTTPError` with a
 401.
+
+### Breaking change in 0.11.0
+
+A bare string starting with `kbc_at_` or `kbc_pat_` now raises `ValueError` at construction. Before
+0.11.0 it was sent as `X-StorageApi-Token`, which the backend rejects with a 401 — the failure moved
+from request time to construction time and the message names the fix. Wrap such tokens in
+`BearerToken(token, project_id)`.
 
 ## Endpoint Classes Usage 
 ```python
@@ -99,7 +106,8 @@ tables.detail('in.c-demo.some-table')
 
 ### Local environment
 
-The package requires Python 3.7 or newer; CI builds and tests on 3.11.
+The package requires Python 3.10 or newer (`workspaces.load_tables` uses `int | str` annotations); CI builds
+and tests on 3.11.
 
 Create a virtual environment and install the package into it in editable mode:
 

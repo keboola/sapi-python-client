@@ -1,4 +1,5 @@
 import unittest
+import warnings
 
 from kbcstorage.auth import BearerToken, StorageApiToken, coerce
 
@@ -58,6 +59,17 @@ class TestCoerce(unittest.TestCase):
     def test_programmatic_token_string_is_rejected(self):
         with self.assertRaisesRegex(ValueError, 'programmatic'):
             coerce('kbc_at_dummy')
+
+    def test_no_warnings(self):
+        # endpoints build other endpoints, so coerce() runs once per endpoint;
+        # a warning here fires a dozen times per client and raises under -W error
+        for token in ('dummy_token', StorageApiToken('dummy_token'),
+                      BearerToken('kbc_at_dummy', 1234)):
+            with self.subTest(token=type(token).__name__):
+                with warnings.catch_warnings(record=True) as caught:
+                    warnings.simplefilter('always')
+                    coerce(token)
+                self.assertEqual([], [str(w.message) for w in caught])
 
 
 if __name__ == '__main__':

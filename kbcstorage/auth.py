@@ -1,27 +1,6 @@
-import os
-import sys
-import warnings
 from typing import Dict, Union
 
 PROGRAMMATIC_PREFIXES = ('kbc_at_', 'kbc_pat_')
-
-_PKG_DIR = os.path.dirname(os.path.abspath(__file__))
-
-
-def _caller_stacklevel() -> int:
-    """
-    Frames to skip so a warning lands on the first caller outside this package.
-
-    Endpoints build other endpoints, so a fixed stacklevel points at kbcstorage
-    itself: the message names the wrong line, the same warning repeats once per
-    endpoint, and a DeprecationWarning attributed to a library module is dropped
-    by the default filter.
-    """
-    level, frame = 1, sys._getframe(1)
-    while frame is not None and os.path.dirname(frame.f_code.co_filename) == _PKG_DIR:
-        level += 1
-        frame = frame.f_back
-    return level
 
 
 class StorageApiToken:
@@ -70,30 +49,13 @@ def coerce(token: Union[str, Auth]) -> Auth:
     Normalise the ``token`` argument of an endpoint into a strategy object.
 
     Args:
-        token: A strategy object, or a bare token string for backward
-            compatibility.
+        token: A strategy object, or a bare token string. Endpoints build other
+            endpoints and pass their own strategy on, so this runs once per
+            endpoint and must stay free of side effects.
 
     Returns:
         The strategy object to authenticate with.
     """
-    if isinstance(token, StorageApiToken):
+    if isinstance(token, (StorageApiToken, BearerToken)):
         return token
-
-    if isinstance(token, BearerToken):
-        warnings.warn(
-            "Authenticating with a bearer token: `.token` returns the "
-            "programmatic token, not a Storage API token, and will be "
-            "rejected if sent as X-StorageApi-Token. Pass `.auth` when "
-            "building further endpoints.",
-            UserWarning,
-            stacklevel=_caller_stacklevel(),
-        )
-        return token
-    auth = StorageApiToken(token)
-    warnings.warn(
-        "Passing the token as a string is deprecated, "
-        "pass kbcstorage.auth.StorageApiToken instead.",
-        DeprecationWarning,
-        stacklevel=_caller_stacklevel(),
-    )
-    return auth
+    return StorageApiToken(token)
