@@ -181,7 +181,7 @@ class Workspaces(Endpoint):
         effectively immutable for the client's lifetime.
         """
         if self._default_backend is _DEFAULT_BACKEND_UNRESOLVED:
-            token_info = Tokens(self.root_url, self.token).verify()
+            token_info = Tokens(self.root_url, self.auth).verify()
             self._default_backend = (token_info.get('owner') or {}).get('defaultBackend')
         return self._default_backend
 
@@ -285,14 +285,14 @@ class Workspaces(Endpoint):
         workspace = self.detail(workspace_id)
         if (workspace['type'] != 'file' and workspace['connection']['backend'] != 'abs'):
             raise Exception('Loading files to workspace is only available for ABS workspaces')
-        files = Files(self.root_url, self.token)
+        files = Files(self.root_url, self.auth)
         if ('operator' in file_mapping and file_mapping['operator'] == 'and'):
             query = ' AND '.join(map(lambda tag: 'tags:"' + tag + '"', file_mapping['tags']))
             file_list = files.list(q=query)
         else:
             file_list = files.list(tags=file_mapping['tags'])
 
-        jobs = Jobs(self.root_url, self.token)
+        jobs = Jobs(self.root_url, self.auth)
         jobs_list = []
         for file in file_list:
             inputs = {

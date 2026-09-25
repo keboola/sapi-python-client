@@ -50,13 +50,11 @@ class Buckets(Endpoint):
         Raises:
             requests.HTTPError: If the API request fails.
         """
-        headers = {'X-StorageApi-Token': self.token}
-
         url = '{}/{}/tables'.format(self.base_url, bucket_id)
         params = {}
         if include is not None and isinstance(include, list):
             params['include'] = ','.join(include)
-        return self._get(url, headers=headers, params=params)
+        return self._get(url, params=params)
 
     def detail(self, bucket_id):
         """
@@ -121,7 +119,7 @@ class Buckets(Endpoint):
         params = {'force': force, 'async': asynchronous}
         if (asynchronous):
             job = self._delete(url, params=params)
-            jobs = Jobs(self.root_url, self.token)
+            jobs = Jobs(self.root_url, self.auth)
             job = jobs.block_until_completed(job['id'])
             if job['status'] == 'error':
                 raise RuntimeError(job['error']['message'])

@@ -11,6 +11,7 @@ various endpoints, such as tables, workspaces, jobs, etc. as described in the
 """
 import os
 
+from kbcstorage.auth import coerce
 from kbcstorage.retry_requests import MAX_RETRIES_DEFAULT, RetryRequests
 import requests
 
@@ -23,6 +24,9 @@ class Endpoint:
     Attributes:
         base_url (str): The base URL for this endpoint.
         token (str): A key for the Storage API.
+        auth (kbcstorage.auth.StorageApiToken|kbcstorage.auth.BearerToken): The
+            authentication strategy to pass on to endpoints created from this
+            one.
     """
     def __init__(self, root_url, path_component, token, max_requests_retries=MAX_RETRIES_DEFAULT):
         """
@@ -33,8 +37,9 @@ class Endpoint:
                 "https://connection.keboola.com/"
             path_component (str): The section of the path specific to the
                 endpoint. eg. "buckets"
-            token (str): A key for the Storage API. Can be found in the storage
-                console.
+            token (str|kbcstorage.auth.StorageApiToken|kbcstorage.auth.BearerToken):
+                A key for the Storage API, found in the storage console, or an
+                authentication strategy from `kbcstorage.auth`.
         """
         if not root_url:
             raise ValueError("Root URL is required.")
@@ -43,12 +48,23 @@ class Endpoint:
         self.root_url = root_url
         self.base_url = '{}/v2/storage/{}'.format(root_url.strip('/'),
                                                   path_component.strip('/'))
-        self.token = token
-        self._auth_header = {'X-StorageApi-Token': self.token,
+        self.auth = coerce(token)
+        self._auth_header = {**self.auth.headers(),
                              'X-KBC-RunId': os.environ.get('KBC_RUNID'),
                              'Accept-Encoding': 'gzip',
                              'User-Agent': 'Keboola Storage API Python Client'}
         self.requests = RetryRequests(max_requests_retries)
+
+    @property
+    def token(self):
+        """
+        The raw token string, whichever scheme is in use.
+
+        Under a bearer token this is the programmatic token, not a Storage API
+        token, so sending it as `X-StorageApi-Token` fails. Pass `auth` when
+        building further endpoints.
+        """
+        return self.auth.token
 
     def _get_raw(self, url, params=None, **kwargs):
         """
@@ -68,8 +84,7 @@ class Endpoint:
         Raises:
             requests.HTTPError: If the API request fails.
         """
-        headers = kwargs.pop('headers', {})
-        headers.update(self._auth_header)
+        headers = {**kwargs.pop('headers', {}), **self._auth_header}
 
         r = self.requests.get(url, params=params, headers=headers, **kwargs)
         try:
@@ -114,8 +129,7 @@ class Endpoint:
         Raises:
             requests.HTTPError: If the API request fails.
         """
-        headers = kwargs.pop('headers', {})
-        headers.update(self._auth_header)
+        headers = {**kwargs.pop('headers', {}), **self._auth_header}
         r = self.requests.post(headers=headers, *args, **kwargs)
         try:
             r.raise_for_status()
@@ -140,8 +154,7 @@ class Endpoint:
         Raises:
             requests.HTTPError: If the API request fails.
         """
-        headers = kwargs.pop('headers', {})
-        headers.update(self._auth_header)
+        headers = {**kwargs.pop('headers', {}), **self._auth_header}
         r = self.requests.put(headers=headers, *args, **kwargs)
         try:
             r.raise_for_status()
@@ -166,8 +179,7 @@ class Endpoint:
         Raises:
             requests.HTTPError: If the API request fails.
         """
-        headers = kwargs.pop('headers', {})
-        headers.update(self._auth_header)
+        headers = {**kwargs.pop('headers', {}), **self._auth_header}
         r = self.requests.delete(headers=headers, *args, **kwargs)
         try:
             r.raise_for_status()

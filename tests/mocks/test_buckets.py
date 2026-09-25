@@ -1,5 +1,6 @@
 import unittest
 import responses
+from kbcstorage.auth import BearerToken
 from kbcstorage.buckets import Buckets
 from .bucket_responses import list_response, detail_response, create_response
 
@@ -9,6 +10,26 @@ class TestBucketsWithMocks(unittest.TestCase):
         token = 'dummy_token'
         base_url = 'https://connection.keboola.com/'
         self.buckets = Buckets(base_url, token)
+
+    @responses.activate
+    def test_list_tables_sends_one_auth_scheme_only(self):
+        """
+        list_tables passes its own headers to _get, so it is the one method that
+        could ship both schemes at once.
+        """
+        url = 'https://connection.keboola.com/v2/storage/buckets/in.c-ga/tables'
+        for token, expected, unexpected in (
+            ('dummy_token', 'X-StorageApi-Token', 'Authorization'),
+            (BearerToken('kbc_at_dummy', 1234), 'Authorization', 'X-StorageApi-Token'),
+        ):
+            with self.subTest(token=token):
+                responses.reset()
+                responses.add(responses.Response(method='GET', url=url, json=[]))
+                Buckets('https://connection.keboola.com/', token).list_tables('in.c-ga')
+
+                headers = responses.calls[0].request.headers
+                self.assertIn(expected, headers)
+                self.assertNotIn(unexpected, headers)
 
     @responses.activate
     def test_list(self):
