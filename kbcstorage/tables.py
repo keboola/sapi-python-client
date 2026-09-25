@@ -508,10 +508,13 @@ class Tables(Endpoint):
         }
         if not isinstance(table_id, str) or table_id == '':
             raise ValueError("Invalid table_id '{}'.".format(table_id))
-        if limit is not None and limit is not isinstance(table_id, int):
-            raise ValueError("Invalid limit '{}'.".format(limit))
+        if limit is not None:
+            if not isinstance(limit, int) or isinstance(limit, bool) or limit < 1:
+                raise ValueError("Invalid limit '{}'.".format(limit))
+            params['limit'] = limit
         if file_format not in ('rfc', 'escaped', 'raw'):
             raise ValueError("Invalid format '{}'.".format(file_format))
+        params['format'] = file_format
         if changed_since is not None:
             if not isinstance(changed_since, str):
                 raise ValueError("Invalid changed_since '{}'.".
