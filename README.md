@@ -25,8 +25,14 @@ client = Client('https://connection.keboola.com', 'your-token')
 # get table data into local file
 client.tables.export_to_file(table_id='in.c-demo.some-table', path_name='/data/')
 
-# save data
+# create a new table from a CSV file
 client.tables.create(name='some-table-2', bucket_id='in.c-demo', file_path='/data/some-table')
+
+# load data into an existing table (full load replaces the data)
+client.tables.load(table_id='in.c-demo.some-table-2', file_path='/data/some-table')
+
+# load data into an existing table incrementally (append rows / upsert by primary key)
+client.tables.load(table_id='in.c-demo.some-table-2', file_path='/data/some-table', is_incremental=True)
 
 # list buckets
 client.buckets.list()
@@ -49,8 +55,11 @@ tables = Tables('https://connection.keboola.com', 'your-token')
 # get table data into local file
 tables.export_to_file(table_id='in.c-demo.some-table', path_name='/data/')
 
-# save data
+# create a new table from a CSV file
 tables.create(name='some-table-2', bucket_id='in.c-demo', file_path='/data/some-table')
+
+# load data into an existing table (use is_incremental=True to append instead of replace)
+tables.load(table_id='in.c-demo.some-table-2', file_path='/data/some-table')
 
 # list buckets
 buckets = Buckets('https://connection.keboola.com', 'your-token')
